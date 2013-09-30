@@ -1,0 +1,27 @@
+#game_outer {
+    float: right;
+    right: 50%;
+    position: relative;
+    margin-bottom: 10px;
+}
+
+#game {
+    border: 1px solid black;
+    float: right;
+    right: -50%;
+    position: relative;
+}
+
+#controls_outer {
+    clear: both;
+    float: right;
+    right: 50%;
+    position: relative;
+}
+
+#controls {
+    right: -50%;
+    display: inline-block;
+    position: relative;
+    border: 1px dashed blue;
+}
