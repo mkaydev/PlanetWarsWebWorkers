@@ -239,7 +239,8 @@ Universe.prototype.drawUniverse = function drawUniverse() {
     * instead of clearing and redrawing, but it doesn't seem possible with antialiasing, which cannot be deactivated
     */ 
     var foregroundContext = this.foregroundCanvas.getContext("2d");
-    // fastest according to jsperf test for Firefox 24.0 on Ubuntu
+    // fastest according to jsperf test
+    // for Firefox 24.0 on Ubuntu and Chrome 28.0.1500.71 on Ubuntu Chromium
     foregroundContext.clearRect(0, 0, this.foregroundCanvas.width, this.foregroundCanvas.height);
 
     // to avoid canvas state changes, loop by color, i.e. by player
