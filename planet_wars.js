@@ -235,12 +235,15 @@ Universe.prototype.drawUniverse = function drawUniverse() {
     var players = this.activePlayers.slice();
     players.push(this.neutralPlayer);
 
-    var backgroundContext = this.backgroundCanvas.getContext("2d");
-    // to avoid canvas state changes, loop by color, i.e. by player
+    /* I'd like to keep the planets on the background and draw over them when the owner changes
+    * instead of clearing and redrawing, but it doesn't seem possible with antialiasing, which cannot be deactivated
+    */ 
+    this.foregroundCanvas.width = this.foregroundCanvas.width;  // for clearing the canvas, fastest way according to jsperf for ff 20
+    var foregroundContext = this.foregroundCanvas.getContext("2d");    // to avoid canvas state changes, loop by color, i.e. by player
     for (var i = 0; i < players.length; i++) {
         var player = players[i];
         var planets = this.getPlanets(player);
-        backgroundContext.fillStyle = player.color;
+        foregroundContext.fillStyle = player.color;
 
         for (var j = 0; j < planets.length; j++) {
             var planet = planets[j];
@@ -248,14 +251,12 @@ Universe.prototype.drawUniverse = function drawUniverse() {
             var centerY = planet.centerY;
             var radius = planet.radius;
 
-            backgroundContext.beginPath();
-            backgroundContext.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
-            backgroundContext.fill();
+            foregroundContext.beginPath();
+            foregroundContext.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+            foregroundContext.fill();
         }
     }
 
-    this.foregroundCanvas.width = this.foregroundCanvas.width;  // for clearing the canvas, fastest way according to jsperf for ff 20
-    var foregroundContext = this.foregroundCanvas.getContext("2d");
     foregroundContext.fillStyle = "black";
     for (var i = 0; i < players.length; i++) {
         var player = players[i];
@@ -287,12 +288,13 @@ Universe.prototype.drawUniverse = function drawUniverse() {
         foregroundContext.fillText("" + planet.forces, planet.centerX, planet.centerY);
     }
 
-    foregroundContext.font = "8pt sans-serif";
+    // disabled, because it kills peformance
+   /* foregroundContext.font = "8pt sans-serif";
      for (var fleetId in this.fleets) {
         var fleet = this.fleets[fleetId];
         foregroundContext.strokeText("" + fleet.forces, fleet.currentX, fleet.currentY);
         foregroundContext.fillText("" + fleet.forces, fleet.currentX, fleet.currentY);
-     }
+     } */
 }
 
 Universe.prototype.getNewPlanetCoords = function getNewPlanetCoords() {
