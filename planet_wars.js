@@ -257,7 +257,7 @@ Universe.prototype.drawUniverse = function drawUniverse() {
         }
     }
 
-    foregroundContext.fillStyle = "black";
+    //foregroundContext.fillStyle = "black";
     for (var i = 0; i < players.length; i++) {
         var player = players[i];
         var fleets = this.getFleets(player);
@@ -271,7 +271,7 @@ Universe.prototype.drawUniverse = function drawUniverse() {
 
             foregroundContext.beginPath();
             foregroundContext.arc(currentX, currentY, radius, 0, 2 * Math.PI, false);
-            foregroundContext.fill();
+            //foregroundContext.fill();
             foregroundContext.stroke();
         }
     }
