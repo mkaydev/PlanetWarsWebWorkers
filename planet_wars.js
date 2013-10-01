@@ -82,41 +82,14 @@ Fleet.prototype.step = function step() {
         this.targetPlanet.enteredBy(this);
     } else {
         // update position
-        var distX;
-        var xDiff;
-        if (this.targetPlanet.centerX > this.currentX) {
-            distX = this.targetPlanet.centerX - this.currentX;
-            xDiff = 1;
-        } else if (this.targetPlanet.centerX < this.currentX) {
-            distX = this.currentX - this.targetPlanet.centerX;
-            xDiff = -1;
-        } else {
-            distX = 0;
-            xDiff = 0;
-        }
+        var remainingSteps = Math.floor(distance / this.movementPerStep);
 
-        var distY;
-        var yDiff;
-        if (this.targetPlanet.centerY > this.currentY) {
-            distY = this.targetPlanet.centerY - this.currentY;
-            yDiff = 1;
-        } else if (this.targetPlanet.centerY < this.currentY) {
-            distY = this.currentY - this.targetPlanet.centerY;
-            yDiff = -1;
-        } else {
-            distY = 0;
-            yDiff = 0;
-        }
+        var xDiff = this.targetPlanet.centerX - this.currentX;
+        var yDiff = this.targetPlanet.centerY - this.currentY;
 
-        for (var i = 0; i < this.movementPerStep; i++) {
-            if (distX > distY) {
-                this.currentX += xDiff;
-                distX -= xDiff;
-            } else {
-                this.currentY += yDiff;
-                distY -= yDiff;
-            }
-        }
+        this.currentX += xDiff / remainingSteps;
+        this.currentY += yDiff / remainingSteps;
+
     }
 }
 
