@@ -238,8 +238,11 @@ Universe.prototype.drawUniverse = function drawUniverse() {
     /* I'd like to keep the planets on the background and draw over them when the owner changes
     * instead of clearing and redrawing, but it doesn't seem possible with antialiasing, which cannot be deactivated
     */ 
-    this.foregroundCanvas.width = this.foregroundCanvas.width;  // for clearing the canvas, fastest way according to jsperf for ff 20
-    var foregroundContext = this.foregroundCanvas.getContext("2d");    // to avoid canvas state changes, loop by color, i.e. by player
+    var foregroundContext = this.foregroundCanvas.getContext("2d");
+    // fastest according to jsperf test for Firefox 24.0 on Ubuntu
+    foregroundContext.clearRect(0, 0, this.foregroundCanvas.width, this.foregroundCanvas.height);
+
+    // to avoid canvas state changes, loop by color, i.e. by player
     for (var i = 0; i < players.length; i++) {
         var player = players[i];
         var planets = this.getPlanets(player);
