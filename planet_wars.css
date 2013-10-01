@@ -5,11 +5,20 @@
     margin-bottom: 10px;
 }
 
-#game {
+#game_background {
     border: 1px solid black;
     float: right;
     right: -50%;
     position: relative;
+    z-index: 0;
+}
+
+#game_foreground {
+    border: 1px solid black;
+    float: right;
+    right: -50%;
+    position: absolute;
+    z-index: 1;
 }
 
 #controls_outer {

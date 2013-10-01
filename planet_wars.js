@@ -55,22 +55,6 @@ Fleet: function Fleet(forces, homePlanet, targetPlanet) {
     this.radius = Math.max(Math.min(this.forces / 5, 10), 3);
 }
 Fleet.prototype.movementPerStep = 10;
-Fleet.prototype.drawFleet = function drawFleet(context) {
-    context.fillStyle = "black";
-    context.strokeStyle = this.owner.color;
-    context.beginPath();
-    context.arc(this.currentX, this.currentY, this.radius, 0, 2 * Math.PI, false);
-    context.fill();
-    context.stroke();
-
-    context.fillStyle = "white";
-    context.font = "8pt sans-serif";
-    context.textBaseline = "middle";
-    context.strokeStyle = "black";
-    context.lineWidth = 2;
-    context.strokeText("" + this.forces, this.currentX, this.currentY);
-    context.fillText("" + this.forces, this.currentX, this.currentY);
-}
 Fleet.prototype.distanceToPos = function distanceToPos(x, y) {
     var yDiff;
     if (y > this.currentY) {
@@ -147,21 +131,6 @@ Planet: function Planet(owner, recruitingPerStep, centerX, centerY) {
     this.forces = 5 * this.recruitingPerStep;
 }
 
-Planet.prototype.drawPlanet = function drawPlanet(context) {
-    context.fillStyle = this.owner.color;
-    context.beginPath();
-    context.arc(this.centerX, this.centerY, this.radius, 0, 2 * Math.PI, false);
-    context.fill();
-
-    context.fillStyle = "white";
-    context.font = "10pt sans-serif";
-    context.textBaseline = "middle";
-    context.strokeStyle = "black";
-    context.lineWidth = 2;
-    context.strokeText("" + this.forces, this.centerX, this.centerY);
-    context.fillText("" + this.forces, this.centerX, this.centerY);
-};
-
 Planet.prototype.enteredBy = function enteredBy(fleet) {
     if (this.owner === fleet.owner) {
         this.forces += fleet.forces;
@@ -218,17 +187,25 @@ Planet.prototype.step = function step() {
 
 // ---------------------------------------------------------------------------------------------------------------------------------
 
-Universe: function Universe(initialPlayers, neutralPlanetCount, width, height, canvasId) {
+Universe: function Universe(initialPlayers, neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId) {
     this.initialPlayers = initialPlayers;
     this.neutralPlayer = new NeutralPlayer();
 
-    this.canvasId = canvasId;
-    this.canvas = document.getElementById(this.canvasId);
+    this.foregroundCanvasId = foregroundCanvasId;
+    this.foregroundCanvas = document.getElementById(this.foregroundCanvasId);
+    this.backgroundCanvasId = backgroundCanvasId;
+    this.backgroundCanvas = document.getElementById(this.backgroundCanvasId);
 
     this.width = width;
     this.height = height;
-    $("#" + canvasId).attr("width", this.width);
-    $("#" + canvasId).attr("height", this.height);
+    $("#" + foregroundCanvasId).attr("width", this.width);
+    $("#" + foregroundCanvasId).attr("height", this.height);
+    $("#" + backgroundCanvasId).attr("width", this.width);
+    $("#" + backgroundCanvasId).attr("height", this.height);
+
+    var context = this.backgroundCanvas.getContext("2d");
+    context.fillStyle = "black";
+    context.fillRect(0, 0, this.width, this.height)
 
     // create main planets for players
     this.planets = [];
@@ -255,15 +232,67 @@ Universe.prototype.maxSecondaryPlanetRecruitingPerStep = 4;
 Universe.prototype.minSecondaryPlanetRecrutingPerStep = 1
 
 Universe.prototype.drawUniverse = function drawUniverse() {
-    var context = this.canvas.getContext("2d");
-    context.fillStyle = "black";
-    context.fillRect(0, 0, this.width, this.height);
+    var players = this.activePlayers.slice();
+    players.push(this.neutralPlayer);
+
+    var backgroundContext = this.backgroundCanvas.getContext("2d");
+    // to avoid canvas state changes, loop by color, i.e. by player
+    for (var i = 0; i < players.length; i++) {
+        var player = players[i];
+        var planets = this.getPlanets(player);
+        backgroundContext.fillStyle = player.color;
+
+        for (var j = 0; j < planets.length; j++) {
+            var planet = planets[j];
+            var centerX = planet.centerX;
+            var centerY = planet.centerY;
+            var radius = planet.radius;
+
+            backgroundContext.beginPath();
+            backgroundContext.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+            backgroundContext.fill();
+        }
+    }
+
+    this.foregroundCanvas.width = this.foregroundCanvas.width;  // for clearing the canvas, fastest way according to jsperf for ff 20
+    var foregroundContext = this.foregroundCanvas.getContext("2d");
+    foregroundContext.fillStyle = "black";
+    for (var i = 0; i < players.length; i++) {
+        var player = players[i];
+        var fleets = this.getFleets(player);
+        foregroundContext.strokeStyle = player.color;
+
+        for (var j = 0; j < fleets.length; j++) {
+            var fleet = fleets[j];
+            var currentX = fleet.currentX;
+            var currentY = fleet.currentY;
+            var radius = fleet.radius;
+
+            foregroundContext.beginPath();
+            foregroundContext.arc(currentX, currentY, radius, 0, 2 * Math.PI, false);
+            foregroundContext.fill();
+            foregroundContext.stroke();
+        }
+    }
+
+    foregroundContext.fillStyle = "white";
+    foregroundContext.strokeStyle = "black";
+    foregroundContext.font = "10pt sans-serif";
+    foregroundContext.textBaseline = "middle";
+    foregroundContext.lineWidth = 2;
+
     for (var i = 0; i < this.planets.length; i++) {
-        this.planets[i].drawPlanet(context);
+        var planet = this.planets[i];
+        foregroundContext.strokeText("" + planet.forces, planet.centerX, planet.centerY);
+        foregroundContext.fillText("" + planet.forces, planet.centerX, planet.centerY);
     }
-    for (var fleetId in this.fleets) {
-        this.fleets[fleetId].drawFleet(context);
-    }
+
+    foregroundContext.font = "8pt sans-serif";
+     for (var fleetId in this.fleets) {
+        var fleet = this.fleets[fleetId];
+        foregroundContext.strokeText("" + fleet.forces, fleet.currentX, fleet.currentY);
+        foregroundContext.fillText("" + fleet.forces, fleet.currentX, fleet.currentY);
+     }
 }
 
 Universe.prototype.getNewPlanetCoords = function getNewPlanetCoords() {
@@ -377,7 +406,6 @@ Universe.prototype.getForce = function getForce(player) {
     return getAirForce(player) + getGroundForce(player);
 }
 
-// TODO should be called at end of each step
 Universe.prototype.determineActivePlayers = function determineActivePlayers() {
     var activePlayers = [];
 
@@ -413,8 +441,8 @@ Universe.prototype.getActivePlayers = function getActivePlayers() {
 // ---------------------------------------------------------------------------------------------------------------------------------
 
 // TODO add ranking
-PlanetWarsGame: function PlanetWarsGame(players, neutralPlanetCount, width, height, canvasId) {
-    this.universe = new Universe(players, neutralPlanetCount, width, height, canvasId);
+PlanetWarsGame: function PlanetWarsGame(players, neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId) {
+    this.universe = new Universe(players, neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId);
     this.drawGame();
 }
 
