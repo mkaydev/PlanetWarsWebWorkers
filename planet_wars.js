@@ -265,7 +265,7 @@ Universe.prototype.drawUniverse = function drawUniverse() {
         foregroundContext.fillText("" + planet.forces, planet.centerX, planet.centerY);
     }
 
-    // disabled, because it kills peformance
+    // disabled, because it kills performance
    /* foregroundContext.font = "8pt sans-serif";
      for (var fleetId in this.fleets) {
         var fleet = this.fleets[fleetId];
