@@ -7,7 +7,7 @@ $(document).ready(function() {
     var height = 600;
     var neutralPlanetCount = 30;
 
-    var players = [new RandomPlayer(), new DoNothingPlayer(), new AttackRandomPlayer(), new AttackLargestEmpirePlayer(), new AttackNearestEnemyPlayer()];
+    var players = [new AttackNearestEnemyPlayer(), new AttackRandomPlayer(), new AttackLargestEmpirePlayer(), new KamikazePlayer()];
 
     var game = new PlanetWarsGame(players, neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId);
 

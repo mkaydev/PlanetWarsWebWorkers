@@ -1,3 +1,13 @@
+shuffleArray: function shuffleArray(arr) {
+    for (var i = 0; i < arr.length - 1; i++) {
+        var switchIndex = Math.floor(Math.random() * arr.length);
+        var tmp = arr[i];
+        arr[i] = arr[switchIndex];
+        arr[switchIndex] = tmp;
+    }
+}
+
+// -------------------------------------------------------------
 Player: function Player() {
     this.color = "white";
 }
@@ -72,6 +82,15 @@ Fleet.prototype.distanceToPos = function distanceToPos(x, y) {
 
     var distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
     return distance;
+}
+
+Fleet.prototype.distanceToTarget = function distanceToTarget() {
+    return this.distanceToPos(this.targetPlanet.centerX, this.targetPlanet.centerY);
+}
+
+Fleet.prototype.stepsToTarget = function stepsToTarget() {
+    var distance = this.distanceToTarget();
+    return Math.floor(distance / this.movementPerStep);
 }
 
 
@@ -199,6 +218,9 @@ Universe: function Universe(initialPlayers, neutralPlanetCount, width, height, b
     }
     this.fleets = {};
     this.activePlayers = this.initialPlayers;
+    shuffleArray(this.activePlayers);
+    shuffleArray(this.planets);
+    shuffleArray(this.fleets);
 }
 Universe.prototype.mainPlanetRecruitingPerStep = 5;
 Universe.prototype.maxSecondaryPlanetRecruitingPerStep = 4;
@@ -234,7 +256,6 @@ Universe.prototype.drawUniverse = function drawUniverse() {
         }
     }
 
-    //foregroundContext.fillStyle = "black";
     for (var i = 0; i < players.length; i++) {
         var player = players[i];
         var fleets = this.getFleets(player);
@@ -247,8 +268,13 @@ Universe.prototype.drawUniverse = function drawUniverse() {
             var radius = fleet.radius;
 
             foregroundContext.beginPath();
-            foregroundContext.arc(currentX, currentY, radius, 0, 2 * Math.PI, false);
-            //foregroundContext.fill();
+            foregroundContext.moveTo(currentX, currentY);
+
+            var steps = fleet.stepsToTarget();
+            var frontX = currentX + (fleet.targetPlanet.centerX - currentX) / steps;
+            var frontY = currentY + (fleet.targetPlanet.centerY - currentY) / steps;
+
+            foregroundContext.lineTo(frontX, frontY);
             foregroundContext.stroke();
         }
     }
@@ -411,6 +437,7 @@ Universe.prototype.step = function step() {
     }
 
     this.activePlayers = this.determineActivePlayers();
+    shuffleArray(this.activePlayers);
 }
 
 Universe.prototype.getActivePlayers = function getActivePlayers() {
