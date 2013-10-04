@@ -7,7 +7,13 @@ $(document).ready(function() {
     var height = 600;
     var neutralPlanetCount = 30;
 
-    var players = [new AttackNearestEnemyPlayer(), new AttackRandomPlayer(), new AttackLargestEmpirePlayer(), new KamikazePlayer()];
+    var players = [
+        new AttackNearestEnemyPlayer(),
+        new AttackRandomPlayer(),
+        new AttackLargestEmpirePlayer(),
+        new KamikazePlayer(),
+        new AttackBestPlanetPlayer()
+    ];
 
     var game = new PlanetWarsGame(players, neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId);
 
