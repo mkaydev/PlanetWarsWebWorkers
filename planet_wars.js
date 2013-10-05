@@ -62,7 +62,6 @@ Fleet: function Fleet(forces, homePlanet, targetPlanet) {
     this.targetPlanet = targetPlanet;
     this.currentX = homePlanet.centerX;
     this.currentY = homePlanet.centerY;
-    this.radius = Math.max(Math.min(this.forces / 5, 10), 3);
 }
 Fleet.prototype.movementPerStep = 10;
 Fleet.prototype.distanceToPos = function distanceToPos(x, y) {
@@ -267,14 +266,27 @@ Universe.prototype.drawUniverse = function drawUniverse() {
             var currentY = fleet.currentY;
             var radius = fleet.radius;
 
-            foregroundContext.beginPath();
-            foregroundContext.moveTo(currentX, currentY);
-
             var steps = fleet.stepsToTarget();
             var frontX = currentX + (fleet.targetPlanet.centerX - currentX) / steps;
             var frontY = currentY + (fleet.targetPlanet.centerY - currentY) / steps;
 
-            foregroundContext.lineTo(frontX, frontY);
+            var diffX = frontX - currentX;
+            var diffY = frontY - currentY;
+
+            var backX = currentX - diffX;
+            var backY = currentY - diffY;
+
+            var backRightX = backX - 1/2 * diffY;
+            var backRightY = backY + 1/2 * diffX;
+
+            var backLeftX = backX + 1/2 * diffY;
+            var backLeftY = backY - 1/2 * diffX;
+
+            foregroundContext.beginPath();
+            foregroundContext.moveTo(currentX, currentY);
+            foregroundContext.lineTo(backLeftX, backLeftY);
+            foregroundContext.lineTo(backRightX, backRightY);
+            foregroundContext.lineTo(currentX, currentY);
             foregroundContext.stroke();
         }
     }
