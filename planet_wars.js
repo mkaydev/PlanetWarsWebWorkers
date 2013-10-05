@@ -287,6 +287,8 @@ Universe.prototype.drawUniverse = function drawUniverse() {
             foregroundContext.lineTo(backLeftX, backLeftY);
             foregroundContext.lineTo(backRightX, backRightY);
             foregroundContext.lineTo(currentX, currentY);
+            // without this repetition there would be sth. missing from one tip of the triangle, it wouldn't be pointy
+            foregroundContext.lineTo(backLeftX, backLeftY);
             foregroundContext.stroke();
         }
     }
