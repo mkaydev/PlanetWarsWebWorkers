@@ -8,12 +8,12 @@ $(document).ready(function() {
     var neutralPlanetCount = 30;
 
     var players = [
-        new AttackNearestEnemyPlayer(),
-       // new AttackRandomPlayer(),
-       // new AttackLargestEmpirePlayer(),
-        //new AttackBestPlanetPlayer(),
-       // new DoNothingPlayer(),
-        new SupportNetworkPlayer(),
+      /*  new AttackRandomPlayer(),
+        new AttackLargestEmpirePlayer(),
+        new AttackBestPlanetPlayer(), */
+        new DoNothingPlayer(), 
+        //new AttackNearestEnemyPlayer(),
+        //new SupportNetworkPlayer(),
         new AlbatrossPlayer()
     ];
 

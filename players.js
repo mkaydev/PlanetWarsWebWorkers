@@ -175,7 +175,7 @@ function SupportNetworkPlayer() {
 }
 SupportNetworkPlayer.prototype.reserveFactor = 10;
 SupportNetworkPlayer.prototype.fleetSize = 25;
-SupportNetworkPlayer.prototype.support = 1.5;
+SupportNetworkPlayer.prototype.support = 1.25;
 SupportNetworkPlayer.prototype.think = function think() {
     var myPlanets = this.universe.getPlanets(this);
     var enemyPlanets = this.universe.getEnemyPlanets(this);
@@ -248,7 +248,7 @@ AlbatrossPlayer.prototype.think = function think() {
         var destination = this.getNextDestination(myPlanet, target);
 
         if (target === destination) {
-            if (target.forces > available && target.recruitingPerStep > myPlanet.recruitingPerStep) continue;
+            if (target.forces > available && target.recruitingPerStep >= myPlanet.recruitingPerStep) continue;
         }
         this.sendFleet(myPlanet, destination, this.fleetSize);
     }
