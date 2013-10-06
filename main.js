@@ -9,11 +9,12 @@ $(document).ready(function() {
 
     var players = [
         new AttackNearestEnemyPlayer(),
-        new AttackRandomPlayer(),
-        new AttackLargestEmpirePlayer(),
-        new AttackBestPlanetPlayer(),
-        new DoNothingPlayer(),
-        new SupportNetworkPlayer()
+       // new AttackRandomPlayer(),
+       // new AttackLargestEmpirePlayer(),
+        //new AttackBestPlanetPlayer(),
+       // new DoNothingPlayer(),
+        new SupportNetworkPlayer(),
+        new AlbatrossPlayer()
     ];
 
     var game = new PlanetWarsGame(players, neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId);

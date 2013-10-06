@@ -17,6 +17,7 @@ Player.prototype.fleetSize = 25;
 Player.prototype.reserveFactor = 0;
 
 Player.prototype.getNearest = function getNearest(planet, planets) {
+    if (planets.length === 0) return;
     var curMinDist = Infinity;
     var curPlanet;
 

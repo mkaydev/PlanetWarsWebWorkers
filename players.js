@@ -25,6 +25,8 @@ function AttackRandomPlayer() {
 AttackRandomPlayer.prototype.think = function think() {
     var myPlanets = this.universe.getPlanets(this);
     var enemyPlanets = this.universe.getEnemyPlanets(this);
+    if (enemyPlanets.length === 0) return;
+
 
     for (var i = 0; i < myPlanets.length; i++) {
         var myPlanet = myPlanets[i];
@@ -80,6 +82,7 @@ function KamikazePlayer() {
 KamikazePlayer.prototype.think = function think() {
     var myPlanets = this.universe.getPlanets(this);
     var enemyPlanets = this.universe.getEnemyPlanets(this);
+    if (enemyPlanets.length === 0) return;
 
     var curMax = 0;
     for (var i = 0; i < enemyPlanets.length; i++) {
@@ -115,6 +118,7 @@ function AttackBestPlanetPlayer() {
 AttackBestPlanetPlayer.prototype.think = function think() {
     var myPlanets = this.universe.getPlanets(this);
     var enemyPlanets = this.universe.getEnemyPlanets(this);
+    if (enemyPlanets.length === 0) return;
 
     var curMax = 0;
     for (var i = 0; i < enemyPlanets.length; i++) {
@@ -152,6 +156,7 @@ AttackNearestEnemyPlayer.prototype.fleetSize = 25;
 AttackNearestEnemyPlayer.prototype.think = function think() {
     var myPlanets = this.universe.getPlanets(this);
     var enemyPlanets = this.universe.getEnemyPlanets(this);
+    if (enemyPlanets.length === 0) return;
 
     for (var i = 0; i < myPlanets.length; i++) {
         var myPlanet = myPlanets[i];
@@ -174,6 +179,7 @@ SupportNetworkPlayer.prototype.support = 1.5;
 SupportNetworkPlayer.prototype.think = function think() {
     var myPlanets = this.universe.getPlanets(this);
     var enemyPlanets = this.universe.getEnemyPlanets(this);
+    if (enemyPlanets.length === 0) return;
 
     for (var i = 0; i < myPlanets.length; i++) {
         var myPlanet = myPlanets[i];
@@ -219,4 +225,31 @@ SupportNetworkPlayer.prototype.getNextDestination = function getNextDestination(
         hopBeforeLast = this.getLastHop(source, lastHop);
     }
     return lastHop;
+}
+
+AlbatrossPlayer.prototype = new SupportNetworkPlayer();
+AlbatrossPlayer.prototype.reserveFactor = 10;
+AlbatrossPlayer.prototype.constructor = AlbatrossPlayer;
+function AlbatrossPlayer() {
+    this.color = "purple";
+}
+AlbatrossPlayer.prototype.think = function think() {
+    var myPlanets = this.universe.getPlanets(this);
+    var enemyPlanets = this.universe.getEnemyPlanets(this);
+    if (enemyPlanets.length === 0) return;
+
+
+    for (var i = 0; i < myPlanets.length; i++) {
+        var myPlanet = myPlanets[i];
+        var available = myPlanet.forces - this.reserveFactor * myPlanet.recruitingPerStep;
+        if (available < this.fleetSize) continue;
+
+        var target = this.getNearest(myPlanet, enemyPlanets);
+        var destination = this.getNextDestination(myPlanet, target);
+
+        if (target === destination) {
+            if (target.forces > available && target.recruitingPerStep > myPlanet.recruitingPerStep) continue;
+        }
+        this.sendFleet(myPlanet, destination, this.fleetSize);
+    }
 }
