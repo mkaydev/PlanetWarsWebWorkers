@@ -162,3 +162,61 @@ AttackNearestEnemyPlayer.prototype.think = function think() {
         this.sendFleet(myPlanet, target, this.fleetSize);
     }
 }
+
+SupportNetworkPlayer.prototype = new Player();
+SupportNetworkPlayer.prototype.constructor = SupportNetworkPlayer;
+function SupportNetworkPlayer() {
+    this.color = "aqua";
+}
+SupportNetworkPlayer.prototype.reserveFactor = 10;
+SupportNetworkPlayer.prototype.fleetSize = 25;
+SupportNetworkPlayer.prototype.support = 1.5;
+SupportNetworkPlayer.prototype.think = function think() {
+    var myPlanets = this.universe.getPlanets(this);
+    var enemyPlanets = this.universe.getEnemyPlanets(this);
+
+    for (var i = 0; i < myPlanets.length; i++) {
+        var myPlanet = myPlanets[i];
+        var available = myPlanet.forces - this.reserveFactor * myPlanet.recruitingPerStep;
+        if (available < this.fleetSize) continue;
+
+        var target = this.getNearest(myPlanet, enemyPlanets);
+        var destination = this.getNextDestination(myPlanet, target);
+
+        this.sendFleet(myPlanet, destination, this.fleetSize);
+    }
+}
+
+SupportNetworkPlayer.prototype.getLastHop = function getLastHop(source, target) {
+    if (typeof target === 'undefined') {
+        return;
+    }
+    var minDist = Math.pow(source.distanceTo(target), this.support);
+    var destination = target;
+
+    var myPlanets = this.universe.getPlanets(this);
+
+    for (var i = 0; i < myPlanets.length; i++) {
+        var myPlanet = myPlanets[i];
+        if (myPlanet === source) continue;
+        
+        var dist = Math.pow(myPlanet.distanceTo(target), this.support) + source.distanceTo(myPlanet);
+        if (dist < minDist) {
+            minDist = dist;
+            destination = myPlanet;
+        } 
+    }
+    return destination;
+}
+
+SupportNetworkPlayer.prototype.getNextDestination = function getNextDestination(source, target) {
+    if (typeof target === 'undefined') return;
+    var lastHop = this.getLastHop(source, target);
+    var hopBeforeLast = this.getLastHop(source, lastHop);
+
+    while (hopBeforeLast !== lastHop) {
+        lastHop = hopBeforeLast;
+        hopBeforeLast = this.getLastHop(source, lastHop);
+    }
+    return lastHop;
+}

@@ -11,8 +11,9 @@ $(document).ready(function() {
         new AttackNearestEnemyPlayer(),
         new AttackRandomPlayer(),
         new AttackLargestEmpirePlayer(),
-        new KamikazePlayer(),
-        new AttackBestPlanetPlayer()
+        new AttackBestPlanetPlayer(),
+        new DoNothingPlayer(),
+        new SupportNetworkPlayer()
     ];
 
     var game = new PlanetWarsGame(players, neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId);
