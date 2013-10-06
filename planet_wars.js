@@ -222,7 +222,7 @@ Universe: function Universe(initialPlayers, neutralPlanetCount, width, height, b
     shuffleArray(this.planets);
     shuffleArray(this.fleets);
 }
-Universe.prototype.mainPlanetRecruitingPerStep = 5;
+Universe.prototype.mainPlanetRecruitingPerStep = 6;
 Universe.prototype.maxSecondaryPlanetRecruitingPerStep = 4;
 Universe.prototype.minSecondaryPlanetRecrutingPerStep = 1
 
