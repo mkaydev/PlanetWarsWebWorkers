@@ -187,9 +187,13 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY) {
     setSendFleet(planetOwner);
 
     this.enteredBy = function enteredBy(fleet, owner) {
-        if (!fleet.getSource() instanceof Planet) return;
-        if (!(fleet.getSource().isFleetOrigin(fleet))) return;
         if (!fleet.ownerEquals(owner)) return;
+        
+        var source = fleet.getSource();
+        if (!(source instanceof Planet)) return;
+        if (!cosmos.knowsPlanet(source)) return;
+        if (!(source.isFleetOrigin(fleet))) return;
+        
         cosmos.unregisterFleet(fleet);
 
         if (this.ownerEquals(owner)) {
@@ -336,7 +340,14 @@ Universe: function Universe(initialPlayers, neutralPlanetCount, width, height, b
     shuffleArray(planets);
     this.getAllPlanets = function getAllPlanets() {
         return planets.slice();
-    }
+    };
+
+    this.knowsPlanet = function knowsPlanet(p) {
+        for (var i = 0; i < planets.length; i++) {
+            if (planets[i] === p) return true;
+        }
+        return false;
+    };
 
     var activePlayers = players.slice();
     shuffleArray(activePlayers);
