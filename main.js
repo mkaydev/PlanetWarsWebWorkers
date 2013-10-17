@@ -10,7 +10,7 @@ $(document).ready(function() {
     var players = [
         new AttackRandomPlayer(),
         new AttackLargestEmpirePlayer(),
-        new AttackBestPlanetPlayer(), 
+        new AttackBestPlanetPlayer(),
         new DoNothingPlayer(), 
         new AttackNearestEnemyPlayer(),
         new SupportNetworkPlayer(),

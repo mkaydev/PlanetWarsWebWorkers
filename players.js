@@ -1,60 +1,69 @@
-
+RandomPlayer: function RandomPlayer() {
+    this.color = "red";
+};
 RandomPlayer.prototype = new Player();
 RandomPlayer.prototype.constructor = RandomPlayer;
-function RandomPlayer() {
-    this.color = "red";
-}
-RandomPlayer.prototype.think = function think() {
-    var myPlanets = this.universe.getPlanets(this);
-    var allPlanets = this.universe.getAllPlanets();
+RandomPlayer.prototype.think = function think(universe) {
+    var fleetSize = 25;
+
+    var myPlanets = universe.getPlanets(this);
+    var allPlanets = universe.getAllPlanets();
 
     for (var i = 0; i < myPlanets.length; i++) {
         var myPlanet = myPlanets[i];
-        if (myPlanet.forces > this.fleetSize) {
+        if (myPlanet.getForces() > fleetSize) {
             var targetIndex = Math.floor(Math.random() * allPlanets.length)
-            this.sendFleet(myPlanet, allPlanets[targetIndex], this.fleetSize);
+            this.sendFleet(myPlanet, allPlanets[targetIndex], fleetSize);
         }
     }
 }
 
+AttackRandomPlayer: function AttackRandomPlayer() {
+    this.color = "blue";
+};
 AttackRandomPlayer.prototype = new Player();
 AttackRandomPlayer.prototype.constructor = AttackRandomPlayer;
-function AttackRandomPlayer() {
-    this.color = "blue";
-}
-AttackRandomPlayer.prototype.think = function think() {
-    var myPlanets = this.universe.getPlanets(this);
-    var enemyPlanets = this.universe.getEnemyPlanets(this);
+
+AttackRandomPlayer.prototype.think = function think(universe) {
+    var fleetSize = 25;
+
+    var myPlanets = universe.getPlanets(this);
+    var enemyPlanets = universe.getEnemyPlanets(this);
     if (enemyPlanets.length === 0) return;
 
 
     for (var i = 0; i < myPlanets.length; i++) {
         var myPlanet = myPlanets[i];
-        if (myPlanet.forces > this.fleetSize) {
+        if (myPlanet.getForces() > fleetSize) {
             var targetIndex = Math.floor(Math.random() * enemyPlanets.length)
-            this.sendFleet(myPlanet, enemyPlanets[targetIndex], this.fleetSize);
+            this.sendFleet(myPlanet, enemyPlanets[targetIndex], fleetSize);
         }
     }
-}
+};
 
+DoNothingPlayer: function DoNothingPlayer() {
+    this.color = "yellow";
+};
 DoNothingPlayer.prototype = new Player();
 DoNothingPlayer.prototype.constructor = DoNothingPlayer;
-function DoNothingPlayer() {
-    this.color = "yellow";
-}
 
-AttackLargestEmpirePlayer.prototype = new Player();
-AttackLargestEmpirePlayer.prototype.constructor = AttackLargestEmpirePlayer;
-function AttackLargestEmpirePlayer() {
+
+AttackLargestEmpirePlayer: function AttackLargestEmpirePlayer() {
     this.color = "green";
 }
-AttackLargestEmpirePlayer.prototype.think = function think() {
+AttackLargestEmpirePlayer.prototype = new Player();
+AttackLargestEmpirePlayer.prototype.constructor = AttackLargestEmpirePlayer;
+
+AttackLargestEmpirePlayer.prototype.think = function think(universe) {
+    var fleetSize = 25;
+
     var curMax = 0;
     var curTargets = [];
+    var activePlayers = universe.getActivePlayers();
 
-    for (var i = 0; i < this.universe.activePlayers.length; i++) {
-        if (this.universe.activePlayers[i] === this) continue;
-        var planets = this.universe.getPlanets(this.universe.activePlayers[i]);
+    for (var i = 0; i < activePlayers.length; i++) {
+        if (activePlayers[i] === this) continue;
+        var planets = universe.getPlanets(activePlayers[i]);
         if (planets.length > curMax) {
             curMax = planets.length;
             curTargets = planets;
@@ -63,39 +72,39 @@ AttackLargestEmpirePlayer.prototype.think = function think() {
 
     if (curTargets.length == 0) return;
 
-    var myPlanets = this.universe.getPlanets(this);
+    var myPlanets = universe.getPlanets(this);
 
     for (var i = 0; i < myPlanets.length; i++) {
         var myPlanet = myPlanets[i];
-        if (myPlanet.forces > this.fleetSize) {
+        if (myPlanet.getForces() > fleetSize) {
             var targetIndex = Math.floor(Math.random() * curTargets.length);
-            this.sendFleet(myPlanet, curTargets[targetIndex], this.fleetSize);
+            this.sendFleet(myPlanet, curTargets[targetIndex], fleetSize);
         }
     }
-}
+};
 
-KamikazePlayer.prototype = new Player();
-KamikazePlayer.prototype.constructor = KamikazePlayer;
-function KamikazePlayer() {
+KamikazePlayer: function KamikazePlayer() {
     this.color = "salmon";
 }
-KamikazePlayer.prototype.think = function think() {
-    var myPlanets = this.universe.getPlanets(this);
-    var enemyPlanets = this.universe.getEnemyPlanets(this);
+KamikazePlayer.prototype = new Player();
+KamikazePlayer.prototype.constructor = KamikazePlayer;
+KamikazePlayer.prototype.think = function think(universe) {
+    var myPlanets = universe.getPlanets(this);
+    var enemyPlanets = universe.getEnemyPlanets(this);
     if (enemyPlanets.length === 0) return;
 
     var curMax = 0;
     for (var i = 0; i < enemyPlanets.length; i++) {
         var enemyPlanet = enemyPlanets[i];
-        if (enemyPlanet.recruitingPerStep > curMax) {
-            curMax = enemyPlanet.recruitingPerStep;
+        if (enemyPlanet.getRecruitingPerStep() > curMax) {
+            curMax = enemyPlanet.getRecruitingPerStep();
         }
     }
 
     var targets = [];
     for (var i = 0; i < enemyPlanets.length; i++) {
         var enemyPlanet = enemyPlanets[i];
-        if (enemyPlanet.recruitingPerStep === curMax) {
+        if (enemyPlanet.getRecruitingPerStep() === curMax) {
             targets.push(enemyPlanet);
         }
     }
@@ -104,34 +113,35 @@ KamikazePlayer.prototype.think = function think() {
         shuffleArray(targets);
         for (var j = 0; j < targets.length; j++) {
             var curTarget = targets[j];
-            if (myPlanet.forces > curTarget.forces) this.sendFleet(myPlanet, curTarget, myPlanet.forces);
+            if (myPlanet.getForces() > curTarget.getForces()) this.sendFleet(myPlanet, curTarget, myPlanet.getForces());
         }
     }
-}
+};
 
-AttackBestPlanetPlayer.prototype = new Player();
-AttackBestPlanetPlayer.prototype.reserveFactor = 10;
-AttackBestPlanetPlayer.prototype.constructor = AttackBestPlanetPlayer;
-function AttackBestPlanetPlayer() {
+AttackBestPlanetPlayer: function AttackBestPlanetPlayer() {
     this.color = "AntiqueWhite ";
-}
-AttackBestPlanetPlayer.prototype.think = function think() {
-    var myPlanets = this.universe.getPlanets(this);
-    var enemyPlanets = this.universe.getEnemyPlanets(this);
+};
+AttackBestPlanetPlayer.prototype = new Player();
+AttackBestPlanetPlayer.prototype.constructor = AttackBestPlanetPlayer;
+AttackBestPlanetPlayer.prototype.think = function think(universe) {
+    var reserveFactor = 10;
+
+    var myPlanets = universe.getPlanets(this);
+    var enemyPlanets = universe.getEnemyPlanets(this);
     if (enemyPlanets.length === 0) return;
 
     var curMax = 0;
     for (var i = 0; i < enemyPlanets.length; i++) {
         var enemyPlanet = enemyPlanets[i];
-        if (enemyPlanet.recruitingPerStep > curMax) {
-            curMax = enemyPlanet.recruitingPerStep;
+        if (enemyPlanet.getRecruitingPerStep() > curMax) {
+            curMax = enemyPlanet.getRecruitingPerStep();
         }
     }
 
     var targets = [];
     for (var i = 0; i < enemyPlanets.length; i++) {
         var enemyPlanet = enemyPlanets[i];
-        if (enemyPlanet.recruitingPerStep === curMax) {
+        if (enemyPlanet.getRecruitingPerStep() === curMax) {
             targets.push(enemyPlanet);
         }
     }
@@ -140,119 +150,125 @@ AttackBestPlanetPlayer.prototype.think = function think() {
         shuffleArray(targets);
         for (var j = 0; j < targets.length; j++) {
             var curTarget = targets[j];
-            var available = myPlanet.forces - this.reserveFactor * myPlanet.recruitingPerStep;
-            if (available > curTarget.forces) this.sendFleet(myPlanet, curTarget, myPlanet.forces);
+            var available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
+            if (available > curTarget.getForces()) this.sendFleet(myPlanet, curTarget, myPlanet.getForces());
         }
     }
-}
+};
 
+AttackNearestEnemyPlayer: function AttackNearestEnemyPlayer() {
+    this.color = "orange";
+};
 AttackNearestEnemyPlayer.prototype = new Player();
 AttackNearestEnemyPlayer.prototype.constructor = AttackNearestEnemyPlayer;
-function AttackNearestEnemyPlayer() {
-    this.color = "orange";
-}
-AttackNearestEnemyPlayer.prototype.reserveFactor = 10;
-AttackNearestEnemyPlayer.prototype.fleetSize = 25;
-AttackNearestEnemyPlayer.prototype.think = function think() {
-    var myPlanets = this.universe.getPlanets(this);
-    var enemyPlanets = this.universe.getEnemyPlanets(this);
+
+AttackNearestEnemyPlayer.prototype.think = function think(universe) {
+    var reserveFactor = 10;
+    var fleetSize = 25;
+
+    var myPlanets = universe.getPlanets(this);
+    var enemyPlanets = universe.getEnemyPlanets(this);
     if (enemyPlanets.length === 0) return;
 
     for (var i = 0; i < myPlanets.length; i++) {
         var myPlanet = myPlanets[i];
-        var available = myPlanet.forces - this.reserveFactor * myPlanet.recruitingPerStep;
-        if (available < this.fleetSize) continue;
+        var available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
+        if (available < fleetSize) continue;
 
-        var target = this.getNearest(myPlanet, enemyPlanets);
-        this.sendFleet(myPlanet, target, this.fleetSize);
+        var target = universe.getNearest(myPlanet, enemyPlanets);
+        this.sendFleet(myPlanet, target, fleetSize);
     }
-}
+};
 
-SupportNetworkPlayer.prototype = new Player();
-SupportNetworkPlayer.prototype.constructor = SupportNetworkPlayer;
-function SupportNetworkPlayer() {
+SupportNetworkPlayer: function SupportNetworkPlayer() {
     this.color = "aqua";
 }
-SupportNetworkPlayer.prototype.reserveFactor = 10;
-SupportNetworkPlayer.prototype.fleetSize = 25;
-SupportNetworkPlayer.prototype.support = 2.5;
-SupportNetworkPlayer.prototype.think = function think() {
-    var myPlanets = this.universe.getPlanets(this);
-    var enemyPlanets = this.universe.getEnemyPlanets(this);
+SupportNetworkPlayer.prototype = new Player();
+SupportNetworkPlayer.prototype.constructor = SupportNetworkPlayer;
+
+SupportNetworkPlayer.prototype.think = function think(universe) {
+    var reserveFactor = 10;
+    var fleetSize = 30;
+    var support = 2.5;
+
+    var myPlanets = universe.getPlanets(this);
+    var enemyPlanets = universe.getEnemyPlanets(this);
     if (enemyPlanets.length === 0) return;
 
     for (var i = 0; i < myPlanets.length; i++) {
         var myPlanet = myPlanets[i];
-        var available = myPlanet.forces - this.reserveFactor * myPlanet.recruitingPerStep;
-        if (available < this.fleetSize) continue;
+        var available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
+        if (available < fleetSize) continue;
 
-        var target = this.getNearest(myPlanet, enemyPlanets);
-        var destination = this.getNextDestination(myPlanet, target);
+        var target = universe.getNearest(myPlanet, enemyPlanets);
+        var destination = this.getNextDestination(universe, myPlanet, target, support);
 
-        this.sendFleet(myPlanet, destination, this.fleetSize);
+        this.sendFleet(myPlanet, destination, fleetSize);
     }
-}
+};
 
-SupportNetworkPlayer.prototype.getLastHop = function getLastHop(source, target) {
-    if (typeof target === 'undefined') {
+SupportNetworkPlayer.prototype.getLastHop = function getLastHop(universe, source, target, support) {
+    if (typeof target === "undefined") {
         return;
     }
-    var minDist = Math.pow(source.distanceTo(target), this.support);
+    var minDist = Math.pow(source.distanceTo(target), support);
     var destination = target;
 
-    var myPlanets = this.universe.getPlanets(this);
+    var myPlanets = universe.getPlanets(this);
 
     for (var i = 0; i < myPlanets.length; i++) {
         var myPlanet = myPlanets[i];
         if (myPlanet === source) continue;
         
-        var dist = Math.pow(myPlanet.distanceTo(target), this.support) + source.distanceTo(myPlanet);
+        var dist = Math.pow(myPlanet.distanceTo(target), support) + source.distanceTo(myPlanet);
         if (dist < minDist) {
             minDist = dist;
             destination = myPlanet;
         } 
     }
     return destination;
-}
+};
 
-SupportNetworkPlayer.prototype.getNextDestination = function getNextDestination(source, target) {
-    if (typeof target === 'undefined') return;
-    var lastHop = this.getLastHop(source, target);
-    var hopBeforeLast = this.getLastHop(source, lastHop);
+SupportNetworkPlayer.prototype.getNextDestination = function getNextDestination(universe, source, target, support) {
+    if (typeof target === "undefined") return;
+    var lastHop = this.getLastHop(universe, source, target, support);
+    var hopBeforeLast = this.getLastHop(universe, source, lastHop, support);
 
     while (hopBeforeLast !== lastHop) {
         lastHop = hopBeforeLast;
-        hopBeforeLast = this.getLastHop(source, lastHop);
+        hopBeforeLast = this.getLastHop(universe, source, lastHop, support);
     }
     return lastHop;
-}
+};
 
-AlbatrossPlayer.prototype = new SupportNetworkPlayer();
-AlbatrossPlayer.prototype.reserveFactor = 10;
-AlbatrossPlayer.prototype.support = 3;
-AlbatrossPlayer.prototype.constructor = AlbatrossPlayer;
-function AlbatrossPlayer() {
+AlbatrossPlayer: function AlbatrossPlayer() {
     this.color = "purple";
-}
-AlbatrossPlayer.prototype.think = function think() {
-    var myPlanets = this.universe.getPlanets(this);
-    var enemyPlanets = this.universe.getEnemyPlanets(this);
+};
+AlbatrossPlayer.prototype = new SupportNetworkPlayer();
+AlbatrossPlayer.prototype.constructor = AlbatrossPlayer;
+AlbatrossPlayer.prototype.think = function think(universe) {
+    var fleetSize = 25;
+    var reserveFactor = 10;
+    var support = 3;
+
+    var myPlanets = universe.getPlanets(this);
+    var enemyPlanets = universe.getEnemyPlanets(this);
     if (enemyPlanets.length === 0) return;
 
 
     for (var i = 0; i < myPlanets.length; i++) {
         var myPlanet = myPlanets[i];
-        var available = myPlanet.forces - this.reserveFactor * myPlanet.recruitingPerStep;
-        if (available < this.fleetSize) continue;
+        var available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
+        if (available < fleetSize) continue;
 
-        var target = this.getNearest(myPlanet, enemyPlanets);
-        var destination = this.getNextDestination(myPlanet, target);
+        var target = universe.getNearest(myPlanet, enemyPlanets);
+        var destination = this.getNextDestination(universe, myPlanet, target, support);
 
         if (target === destination) {
-            if (target.forces > available && target.recruitingPerStep >= myPlanet.recruitingPerStep) continue;
+            if (target.getForces() > available && target.getRecruitingPerStep() >= myPlanet.getRecruitingPerStep()) continue;
         }
 
-        var fleetSize = Math.ceil(target.forces / this.fleetSize) * this.fleetSize;
+        var fleetSize = Math.ceil(target.getForces() / fleetSize) * fleetSize;
         this.sendFleet(myPlanet, destination, Math.min(available, fleetSize));
     }
-}
+};
