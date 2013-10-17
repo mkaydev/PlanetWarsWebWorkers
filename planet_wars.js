@@ -248,11 +248,12 @@ Planet.prototype.collidesWith = function collidesWith(otherPlanet) {
     return true;
 };
 
+Planet.prototype.margin = 10;
 Planet.prototype.fullyVisibleIn = function fullyVisibleIn(canvasWidth, canvasHeight) {
-    if (this.getX() - this.radius < 0) return false;
-    if (this.getY() - this.radius < 0) return false;
-    if (this.getX() + this.radius >= canvasWidth) return false;
-    if (this.getY() + this.radius >= canvasHeight) return false;
+    if (this.getX() - this.radius < this.margin) return false;
+    if (this.getY() - this.radius < this.margin) return false;
+    if (this.getX() + this.radius >= canvasWidth - this.margin) return false;
+    if (this.getY() + this.radius >= canvasHeight - this.margin) return false;
     return true;
 };
 
@@ -596,7 +597,6 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
 PlanetWarsGame.prototype.stepInterval = 60;
 PlanetWarsGame.prototype.stepLoopId = null;
 PlanetWarsGame.prototype.running = false;
-
 // TODO visualize winner
 PlanetWarsGame.prototype.step = function step() {
     // check if game has ended
