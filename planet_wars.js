@@ -683,27 +683,20 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
     this.universe.drawUniverse();
 }
 
-PlanetWarsGame.prototype.stepInterval = 20;
+PlanetWarsGame.prototype.stepInterval = 40;
 PlanetWarsGame.prototype.stepLoopId = null;
 PlanetWarsGame.prototype.running = false;
 // TODO visualize winner
 PlanetWarsGame.prototype.step = function step() {
-    if (!this.stepFinished) {
-        window.setTimeout(this.step.bind(this), this.stepInterval);
-        return;
-    }
-
     // check if game has ended
     var activePlayers = this.universe.getActivePlayers();
 
     if (activePlayers.length > 1) {
         this.round += 1;
-        this.stepFinished = false;
-        window.setTimeout(this.step.bind(this), this.stepInterval);
         this.universe.step();
-        this.stepFinished = true;
         this.drawGame();
     } else {
+        window.clearInterval(this.stepLoopId);
         this.drawGame();
         this.running = false;
     }
@@ -713,7 +706,7 @@ PlanetWarsGame.prototype.play = function play() {
     this.round = 0;
     if (this.stepLoopId === null) {
         this.running = true;
-        this.stepLoopId = window.setTimeout(this.step.bind(this), this.stepInterval);
+        this.stepLoopdId = window.setInterval(this.step.bind(this), this.stepInterval);
     }
 };
 
