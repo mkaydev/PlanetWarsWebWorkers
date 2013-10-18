@@ -683,7 +683,7 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
     this.universe.drawUniverse();
 }
 
-PlanetWarsGame.prototype.stepInterval = 40;
+PlanetWarsGame.prototype.stepInterval = 50;
 PlanetWarsGame.prototype.stepLoopId = null;
 PlanetWarsGame.prototype.running = false;
 // TODO visualize winner
