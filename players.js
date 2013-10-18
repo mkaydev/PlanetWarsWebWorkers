@@ -1,3 +1,51 @@
+/*
+    to implement a player, set the prototype of the new player object to new Player() and the constructor to the new player constructor
+    afterwards implement the .think function, which takes the current universe
+
+    publicly accessible functions for use in the .think method:
+
+    Player:sendFleet(source, destination, fleetSize)
+        source: a planet, owned by the player
+        destination: a planet
+        fleetSize: an integer
+
+    Planet:getRecruitingPerStep()
+    Planet:isNeutral()
+    Planet:getForces()
+    Planet:distanceTo(otherPlanet)
+    Planet:ownerEquals(player)
+    Planet:getX()
+    Planet:getY()
+
+    Fleet:ownerEquals(player)
+    Fleet:distanceToTarget()
+    Fleet:stepsToTarget()
+    Fleet:getMovementPerStep()
+    Fleet:getForces()
+    Fleet:getX()
+    Fleet:getY()
+
+
+    Universe:getActivePlayers()
+
+    Universe:getAllPlanets()
+    Universe:getPlanets(player)
+    Universe:getNeutralPlanets()
+    Universe:getEnemyPlanets(player)
+    Universe:sortByDistance(planet, planets)
+
+    Universe:getGroundForces(player)             f
+    Universe:getAirForces(player)
+    Universe:getForces(player)
+
+    Universe:getAllFleets()
+    Universe:getFleets(player)
+    Universe:getEnemyFleets(player)
+
+
+ */
+
+
 RandomPlayer: function RandomPlayer() {
     this.color = "red";
 };
@@ -175,7 +223,8 @@ AttackNearestEnemyPlayer.prototype.think = function think(universe) {
         var available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
         if (available < fleetSize) continue;
 
-        var target = universe.getNearest(myPlanet, enemyPlanets);
+        universe.sortByDistance(myPlanet, enemyPlanets);
+        var target = enemyPlanets[0];
         this.sendFleet(myPlanet, target, fleetSize);
     }
 };
@@ -200,7 +249,8 @@ SupportNetworkPlayer.prototype.think = function think(universe) {
         var available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
         if (available < fleetSize) continue;
 
-        var target = universe.getNearest(myPlanet, enemyPlanets);
+        universe.sortByDistance(myPlanet, enemyPlanets);
+        var target = enemyPlanets[0];
         var destination = this.getNextDestination(universe, myPlanet, target, support);
 
         this.sendFleet(myPlanet, destination, fleetSize);
@@ -261,7 +311,8 @@ AlbatrossPlayer.prototype.think = function think(universe) {
         var available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
         if (available < fleetSize) continue;
 
-        var target = universe.getNearest(myPlanet, enemyPlanets);
+        universe.sortByDistance(myPlanet, enemyPlanets);
+        var target = enemyPlanets[0];
         var destination = this.getNextDestination(universe, myPlanet, target, support);
 
         if (target === destination) {
@@ -271,4 +322,84 @@ AlbatrossPlayer.prototype.think = function think(universe) {
         var fleetSize = Math.ceil(target.getForces() / fleetSize) * fleetSize;
         this.sendFleet(myPlanet, destination, Math.min(available, fleetSize));
     }
+};
+
+VirusPlayer: function VirusPlayer() {
+    this.color = "Olive"
+}
+VirusPlayer.prototype = new Player();
+VirusPlayer.prototype.constructor = VirusPlayer;
+VirusPlayer.prototype.think = function think(universe) {
+    var fleetSize = 25;
+    var reserveFactor = 10;
+    var fullOutFactor = 3;
+
+    this.evaluateVictim = function evaluateVictim(target, attacker) {
+        var defendingForces = target.getForces();
+        var defendingFleets = target.getDefendingFleets();
+        for (var i = 0; i < defendingFleets.length; i++) {
+            defendingForces += defendingFleets[i].getForces();
+        }
+
+        var attackingFleets = target.getAttackingFleets();
+        for (var i = 0; i < attackingFleets.length; i++) {
+            defendingForces -= attackingFleets[i].getForces();
+        }
+        var evaluation = {
+            "attack": defendingForces < fleetSize || attacker.getForces() > fullOutFactor * defendingForces,
+            "fullOut": attacker.getForces() > fullOutFactor * defendingForces
+        };
+
+        return evaluation;
+    }.bind(this);
+
+    var myPlanets = universe.getPlanets(this);
+    var enemyPlanets = universe.getEnemyPlanets(this);
+
+    for (var i = 0; i < myPlanets.length; i++) {
+        var myPlanet = myPlanets[i];
+        var available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
+        if (available < fleetSize) continue;
+
+        universe.sortByDistance(myPlanet, enemyPlanets);
+
+        var foundVictim = false;
+
+        for (var j = 0; j < enemyPlanets.length; j++ ) {
+            var target = enemyPlanets[j];
+            var evaluation = this.evaluateVictim(target, myPlanet);
+            if (evaluation.attack) {
+                if (evaluation.fullOut) {
+                    var attackSize =  Math.max(Math.floor(available / fullOutFactor), fleetSize);
+                    this.sendFleet(myPlanet, target, attackSize);
+                    available -= attackSize;
+                } else {
+                    this.sendFleet(myPlanet, target, fleetSize);
+                    available -= fleetSize;
+                }
+                foundVictim = true;
+            }
+            if (available < fleetSize) break;
+        }
+
+        if (available > fleetSize && !foundVictim) {
+            var destination = this.getPlanetWithMaxForce(myPlanets);
+            if (myPlanet !== destination) this.sendFleet(myPlanet, destination, Math.max(Math.floor(available / fullOutFactor), fleetSize));
+        };
+    }
+};
+
+VirusPlayer.prototype.getPlanetWithMaxForce = function getPlanetWithMaxForce(planets) {
+    var curMax = 0;
+    var curPlanet;
+
+    for (var i = 0; i < planets.length; i++) {
+        var planet = planets[i];
+        var forces = planet.getForces();
+        if (forces > curMax) {
+            curMax = forces;
+            curPlanet = planet;
+        }
+    }
+    return curPlanet;
 };

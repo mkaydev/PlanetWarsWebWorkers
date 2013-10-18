@@ -21,6 +21,14 @@
     z-index: 1;
 }
 
+#game_text {
+    border: 1px solid black;
+    float: right;
+    right: -50%;
+    position: absolute;
+    z-index: 2;
+}
+
 #controls_outer {
     clear: both;
     float: right;

@@ -14,21 +14,33 @@ shuffleArray: function shuffleArray(arr) {
 
 // -------------------------------------------------------------
 Player: function Player() {
-    this.color = "white";
+    this.color = "black";
+    var planetCommands = {};
+    this.registerPlanet = function registerPlanet(p, sendFleetCmd) {
+        var id = p.getId();
+        if (planetCommands.hasOwnProperty(id)) console.log(id);
+        planetCommands[id] = sendFleetCmd;
+    };
+    this.deregisterPlanet = function deregisterPlanet(p) {
+        var id = p.getId();
+        if (!planetCommands.hasOwnProperty(id)) return;
+        delete planetCommands[id];
+    };
+
+    this.sendFleet = function sendFleet(source, destination, fleetSize) {
+        if (isNaN(fleetSize)) return;
+        if (typeof destination === "undefined") return;
+        if (typeof source === "undefined") return;
+        if (source.ownerEquals(this) && source.getForces() > 0 && source != destination) {
+            var size = fleetSize;
+            if (size > source.getForces()) size = source.getForces();
+            planetCommands[source.getId()](size, destination);
+        }
+    };
 };
+
 Player.prototype.isNeutral = false;
 Player.prototype.think = function think(universe) {};
-
-Player.prototype.sendFleet = function sendFleet(source, destination, fleetSize) {
-    if (isNaN(fleetSize)) return;
-    if (typeof destination === "undefined") return;
-    if (typeof source === "undefined") return;
-    if (source.ownerEquals(this) && source.getForces() > 0 && source != destination) {
-        var size = fleetSize;
-        if (size > source.getForces()) size = source.getForces();
-        source.sendFleet(size, destination);
-    }
-};
 
 NeutralPlayer: function NeutralPlayer() {
     this.color = "grey";
@@ -40,6 +52,8 @@ NeutralPlayer.prototype.isNeutral = true;
 // ---------------------------------------------------------------------------------------------------------------------------------
 
 Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY) {
+    var fleetMovementPerStep = 10;
+
     Fleet: function Fleet(universe, flOwner, forces, homePlanet, targetPlanet) {
         if (!homePlanet.ownerEquals(flOwner)) return;
 
@@ -48,15 +62,15 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY) {
             return fleetId;
         };
 
-        var movementPerStep = 10;
         this.getMovementPerStep = function getMovementPerStep() {
-            return movementPerStep;
+            return fleetMovementPerStep;
         };
 
         var fleetOwner = flOwner;
         this.ownerEquals = function ownerEquals(player) {
             return fleetOwner === player;
         };
+        var ownerEquals = this.ownerEquals;
 
         var home = homePlanet;
         this.getSource = function getSource() {
@@ -84,6 +98,15 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY) {
         };
 
         var step = function step() {
+            if (fleetForces != this.getForces()) alert("getForces of fleet was manipulated!");
+            if (currentX != this.getX()) alert("getX of fleet was manipulated!");
+            if (currentY != this.getY()) alert("getY of fleet was manipulated!");
+            if (destination != this.getDestination()) alert("getDestination of fleet was manipulated!");
+            if (home != this.getSource()) alert("getSource of fleet was manipulated!");
+            if (ownerEquals.toString() != this.ownerEquals.toString()) alert("ownerEquals of fleet was manipulated!");
+            if (fleetMovementPerStep != this.getMovementPerStep()) alert("getMovementPerStep of fleet was manipulated!");
+            if (fleetId != this.getId()) alert("getId of fleet was manipulated!");
+
             var distance = this.distanceToPos(this.getDestination().getX(), this.getDestination().getY());
             if (distance <= this.getMovementPerStep()) {
                 // attack / defend
@@ -137,6 +160,13 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY) {
 
     //------------------------------------------------------------------
 
+    var id = createId("Planet:");
+    var setGetId = function setGetId(planetId) {
+        this.getId = function getId() {
+            return planetId;
+        };
+    }.bind(this);
+    setGetId(id);
 
     var planetOwner = owner;
 
@@ -146,6 +176,13 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY) {
         };
     }.bind(this);
     setOwnerEquals(planetOwner);
+    var ownerEquals = this.ownerEquals;
+
+    var deregisterPlanet = function deregisterPlanet() {
+        planetOwner.deregisterPlanet(this);
+        var id = createId("Planet:");
+        setGetId(id);
+    }.bind(this);
 
     var setIsNeutral = function setIsNeutral(plOwner) {
         this.isNeutral = function isNeutral() {
@@ -169,7 +206,7 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY) {
         return y;
     };
 
-    this.radius = recruitingPerStep * 5; // assumes integer
+    this.radius = recruitingPerStep * 5;
 
     var groundForces = 5 * this.getRecruitingPerStep();
     this.getForces = function getForces() {
@@ -177,47 +214,96 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY) {
     };
 
     var cosmos = universe;
-    var setSendFleet = function setSendFleet(plOwner) {
-        this.sendFleet = function sendFleet(size, destination) {
+    var registerPlanet = function registerPlnaet(plOwner) {
+        var sendFleet = function sendFleet(size, destination) {
             if (size > groundForces) return;
-            new Fleet(cosmos, plOwner, size, this, destination);
-            groundForces -= size;
+            var fleetSize = Math.floor(size);
+            new Fleet(cosmos, plOwner, fleetSize, this, destination);
+            groundForces -= fleetSize;
         }.bind(this);
+        plOwner.registerPlanet(this, sendFleet);
     }.bind(this);
-    setSendFleet(planetOwner);
+    registerPlanet(planetOwner);
+
+    var setGetDefendingFleets = function setGetDefendingFleets(plOwner) {
+        this.getDefendingFleets = function getDefendingFleets() {
+            var myFleets = cosmos.getFleets(plOwner);
+            var defendingFleets = [];
+            for (var i = 0; i < myFleets.length; i++) {
+                var fl = myFleets[i];
+                if (fl.getDestination() === this) defendingFleets.push(fl);
+            }
+            return defendingFleets;
+        };
+    }.bind(this);
+
+    var setGetAttackingFleets = function setAttackingFleets(plOwner) {
+        this.getAttackingFleets = function getAttackingFleets() {
+            var enemyFleets =  cosmos.getEnemyFleets(plOwner);
+            var attackingFleets = [];
+            for (var i = 0; i < enemyFleets.length; i++) {
+                var fl = enemyFleets[i];
+                if (fl.getDestination() === this) attackingFleets.push(fl);
+            }
+            return attackingFleets;
+        }
+    }.bind(this);
+    setGetDefendingFleets(planetOwner);
+    setGetAttackingFleets(planetOwner);
 
     this.enteredBy = function enteredBy(fleet, owner) {
         if (!fleet.ownerEquals(owner)) return;
         
         var source = fleet.getSource();
-        if (!(source instanceof Planet)) return;
         if (!cosmos.knowsPlanet(source)) return;
         if (!(source.isFleetOrigin(fleet))) return;
         
-        cosmos.unregisterFleet(fleet);
+        cosmos.deregisterFleet(fleet);
 
         if (this.ownerEquals(owner)) {
             groundForces += fleet.getForces();
         } else {
-            if (fleet.getForces() > groundForces) {
+            if (fleet.getForces() >= groundForces) {
 
+                deregisterPlanet();
                 var planetOwner = owner;
+                deregisterPlanet = function deregisterPlanet() {
+                    planetOwner.deregisterPlanet(this);
+                    var id = createId("Planet:");
+                    setGetId(id);
+                }.bind(this);
+
                 setOwnerEquals(planetOwner);
-                setSendFleet(planetOwner);
                 setIsNeutral(planetOwner);
                 groundForces = fleet.getForces() - groundForces;
+                setGetDefendingFleets(planetOwner);
+                setGetAttackingFleets(planetOwner);
+                registerPlanet(planetOwner);
+
             } else {
                 groundForces -= fleet.getForces();
             }
         }
     }.bind(this);
 
+    var isFleetOrigin = this.isFleetOrigin;
     var step = function step() {
         if (this.isNeutral()) return;
         groundForces += this.getRecruitingPerStep();
+        if (recruitingPerStep != this.getRecruitingPerStep()) alert("getRecruitingPerStep of planet was manipulated!");
+        if (groundForces != this.getForces()) alert("getForces of planet was manipulated!");
+        if (x != this.getX()) alert("getX of planet was manipulated!");
+        if (y != this.getY()) alert("getY planet was manipulated!");
+        if (isFleetOrigin.toString() != this.isFleetOrigin.toString()) alert("isFleetOrigin of planet was manipulated!");
+        if (ownerEquals.toString() != this.ownerEquals.toString()) alert("ownerEquals of planet was manipulated!");
     }.bind(this);
 
     universe.registerPlanetStepFunction(step);
+
+    this.fleetStepsTo = function fleetStepsTo(otherPlanet) {
+        var distance = this.distanceTo(otherPlanet);
+        return Math.floor(distance / fleetMovementPerStep);
+    };
 };
 
 
@@ -258,8 +344,9 @@ Planet.prototype.fullyVisibleIn = function fullyVisibleIn(canvasWidth, canvasHei
 };
 
 // ---------------------------------------------------------------------------------------------------------------------------------
-
-Universe: function Universe(initialPlayers, neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId) {
+// TODO create canvas + ids here
+Universe: function Universe(initialPlayers, neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId) {
+    this.currentStep = 0;
     var players = initialPlayers;
     this.determineActivePlayers = function determineActivePlayers() {
         var activePlayers = [];
@@ -281,6 +368,8 @@ Universe: function Universe(initialPlayers, neutralPlanetCount, width, height, b
     this.foregroundCanvas = document.getElementById(this.foregroundCanvasId);
     this.backgroundCanvasId = backgroundCanvasId;
     this.backgroundCanvas = document.getElementById(this.backgroundCanvasId);
+    this.textCanvasId = textCanvasId;
+    this.textCanvas = document.getElementById(this.textCanvasId);
 
     this.width = width;
     this.height = height;
@@ -288,10 +377,19 @@ Universe: function Universe(initialPlayers, neutralPlanetCount, width, height, b
     $("#" + foregroundCanvasId).attr("height", this.height);
     $("#" + backgroundCanvasId).attr("width", this.width);
     $("#" + backgroundCanvasId).attr("height", this.height);
+    $("#" + textCanvasId).attr("width", this.width);
+    $("#" + textCanvasId).attr("height", this.height);
+
+    var textContext = this.textCanvas.getContext("2d");
+    textContext.fillStyle = "white";
+    textContext.strokeStyle = "black";
+    textContext.font = "10pt sans-serif";
+    textContext.textBaseline = "middle";
+    textContext.lineWidth = 2;
 
     var context = this.backgroundCanvas.getContext("2d");
     context.fillStyle = "black";
-    context.fillRect(0, 0, this.width, this.height)
+    context.fillRect(0, 0, this.width, this.height);
 
     var planetStepFuncs = [];
     this.registerPlanetStepFunction = function registerPlanetStepFunction(stepFunc) {
@@ -301,7 +399,7 @@ Universe: function Universe(initialPlayers, neutralPlanetCount, width, height, b
     // create main planets for players
     var planets = [];
 
-    this.createNewPlanet = function createNewPlanet(recruitingPerStep, owner) {
+    var createNewPlanet = function createNewPlanet(recruitingPerStep, owner) {
         var collides = true;
         while (collides) {
             var coords;
@@ -327,14 +425,14 @@ Universe: function Universe(initialPlayers, neutralPlanetCount, width, height, b
 
     for (var i = 0; i < players.length; i++) {
         var player = players[i];
-        var planet = this.createNewPlanet(this.mainPlanetRecruitingPerStep, player);
+        var planet = createNewPlanet(this.mainPlanetRecruitingPerStep, player);
         planets.push(planet);
     }
 
     // create neutral planets
     for (var i = 0; i < neutralPlanetCount; i++) {
         var recruiting = Math.round((this.maxSecondaryPlanetRecruitingPerStep - this.minSecondaryPlanetRecrutingPerStep) * Math.random()) + this.minSecondaryPlanetRecrutingPerStep;
-        var planet = this.createNewPlanet(recruiting, this.getNeutralPlayer());
+        var planet = createNewPlanet(recruiting, this.getNeutralPlayer());
         planets.push(planet);
     }
 
@@ -371,16 +469,17 @@ Universe: function Universe(initialPlayers, neutralPlanetCount, width, height, b
         if (fleets.hasOwnProperty(flightId)) console.log(flightId);
         fleets[flightId] = fleet;
         fleetStepFuncs[flightId] = stepFunc;
-
     };
 
-    this.unregisterFleet = function unregisterFleet(fleet) {
+    this.deregisterFleet = function deregisterFleet(fleet) {
         var flightId = fleet.getId();
+        if (!fleets.hasOwnProperty(flightId)) return;
         delete fleets[flightId];
         delete fleetStepFuncs[flightId];
     };
 
     this.step = function step() {
+        this.currentStep += 1;
         for (var fleetId in fleetStepFuncs) {
             fleetStepFuncs[fleetId]();
         }
@@ -454,20 +553,13 @@ Universe.prototype.getEnemyPlanets = function getEnemyPlanets(player) {
     return planets;
 };
 
-Universe.prototype.getNearest = function getNearest(planet, planets) {
-    if (planets.length === 0) return;
-    var curMinDist = Infinity;
-    var curPlanet;
-
-    for (var i = 0; i < planets.length; i++) {
-        var dist = planet.distanceTo(planets[i]);
-        if (dist < curMinDist) {
-            curMinDist = dist;
-            curPlanet = planets[i];
-        }
+Universe.prototype.sortByDistance = function sortByDistance(planet, planets) {
+    var sortByDist = function sortByDist(a, b) {
+        var distA = planet.distanceTo(a);
+        var distB = planet.distanceTo(b);
+        return distA - distB;
     };
-
-    return curPlanet;
+    planets.sort(sortByDist);
 };
 
 Universe.prototype.getGroundForces = function getGroundForces(player) {
@@ -559,42 +651,38 @@ Universe.prototype.drawUniverse = function drawUniverse() {
         }
     }
 
-    foregroundContext.fillStyle = "white";
-    foregroundContext.strokeStyle = "black";
-    foregroundContext.font = "10pt sans-serif";
-    foregroundContext.textBaseline = "middle";
-    foregroundContext.lineWidth = 2;
+    // text drawing seems to be incredibly slow
+    if (this.currentStep % 3 == 0) {
+        var textContext = this.textCanvas.getContext("2d");
+        textContext.clearRect(0, 0, this.textCanvas.width, this.textCanvas.height);
 
-    var planets = this.getAllPlanets();
-    for (var i = 0; i < planets.length; i++) {
-        var planet = planets[i];
-        foregroundContext.strokeText("" + planet.getForces(), planet.getX(), planet.getY());
-        foregroundContext.fillText("" + planet.getForces(), planet.getX(), planet.getY());
+        var planets = this.getAllPlanets();
+        for (var i = 0; i < planets.length; i++) {
+            var planet = planets[i];
+            textContext.strokeText("" + planet.getForces(), planet.getX(), planet.getY());
+            textContext.fillText("" + planet.getForces(), planet.getX(), planet.getY());
+        }
     }
-
-    // disabled, because it kills performance
-    /* foregroundContext.font = "8pt sans-serif";
-     for (var fleetId in this.fleets) {
-     var fleet = this.fleets[fleetId];
-     foregroundContext.strokeText("" + fleet.getForces(), fleet.currentX, fleet.currentY);
-     foregroundContext.fillText("" + fleet.getForces(), fleet.currentX, fleet.currentY);
-     } */
 };
 
 // ---------------------------------------------------------------------------------------------------------------------------------
 
 // TODO add ranking
-PlanetWarsGame: function PlanetWarsGame(players, neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId) {
-    this.universe = new Universe(players, neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId);
+PlanetWarsGame: function PlanetWarsGame(players, neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId) {
+    this.universe = new Universe(players, neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId);
+    this.lastDrawn = 0;
     this.drawGame();
 }
 
 // TODO add ranking refresh
 PlanetWarsGame.prototype.drawGame = function drawGame() {
+    var current = new Date().getTime();
+    if (current - this.lastDrawn < this.stepInterval) return;
+    this.lastDrawn = current;
     this.universe.drawUniverse();
 }
 
-PlanetWarsGame.prototype.stepInterval = 60;
+PlanetWarsGame.prototype.stepInterval = 50;
 PlanetWarsGame.prototype.stepLoopId = null;
 PlanetWarsGame.prototype.running = false;
 // TODO visualize winner
@@ -605,8 +693,8 @@ PlanetWarsGame.prototype.step = function step() {
     if (activePlayers.length > 1) {
         this.round += 1;
         this.universe.step();
-        this.drawGame();
         window.setTimeout(this.step.bind(this), this.stepInterval);
+        this.drawGame();
     } else {
         this.drawGame();
         this.running = false;
