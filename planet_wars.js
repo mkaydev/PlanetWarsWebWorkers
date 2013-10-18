@@ -671,6 +671,7 @@ Universe.prototype.drawUniverse = function drawUniverse() {
 PlanetWarsGame: function PlanetWarsGame(players, neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId) {
     this.universe = new Universe(players, neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId);
     this.lastDrawn = 0;
+    this.stepFinished = true;
     this.drawGame();
 }
 
@@ -682,18 +683,25 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
     this.universe.drawUniverse();
 }
 
-PlanetWarsGame.prototype.stepInterval = 50;
+PlanetWarsGame.prototype.stepInterval = 20;
 PlanetWarsGame.prototype.stepLoopId = null;
 PlanetWarsGame.prototype.running = false;
 // TODO visualize winner
 PlanetWarsGame.prototype.step = function step() {
+    if (!this.stepFinished) {
+        window.setTimeout(this.step.bind(this), this.stepInterval);
+        return;
+    }
+
     // check if game has ended
     var activePlayers = this.universe.getActivePlayers();
 
     if (activePlayers.length > 1) {
         this.round += 1;
-        this.universe.step();
+        this.stepFinished = false;
         window.setTimeout(this.step.bind(this), this.stepInterval);
+        this.universe.step();
+        this.stepFinished = true;
         this.drawGame();
     } else {
         this.drawGame();
