@@ -1,3 +1,9 @@
+(function() {
+  var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
+                              window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+  window.requestAnimationFrame = requestAnimationFrame;
+})();
+
 createId: function createId(prefix) {
     if (typeof prefix === "undefined") prefix = "";
     return "".concat(prefix, Math.random(),  new Date().getTime());
@@ -18,7 +24,6 @@ Player: function Player() {
     var planetCommands = {};
     this.registerPlanet = function registerPlanet(p, sendFleetCmd) {
         var id = p.getId();
-        if (planetCommands.hasOwnProperty(id)) console.log(id);
         planetCommands[id] = sendFleetCmd;
     };
     this.deregisterPlanet = function deregisterPlanet(p) {
@@ -466,14 +471,12 @@ Universe: function Universe(initialPlayers, neutralPlanetCount, width, height, b
 
     this.registerFleet = function registerFleet(fleet, stepFunc) {
         var flightId = fleet.getId();
-        if (fleets.hasOwnProperty(flightId)) console.log(flightId);
         fleets[flightId] = fleet;
         fleetStepFuncs[flightId] = stepFunc;
     };
 
     this.deregisterFleet = function deregisterFleet(fleet) {
         var flightId = fleet.getId();
-        if (!fleets.hasOwnProperty(flightId)) return;
         delete fleets[flightId];
         delete fleetStepFuncs[flightId];
     };
@@ -670,33 +673,36 @@ Universe.prototype.drawUniverse = function drawUniverse() {
 // TODO add ranking
 PlanetWarsGame: function PlanetWarsGame(players, neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId) {
     this.universe = new Universe(players, neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId);
-    this.lastDrawn = 0;
-    this.stepFinished = true;
     this.drawGame();
+    this.lastStepped = new Date().getTime();
 }
 
 // TODO add ranking refresh
 PlanetWarsGame.prototype.drawGame = function drawGame() {
-    var current = new Date().getTime();
-    if (current - this.lastDrawn < this.stepInterval) return;
-    this.lastDrawn = current;
     this.universe.drawUniverse();
 }
 
-PlanetWarsGame.prototype.stepInterval = 50;
+PlanetWarsGame.prototype.drawInterval = 36;
 PlanetWarsGame.prototype.stepLoopId = null;
 PlanetWarsGame.prototype.running = false;
+PlanetWarsGame.prototype.maxRounds = 2000;
 // TODO visualize winner
-PlanetWarsGame.prototype.step = function step() {
-    // check if game has ended
+PlanetWarsGame.prototype.step = function step(timestamp) {
     var activePlayers = this.universe.getActivePlayers();
 
-    if (activePlayers.length > 1) {
-        this.round += 1;
-        this.universe.step();
-        this.drawGame();
+    if (activePlayers.length > 1 && this.round < this.maxRounds) {
+        var now = new Date().getTime();
+        if (this.lastDrawn == this.round) {
+            this.round += 1;
+            this.universe.step();
+            this.lastStepped = now;
+        }
+        if ((now - this.lastStepped > this.drawInterval) && (this.lastDrawn < this.round)) {
+            this.drawGame();
+            this.lastDrawn = this.round;
+        }
+        requestAnimationFrame(this.step.bind(this));
     } else {
-        window.clearInterval(this.stepLoopId);
         this.drawGame();
         this.running = false;
     }
@@ -704,11 +710,9 @@ PlanetWarsGame.prototype.step = function step() {
 
 PlanetWarsGame.prototype.play = function play() {
     this.round = 0;
+    this.lastDrawn = 0;
     if (this.stepLoopId === null) {
         this.running = true;
-        this.stepLoopdId = window.setInterval(this.step.bind(this), this.stepInterval);
+        window.requestAnimationFrame(this.step.bind(this));
     }
 };
-
-
-
