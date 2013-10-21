@@ -9,18 +9,7 @@ $(document).ready(function() {
     var height = 600;
     var neutralPlanetCount = 50;
 
-    var players = [
-     //   new AttackRandomPlayer(),
-     //   new AttackLargestEmpirePlayer(),
-     //   new AttackBestPlanetPlayer(),
-     //   new DoNothingPlayer(),
-        new AttackNearestEnemyPlayer(),
-        new SupportNetworkPlayer(),
-        new AlbatrossPlayer(),
-        new VirusPlayer()
-    ];
-
-    var game = new PlanetWarsGame(players, neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId);
+    var game = new PlanetWarsGame(neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId);
 
     // bind controls
     $("#play").click(game.play.bind(game));

@@ -98,7 +98,7 @@ DoNothingPlayer.prototype.constructor = DoNothingPlayer;
 
 AttackLargestEmpirePlayer: function AttackLargestEmpirePlayer() {
     this.color = "green";
-}
+};
 AttackLargestEmpirePlayer.prototype = new Player();
 AttackLargestEmpirePlayer.prototype.constructor = AttackLargestEmpirePlayer;
 
@@ -133,7 +133,7 @@ AttackLargestEmpirePlayer.prototype.think = function think(universe) {
 
 KamikazePlayer: function KamikazePlayer() {
     this.color = "salmon";
-}
+};
 KamikazePlayer.prototype = new Player();
 KamikazePlayer.prototype.constructor = KamikazePlayer;
 KamikazePlayer.prototype.think = function think(universe) {
@@ -231,7 +231,7 @@ AttackNearestEnemyPlayer.prototype.think = function think(universe) {
 
 SupportNetworkPlayer: function SupportNetworkPlayer() {
     this.color = "aqua";
-}
+};
 SupportNetworkPlayer.prototype = new Player();
 SupportNetworkPlayer.prototype.constructor = SupportNetworkPlayer;
 
@@ -326,7 +326,7 @@ AlbatrossPlayer.prototype.think = function think(universe) {
 
 VirusPlayer: function VirusPlayer() {
     this.color = "Olive"
-}
+};
 VirusPlayer.prototype = new Player();
 VirusPlayer.prototype.constructor = VirusPlayer;
 VirusPlayer.prototype.think = function think(universe) {
