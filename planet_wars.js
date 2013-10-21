@@ -14,6 +14,8 @@
 // TODO add ranking
 // TODO create canvas ids here
 PlanetWarsGame: function PlanetWarsGame(neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId) {
+    this.currentStateCache = [];
+    this.nextStateCache = [];
     this.simulator = new Worker("simulator.js");
 
     this.simulator.onmessage = function(oEvent) {
@@ -24,14 +26,16 @@ PlanetWarsGame: function PlanetWarsGame(neutralPlanetCount, width, height, backg
         if (status === "error") {
             console.log(message);
         } else {
-            if (action === "getState") {
-                this.nextState = message;
-                this.lastStepped = new Date().getTime();
+
+            if (action === "getStates") {
+                this.nextStateCache = message;
+                this.lastGetStateFinished = true;
             }
 
             if (action === "start") {
-                this.nextState = message;
-                this.currentState = this.nextState;
+                this.currentStateCache = message.current;
+                this.nextStateCache = message.next;
+                this.stepState();
                 this.drawGame();
             }
         }
@@ -47,10 +51,8 @@ PlanetWarsGame: function PlanetWarsGame(neutralPlanetCount, width, height, backg
     );
 
     this.round = 0;
-    this.simulator.postMessage({"action": "getState"});
-
-    this.lastStepped = 0;
-    this.lastStepFinished = true;
+    this.currentStateIndex = 0;
+    this.lastGetStateFinished = true;
 
     this.foregroundCanvasId = foregroundCanvasId;
     this.foregroundCanvas = document.getElementById(this.foregroundCanvasId);
@@ -78,6 +80,23 @@ PlanetWarsGame: function PlanetWarsGame(neutralPlanetCount, width, height, backg
     var context = this.backgroundCanvas.getContext("2d");
     context.fillStyle = "black";
     context.fillRect(0, 0, this.width, this.height);
+};
+
+PlanetWarsGame.prototype.stepState = function stepState() {
+    if (this.currentStateIndex >= this.currentStateCache.length) {
+
+        this.currentStateIndex = 0;
+        this.currentStateCache = this.nextStateCache;
+        this.simulator.postMessage({"action": "getStates"});
+        this.lastGetStateFinished = false;
+
+    }
+    
+    this.currentState = this.currentStateCache[this.currentStateIndex];
+    this.currentStateIndex += 1;
+    this.lastStepped = new Date().getTime();
+    
+    return true;
 };
 
 // TODO add ranking refresh
@@ -155,19 +174,21 @@ PlanetWarsGame.prototype.running = false;
 PlanetWarsGame.prototype.maxRounds = 2000;
 
 PlanetWarsGame.prototype.step = function step(timestamp) {
-
     var activePlayersCount = this.currentState.activePlayersCount;
+    
     if (activePlayersCount > 1 && this.round < this.maxRounds) {
-
-        if (this.currentState !== this.nextState) {
-            this.currentState = this.nextState;
+        var now = new Date().getTime();
+        
+        if (now - this.lastStepped > this.stepInterval) {
+            var stepFinished = this.stepState();
+            
+            if (!stepFinished) {
+                requestAnimationFrame(this.step.bind(this));
+                return;
+            }
+            
             this.round += 1;
             this.drawGame();
-        }
-
-        var now = new Date().getTime();
-        if (now - this.lastStepped > this.stepInterval) {
-            this.simulator.postMessage({"action": "getState"});
         }
         requestAnimationFrame(this.step.bind(this));
 
