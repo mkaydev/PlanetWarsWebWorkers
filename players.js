@@ -325,7 +325,7 @@ AlbatrossPlayer.prototype.think = function think(universe) {
 };
 
 VirusPlayer: function VirusPlayer() {
-    this.color = "Olive"
+    this.color = "Olive";
 };
 VirusPlayer.prototype = new Player();
 VirusPlayer.prototype.constructor = VirusPlayer;
@@ -402,4 +402,13 @@ VirusPlayer.prototype.getPlanetWithMaxForce = function getPlanetWithMaxForce(pla
         }
     }
     return curPlanet;
+};
+
+RatPlayer: function RatPlayer() {
+    this.color = "LightSteelBlue";
+};
+RatPlayer.prototype = new Player();
+RatPlayer.prototype.constructor = RatPlayer;
+RatPlayer.prototype.think = function think(universe) {
+
 };

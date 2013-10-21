@@ -6,5 +6,6 @@ var contestants = [
     new AttackNearestEnemyPlayer(),
     new SupportNetworkPlayer(),
     new AlbatrossPlayer(),
-    new VirusPlayer()
+    new VirusPlayer(),
+    new RatPlayer()
 ];
