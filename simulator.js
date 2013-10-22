@@ -1,4 +1,12 @@
-importScripts("helper.js", "player.js", "planet.js", "universe.js", "players.js", "battle_school.js", "contestants.js");
+importScripts(
+    "helper.js",
+    "player.js",
+    "planet.js",
+    "universe.js",
+    "sample_players.js",
+    "battle_school.js",
+    "contestants.js"
+);
 
 
 Simulator: function Simulator() {
