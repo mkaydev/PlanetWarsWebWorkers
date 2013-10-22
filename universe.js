@@ -28,7 +28,7 @@ Universe: function Universe(initialPlayers, neutralPlanetCount, width, height) {
     // create main planets for players
     var planets = [];
 
-    var createNewPlanet = function createNewPlanet(recruitingPerStep, owner) {
+    var createNewPlanet = function createNewPlanet(recruitingPerStep, owner, initialForces) {
         var collides = true;
         while (collides) {
             var coords;
@@ -37,7 +37,7 @@ Universe: function Universe(initialPlayers, neutralPlanetCount, width, height) {
 
             while (!fullyVisible) {
                 coords = this.getNewPlanetCoords();
-                planet = new Planet(this, owner, recruitingPerStep, coords.x, coords.y);
+                planet = new Planet(this, owner, recruitingPerStep, coords.x, coords.y, initialForces);
                 fullyVisible = planet.fullyVisibleIn(this.width, this.height);
             }
 
@@ -54,7 +54,7 @@ Universe: function Universe(initialPlayers, neutralPlanetCount, width, height) {
 
     for (var i = 0; i < players.length; i++) {
         var player = players[i];
-        var planet = createNewPlanet(this.mainPlanetRecruitingPerStep, player);
+        var planet = createNewPlanet(this.mainPlanetRecruitingPerStep, player, this.mainPlanetInitialForces);
         planets.push(planet);
     }
 
@@ -159,6 +159,7 @@ Universe: function Universe(initialPlayers, neutralPlanetCount, width, height) {
     };
 };
 Universe.prototype.mainPlanetRecruitingPerStep = 6;
+Universe.prototype.mainPlanetInitialForces = 300;
 Universe.prototype.maxSecondaryPlanetRecruitingPerStep = 4;
 Universe.prototype.minSecondaryPlanetRecrutingPerStep = 1;
 

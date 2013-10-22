@@ -1,4 +1,4 @@
-Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY) {
+Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY, initialForces) {
     var fleetMovementPerStep = 10;
 
     Fleet: function Fleet(universe, flOwner, forces, homePlanet, targetPlanet) {
@@ -197,6 +197,8 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY) {
     this.radius = recruitingPerStep * 5;
 
     var groundForces = 5 * this.getRecruitingPerStep();
+    if (typeof initialForces !== "undefined") groundForces = initialForces;
+    
     this.getForces = function getForces() {
         return groundForces;
     };
