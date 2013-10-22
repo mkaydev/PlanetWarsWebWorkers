@@ -19,6 +19,16 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY) {
         };
         var ownerEquals = this.ownerEquals;
 
+        this.isHostileToTarget = function isHostileToTarget() {
+            return !targetPlanet.ownerEquals(fleetOwner);
+        };
+        var isHostileToTarget = this.isHostileToTarget;
+
+        this.isHostileTo = function isHostileTo(fleetOrPlanet) {
+            return !fleetOrPlanet.ownerEquals(fleetOwner);
+        };
+        var isHostileTo = this.isHostileTo;
+
         var home = homePlanet;
         this.getSource = function getSource() {
             return home;
@@ -45,14 +55,16 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY) {
         };
 
         var step = function step() {
-            if (fleetForces != this.getForces()) alert("getForces of fleet was manipulated!");
-            if (currentX != this.getX()) alert("getX of fleet was manipulated!");
-            if (currentY != this.getY()) alert("getY of fleet was manipulated!");
-            if (destination != this.getDestination()) alert("getDestination of fleet was manipulated!");
-            if (home != this.getSource()) alert("getSource of fleet was manipulated!");
-            if (ownerEquals.toString() != this.ownerEquals.toString()) alert("ownerEquals of fleet was manipulated!");
-            if (fleetMovementPerStep != this.getMovementPerStep()) alert("getMovementPerStep of fleet was manipulated!");
-            if (fleetId != this.getId()) alert("getId of fleet was manipulated!");
+            if (fleetForces != this.getForces()) simulator.alert("getForces of fleet was manipulated!");
+            if (currentX != this.getX()) simulator.alert("getX of fleet was manipulated!");
+            if (currentY != this.getY()) simulator.alert("getY of fleet was manipulated!");
+            if (destination != this.getDestination()) simulator.alert("getDestination of fleet was manipulated!");
+            if (home != this.getSource()) simulator.alert("getSource of fleet was manipulated!");
+            if (ownerEquals.toString() != this.ownerEquals.toString()) simulator.alert("ownerEquals of fleet was manipulated!");
+            if (isHostileTo.toString() != this.isHostileTo.toString()) simulator.alert("isHostileToTarget of fleet was manipulated!");
+            if (isHostileToTarget.toString() != this.isHostileToTarget.toString()) simulator.alert("isHostileToTarget of fleet was manipulated!");
+            if (fleetMovementPerStep != this.getMovementPerStep()) simulator.alert("getMovementPerStep of fleet was manipulated!");
+            if (fleetId != this.getId()) simulator.alert("getId of fleet was manipulated!");
 
             var distance = this.distanceToPos(this.getDestination().getX(), this.getDestination().getY());
             if (distance <= this.getMovementPerStep()) {
@@ -192,7 +204,7 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY) {
     var cosmos = universe;
     var registerPlanet = function registerPlnaet(plOwner) {
         var sendFleet = function sendFleet(size, destination) {
-            if (size > groundForces) return;
+            if (size > groundForces || size < 0) return;
             var fleetSize = Math.floor(size);
             new Fleet(cosmos, plOwner, fleetSize, this, destination);
             groundForces -= fleetSize;
@@ -224,8 +236,23 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY) {
             return attackingFleets;
         }
     }.bind(this);
+
+    var setGetTargetingFleets = function setTargetingFleets(plOwner) {
+        this.getTargetingFleets = function getTargetingFleets() {
+            var enemyFleets =  cosmos.getAllFleets();
+            var fleets = [];
+            for (var i = 0; i < enemyFleets.length; i++) {
+                var fl = enemyFleets[i];
+                if (fl.getDestination() === this) fleets.push(fl);
+            }
+            return fleets;
+        }
+    }.bind(this);
+
     setGetDefendingFleets(planetOwner);
     setGetAttackingFleets(planetOwner);
+    setGetTargetingFleets(planetOwner);
+
 
     this.enteredBy = function enteredBy(fleet, owner) {
         if (!fleet.ownerEquals(owner)) return;
@@ -254,6 +281,7 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY) {
                 groundForces = fleet.getForces() - groundForces;
                 setGetDefendingFleets(planetOwner);
                 setGetAttackingFleets(planetOwner);
+                setGetTargetingFleets(planetOwner);
                 registerPlanet(planetOwner);
 
             } else {
@@ -271,12 +299,12 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY) {
     var step = function step() {
         if (this.isNeutral()) return;
         groundForces += this.getRecruitingPerStep();
-        if (recruitingPerStep != this.getRecruitingPerStep()) alert("getRecruitingPerStep of planet was manipulated!");
-        if (groundForces != this.getForces()) alert("getForces of planet was manipulated!");
-        if (x != this.getX()) alert("getX of planet was manipulated!");
-        if (y != this.getY()) alert("getY planet was manipulated!");
-        if (isFleetOrigin.toString() != this.isFleetOrigin.toString()) alert("isFleetOrigin of planet was manipulated!");
-        if (ownerEquals.toString() != this.ownerEquals.toString()) alert("ownerEquals of planet was manipulated!");
+        if (recruitingPerStep != this.getRecruitingPerStep()) simulator.alert("getRecruitingPerStep of planet was manipulated!");
+        if (groundForces != this.getForces()) simulator.alert("getForces of planet was manipulated!");
+        if (x != this.getX()) simulator.alert("getX of planet was manipulated!");
+        if (y != this.getY()) simulator.alert("getY planet was manipulated!");
+        if (isFleetOrigin.toString() != this.isFleetOrigin.toString()) simulator.alert("isFleetOrigin of planet was manipulated!");
+        if (ownerEquals.toString() != this.ownerEquals.toString()) simulator.alert("ownerEquals of planet was manipulated!");
     }.bind(this);
 
     this.exportState = function exportState() {

@@ -13,6 +13,7 @@
     Planet:isNeutral()
     Planet:getForces()
     Planet:distanceTo(otherPlanet)
+    Planet:fleetStepsTo(otherPlanet)
     Planet:ownerEquals(player)
     Planet:getX()
     Planet:getY()
@@ -20,6 +21,8 @@
     Fleet:ownerEquals(player)
     Fleet:distanceToTarget()
     Fleet:stepsToTarget()
+    Fleet:isHostileTo(fleetOrPlanet)
+    Fleet:isHostileToTarget()
     Fleet:getMovementPerStep()
     Fleet:getForces()
     Fleet:getX()
@@ -42,6 +45,15 @@
     Universe:getFleets(player)
     Universe:getEnemyFleets(player)
 
+    for debugging:
+    simulator.log(message) allows logging to the console (only string or json objects)
+    simulator.alert(message) allows creating alert windows (only string or json objects)
+
+    if your player manages to freeze your browser, because the .think method takes too long and you're not able to debug the method because of it,
+    try setting the statesPerMessage value of the simulator to a lower value (the simulator tries to precalculate twice this number of states)
+
+    be aware that this logging function relies on the asynchronous message passing of the web worker and therefore won't be in order,
+    a timestamp is logged together with the message to help
 
  */
 
@@ -402,13 +414,4 @@ VirusPlayer.prototype.getPlanetWithMaxForce = function getPlanetWithMaxForce(pla
         }
     }
     return curPlanet;
-};
-
-RatPlayer: function RatPlayer() {
-    this.color = "LightSteelBlue";
-};
-RatPlayer.prototype = new Player();
-RatPlayer.prototype.constructor = RatPlayer;
-RatPlayer.prototype.think = function think(universe) {
-
 };

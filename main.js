@@ -11,7 +11,32 @@ $(document).ready(function() {
 
     var game = new PlanetWarsGame(neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId);
 
-    // bind controls
-    $("#play").click(game.play.bind(game));
+    $("#play").click(function() {
+        togglePlayPause();
+        game.play.bind(game)();
+    });
+    $("#pause").click(function() {
+        togglePlayPause();
+        game.pause.bind(game)();
+    });
+    $("#initialize").click(function() {
+        $("#play").show();
+        $("#pause").hide();
+        game.initialize.bind(game)();
+    });
+    $("#step").click(game.step.bind(game));
 
 });
+
+togglePlayPause: function togglePlayPause() {
+    var playSel = $("#play");
+    var pauseSel = $("#pause");
+
+    if (playSel.is(":hidden")) {
+        playSel.show();
+        pauseSel.hide();
+    } else {
+        pauseSel.show();
+        playSel.hide();
+    }
+}

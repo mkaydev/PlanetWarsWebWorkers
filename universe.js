@@ -221,6 +221,15 @@ Universe.prototype.sortByDistance = function sortByDistance(planet, planets) {
     planets.sort(sortByDist);
 };
 
+Universe.prototype.sortByDistanceToTarget = function sortByDistanceToTarget(fleets) {
+    var sortByDist = function sortByDist(a, b) {
+        var distA = a.distanceToTarget();
+        var distB = b.distanceToTarget();
+        return distA - distB;
+    };
+    fleets.sort(sortByDist);
+};
+
 Universe.prototype.getGroundForces = function getGroundForces(player) {
     var planets = this.getPlanets(player);
     var groundForce = 0;
@@ -240,5 +249,5 @@ Universe.prototype.getAirForces = function getAirForces(player) {
 };
 
 Universe.prototype.getForces = function getForces(player) {
-    return getAirForces(player) + getGroundForces(player);
+    return this.getAirForces(player) + this.getGroundForces(player);
 };

@@ -1,4 +1,4 @@
-importScripts("helper.js", "player.js", "planet.js", "universe.js", "players.js", "contestants.js");
+importScripts("helper.js", "player.js", "planet.js", "universe.js", "players.js", "battle_school.js", "contestants.js");
 
 
 Simulator: function Simulator() {
@@ -26,6 +26,16 @@ Simulator.prototype.fillStates = function fillStates(arr) {
     for (var i = 0; i < toFillCount; i++) {
         this.addState(arr);
     }
+};
+
+Simulator.prototype.log = function log(message) {
+    var timestamp = new Date().getTime();
+    postMessage({"status": "log", "message": timestamp + ": " + message});
+};
+
+Simulator.prototype.alert = function alert(message) {
+    var timestamp = new Date().getTime();
+    postMessage({"status": "alert", "message": timestamp + ": " + message});
 };
 
 Simulator.prototype.statesPerMessage = 50;

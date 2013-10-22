@@ -12,7 +12,7 @@ Player: function Player() {
     };
 
     this.sendFleet = function sendFleet(source, destination, fleetSize) {
-        if (isNaN(fleetSize)) return;
+        if (isNaN(fleetSize) || fleetSize <= 0) return;
         if (typeof destination === "undefined") return;
         if (typeof source === "undefined") return;
         if (source.ownerEquals(this) && source.getForces() > 0 && source != destination) {
