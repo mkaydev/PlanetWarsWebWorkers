@@ -37,7 +37,7 @@ Simulator.prototype.alert = function alert(message) {
     postMessage({"status": "alert", "message": message, "messageId": this.alertCount++});
 };
 
-Simulator.prototype.statesPerMessage = 50;
+Simulator.prototype.statesPerMessage = 2;
 var simulator = new Simulator();
 
 importScripts(
