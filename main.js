@@ -7,9 +7,9 @@ $(document).ready(function() {
 
     var width = 800;
     var height = 600;
-    var neutralPlanetCount = 50;
+    var planetCount = 100;
 
-    var game = new PlanetWarsGame(neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId);
+    var game = new PlanetWarsGame(planetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId);
 
     $("#play").click(function() {
         togglePlayPause();

@@ -1,10 +1,19 @@
 Player: function Player() {
     this.color = "black";
+};
+
+Player.prototype.initialize = function initialize() {
+    var id = createId("Player:");
+    this.getId = function getId() {
+        return id;
+    };
+
     var planetCommands = {};
     this.registerPlanet = function registerPlanet(p, sendFleetCmd) {
         var id = p.getId();
         planetCommands[id] = sendFleetCmd;
     };
+
     this.deregisterPlanet = function deregisterPlanet(p) {
         var id = p.getId();
         if (!planetCommands.hasOwnProperty(id)) return;
@@ -20,7 +29,16 @@ Player: function Player() {
             if (size > source.getForces()) size = source.getForces();
             planetCommands[source.getId()](size, destination);
         }
+    }.bind(this);
+
+    this.equals = function equals(other) {
+        return this.getId() === other.getId();
     };
+
+    this.safeClone = function safeClone() {
+        return {"getId": this.getId, "color": this.color, "equals": this.equals};
+    }.bind(this);
+
 };
 
 Player.prototype.isNeutral = false;
@@ -28,6 +46,7 @@ Player.prototype.think = function think(universe) {};
 
 NeutralPlayer: function NeutralPlayer() {
     this.color = "grey";
+    this.initialize();
 };
 NeutralPlayer.prototype = new Player();
 NeutralPlayer.prototype.constructor = NeutralPlayer;

@@ -1,5 +1,8 @@
 /*
     to implement a player, set the prototype of the new player object to new Player() and the constructor to the new player constructor
+    there are two things you have to do in the player's constructor:
+        1. set this.color to a color of your choice
+        2. call this.initialize()
     afterwards implement the .think function, which takes the current universe
 
     publicly accessible functions for use in the .think method:
@@ -8,6 +11,7 @@
         source: a planet, owned by the player
         destination: a planet
         fleetSize: an integer
+    Player:equals
 
     Planet:getRecruitingPerStep()
     Planet:isNeutral()
@@ -53,13 +57,14 @@
     try setting the statesPerMessage value of the simulator to a lower value (the simulator tries to precalculate twice this number of states)
 
     be aware that this logging function relies on the asynchronous message passing of the web worker and therefore won't be in order,
-    a timestamp is logged together with the message to help
+    a messageId (count of logs/alerts sent) is being sent together with the message being kept track of by the simulator
 
  */
 
 
 RandomPlayer: function RandomPlayer() {
     this.color = "red";
+    this.initialize();
 };
 RandomPlayer.prototype = new Player();
 RandomPlayer.prototype.constructor = RandomPlayer;
@@ -80,6 +85,7 @@ RandomPlayer.prototype.think = function think(universe) {
 
 AttackRandomPlayer: function AttackRandomPlayer() {
     this.color = "blue";
+    this.initialize();
 };
 AttackRandomPlayer.prototype = new Player();
 AttackRandomPlayer.prototype.constructor = AttackRandomPlayer;
@@ -103,6 +109,7 @@ AttackRandomPlayer.prototype.think = function think(universe) {
 
 DoNothingPlayer: function DoNothingPlayer() {
     this.color = "yellow";
+    this.initialize();
 };
 DoNothingPlayer.prototype = new Player();
 DoNothingPlayer.prototype.constructor = DoNothingPlayer;
@@ -110,6 +117,7 @@ DoNothingPlayer.prototype.constructor = DoNothingPlayer;
 
 AttackLargestEmpirePlayer: function AttackLargestEmpirePlayer() {
     this.color = "green";
+    this.initialize();
 };
 AttackLargestEmpirePlayer.prototype = new Player();
 AttackLargestEmpirePlayer.prototype.constructor = AttackLargestEmpirePlayer;
@@ -145,6 +153,7 @@ AttackLargestEmpirePlayer.prototype.think = function think(universe) {
 
 KamikazePlayer: function KamikazePlayer() {
     this.color = "salmon";
+    this.initialize();
 };
 KamikazePlayer.prototype = new Player();
 KamikazePlayer.prototype.constructor = KamikazePlayer;
@@ -179,7 +188,8 @@ KamikazePlayer.prototype.think = function think(universe) {
 };
 
 AttackBestPlanetPlayer: function AttackBestPlanetPlayer() {
-    this.color = "AntiqueWhite ";
+    this.color = "AntiqueWhite";
+    this.initialize();
 };
 AttackBestPlanetPlayer.prototype = new Player();
 AttackBestPlanetPlayer.prototype.constructor = AttackBestPlanetPlayer;
@@ -218,6 +228,7 @@ AttackBestPlanetPlayer.prototype.think = function think(universe) {
 
 AttackNearestEnemyPlayer: function AttackNearestEnemyPlayer() {
     this.color = "orange";
+    this.initialize();
 };
 AttackNearestEnemyPlayer.prototype = new Player();
 AttackNearestEnemyPlayer.prototype.constructor = AttackNearestEnemyPlayer;
@@ -243,6 +254,7 @@ AttackNearestEnemyPlayer.prototype.think = function think(universe) {
 
 SupportNetworkPlayer: function SupportNetworkPlayer() {
     this.color = "aqua";
+    this.initialize();
 };
 SupportNetworkPlayer.prototype = new Player();
 SupportNetworkPlayer.prototype.constructor = SupportNetworkPlayer;
@@ -305,6 +317,7 @@ SupportNetworkPlayer.prototype.getNextDestination = function getNextDestination(
 
 AlbatrossPlayer: function AlbatrossPlayer() {
     this.color = "purple";
+    this.initialize();
 };
 AlbatrossPlayer.prototype = new SupportNetworkPlayer();
 AlbatrossPlayer.prototype.constructor = AlbatrossPlayer;
@@ -338,6 +351,7 @@ AlbatrossPlayer.prototype.think = function think(universe) {
 
 VirusPlayer: function VirusPlayer() {
     this.color = "Olive";
+    this.initialize();
 };
 VirusPlayer.prototype = new Player();
 VirusPlayer.prototype.constructor = VirusPlayer;

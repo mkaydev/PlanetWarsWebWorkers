@@ -13,8 +13,8 @@
 
 // TODO add ranking
 // TODO create canvas ids here
-PlanetWarsGame: function PlanetWarsGame(neutralPlanetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId) {
-    this.neutralPlanetCount = neutralPlanetCount;
+PlanetWarsGame: function PlanetWarsGame(planetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId) {
+    this.planetCount = planetCount;
     this.foregroundCanvasId = foregroundCanvasId;
     this.backgroundCanvasId = backgroundCanvasId;
     this.textCanvasId = textCanvasId;
@@ -34,11 +34,20 @@ PlanetWarsGame.prototype.initialize = function initialize() {
         var action = oEvent.data.action;
         var status = oEvent.data.status;
         var message = oEvent.data.message;
+        var messageId = oEvent.data.messageId;
 
         if (status === "error" || status === "log") {
-            console.log(message);
+            if (typeof messageId !== "undefined") {
+                console.log(messageId, message);
+            } else {
+                console.log(message);
+            }
         } else if (status === "alert") {
-            alert(message);
+            if (typeof messageId !== "undefined") {
+                alert([messageId, message]);
+            } else {
+                alert(message);
+            }
         } else {
 
             if (action === "getStates") {
@@ -59,7 +68,7 @@ PlanetWarsGame.prototype.initialize = function initialize() {
     this.simulator.postMessage(
         {
             "action": "start",
-            "neutralPlanetCount": this.neutralPlanetCount,
+            "planetCount": this.planetCount,
             "width": this.width,
             "height": this.height
         }

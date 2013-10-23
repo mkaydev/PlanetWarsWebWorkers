@@ -1,6 +1,7 @@
-Universe: function Universe(initialPlayers, neutralPlanetCount, width, height) {
+Universe: function Universe(initialPlayers, planetCount, width, height) {
     var players = initialPlayers;
-    this.determineActivePlayers = function determineActivePlayers() {
+    var neutralPlanetCount = planetCount - players.length;
+    var determineActivePlayers = function determineActivePlayers() {
         var activePlayers = [];
 
         for (var i = 0; i < players.length; i++) {
@@ -10,7 +11,7 @@ Universe: function Universe(initialPlayers, neutralPlanetCount, width, height) {
         }
 
         return activePlayers;
-    };
+    }.bind(this);
 
     var neutralPlayer = new NeutralPlayer();
     this.getNeutralPlayer = function getNeutralPlayer() {
@@ -116,14 +117,19 @@ Universe: function Universe(initialPlayers, neutralPlanetCount, width, height) {
             planetStepFuncs[i]();
         }
 
-        for (var i = 0; i < this.getActivePlayers().length; i++) {
-            this.getActivePlayers()[i].think(this);
+        var activePlayers = determineActivePlayers();
+        for (var i = 0; i < activePlayers.length; i++) {
+            activePlayers[i].think(this);
         }
 
-        var activePlayers = this.determineActivePlayers();
+        var activePlayers = determineActivePlayers();
         shuffleArray(activePlayers);
         this.getActivePlayers = function getActivePlayers() {
-            return activePlayers.slice();
+            var getSafeClone = function(a) {
+                return a.safeClone();
+            };
+            var copy = activePlayers.slice();
+            return copy.map(getSafeClone);
         };
     }.bind(this);
 

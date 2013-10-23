@@ -15,7 +15,7 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY, in
 
         var fleetOwner = flOwner;
         this.ownerEquals = function ownerEquals(player) {
-            return fleetOwner === player;
+            return fleetOwner.getId() === player.getId();
         };
         var ownerEquals = this.ownerEquals;
 
@@ -139,7 +139,7 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY, in
 
     Fleet.prototype.stepsToTarget = function stepsToTarget() {
         var distance = this.distanceToTarget();
-        return Math.floor(distance / this.getMovementPerStep());
+        return Math.floor(distance / this.getMovementPerStep()) + 1; // players always see fleets after they have stepped or before their first step
     };
 
     this.isFleetOrigin = function isFleetOrigin(fleet) {
@@ -160,7 +160,7 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY, in
 
     var setOwnerEquals = function setOwnerEquals(plOwner) {
         this.ownerEquals = function ownerEquals(player) {
-            return plOwner === player;
+            return plOwner.getId() === player.getId();
         };
     }.bind(this);
     setOwnerEquals(planetOwner);
@@ -194,7 +194,7 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY, in
         return y;
     };
 
-    this.radius = recruitingPerStep * 5;
+    this.radius = Math.sqrt(recruitingPerStep * 2) * 5;
 
     var groundForces = 5 * this.getRecruitingPerStep();
     if (typeof initialForces !== "undefined") groundForces = initialForces;
@@ -294,7 +294,7 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY, in
 
     this.fleetStepsTo = function fleetStepsTo(otherPlanet) {
         var distance = this.distanceTo(otherPlanet);
-        return Math.floor(distance / fleetMovementPerStep);
+        return Math.floor(distance / fleetMovementPerStep) + 1; // fleet will have first step in next round
     };
 
     var isFleetOrigin = this.isFleetOrigin;

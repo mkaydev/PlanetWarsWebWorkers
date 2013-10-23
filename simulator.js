@@ -1,21 +1,13 @@
-importScripts(
-    "helper.js",
-    "player.js",
-    "planet.js",
-    "universe.js",
-    "sample_players.js",
-    "battle_school.js",
-    "contestants.js"
-);
-
-
 Simulator: function Simulator() {
     this.initialized = false;
+    this.loggedCount = 0;
+    this.alertCount = 0;
 };
 
-Simulator.prototype.initialize = function(players, neutralPlanetCount, width, height) {
+Simulator.prototype.initialize = function(players, planetCount, width, height) {
     // precalculate some states in advance to avoid laggy animation
-    this.universe = new Universe(players, neutralPlanetCount, width, height);
+    if (planetCount < players.length) planetCount = players.length;
+    this.universe = new Universe(players, planetCount, width, height);
     this.firstCache = [];
     this.secondCache = [];
     this.fillStates(this.firstCache);
@@ -38,17 +30,26 @@ Simulator.prototype.fillStates = function fillStates(arr) {
 
 Simulator.prototype.log = function log(message) {
     var timestamp = new Date().getTime();
-    postMessage({"status": "log", "message": timestamp + ": " + message});
+    postMessage({"status": "log", "message": message, "messageId": this.loggedCount++});
 };
 
 Simulator.prototype.alert = function alert(message) {
-    var timestamp = new Date().getTime();
-    postMessage({"status": "alert", "message": timestamp + ": " + message});
+    postMessage({"status": "alert", "message": message, "messageId": this.alertCount++});
 };
 
-Simulator.prototype.statesPerMessage = 50;
-
+Simulator.prototype.statesPerMessage = 2;
 var simulator = new Simulator();
+
+importScripts(
+    "helper.js",
+    "player.js",
+    "planet.js",
+    "universe.js",
+    "sample_players.js",
+    "battle_school.js",
+    "contestants.js"
+);
+
 
 onmessage = function(oEvent) {
     var action = oEvent.data.action;
@@ -72,10 +73,10 @@ onmessage = function(oEvent) {
 
     } else if (oEvent.data.action === "start") {
 
-        var neutralPlanetCount = oEvent.data.neutralPlanetCount;
+        var planetCount = oEvent.data.planetCount;
         var width = oEvent.data.width;
         var height = oEvent.data.height;
-        simulator.initialize(contestants, neutralPlanetCount, width, height);
+        simulator.initialize(getContestants(), planetCount, width, height);
 
         var status = "ok";
         var message = {"current": simulator.firstCache, "next": simulator.secondCache};
