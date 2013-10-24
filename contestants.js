@@ -7,22 +7,22 @@ var getContestants = function getContestants() {
          AttackLargestEmpirePlayer,
          KamikazePlayer,
          AttackBestPlanetPlayer,
-
          DoNothingPlayer,
-         VirusPlayer,
-         AlbatrossPlayer,
          SupportNetworkPlayer,
          */
 
-
         AttackNearestEnemyPlayer,
-        RatPlayer
+        AlbatrossPlayer,
+        VirusPlayer,
+
+        RatPlayer,
 
     ];
     var result = [];
     for (var i = 0; i < contestants.length; i++) {
         result.push(new contestants[i]());
     }
+    shuffleArray(result);
     return result;
 };
 

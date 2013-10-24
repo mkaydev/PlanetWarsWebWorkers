@@ -343,11 +343,35 @@ Planet.prototype.distanceTo = function distanceTo(otherPlanet) {
     return distance;
 };
 
-Planet.prototype.minDistanceToOther = 5;
-Planet.prototype.collidesWith = function collidesWith(otherPlanet) {
+Planet.prototype.distanceToCoords = function distanceToCoords(x, y) {
+    var yDiff;
+    if (y > this.getY()) {
+        yDiff = y - this.getY();
+    } else {
+        yDiff = this.getY() - y;
+    }
+
+    var xDiff;
+    if (x > this.getX()) {
+        xDiff = x - this.getX();
+    } else {
+        xDiff = this.getX() - x;
+    }
+
+    var distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+    return distance;
+};
+
+Planet.prototype.minDistanceToOther = 10;
+Planet.prototype.collidesWith = function collidesWith(otherPlanet, minDistance) {
     var distance = this.distanceTo(otherPlanet);
-    if (distance - this.minDistanceToOther > this.radius + otherPlanet.radius) return false;
-    return true;
+    if (typeof minDistance !== "undefined") {
+        if (distance - minDistance > this.radius + otherPlanet.radius) return false;
+        return true;
+    } else {
+        if (distance - this.minDistanceToOther > this.radius + otherPlanet.radius) return false;
+        return true;
+    }
 };
 
 Planet.prototype.margin = 10;

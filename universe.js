@@ -29,7 +29,7 @@ Universe: function Universe(initialPlayers, planetCount, width, height) {
     // create main planets for players
     var planets = [];
 
-    var createNewPlanet = function createNewPlanet(recruitingPerStep, owner, initialForces) {
+    var createNewPlanet = function createNewPlanet(recruitingPerStep, owner, initialForces, minDistance) {
         var collides = true;
         while (collides) {
             var coords;
@@ -44,7 +44,7 @@ Universe: function Universe(initialPlayers, planetCount, width, height) {
 
             collides = false;
             for (var i = 0; i < planets.length; i++) {
-                if (planets[i].collidesWith(planet)) {
+                if (planets[i].collidesWith(planet, minDistance)) {
                     collides = true;
                     break;
                 }
@@ -55,7 +55,7 @@ Universe: function Universe(initialPlayers, planetCount, width, height) {
 
     for (var i = 0; i < players.length; i++) {
         var player = players[i];
-        var planet = createNewPlanet(this.mainPlanetRecruitingPerStep, player, this.mainPlanetInitialForces);
+        var planet = createNewPlanet(this.mainPlanetRecruitingPerStep, player, this.mainPlanetInitialForces, this.minDistanceFromMainPlanet);
         planets.push(planet);
     }
 
@@ -95,10 +95,13 @@ Universe: function Universe(initialPlayers, planetCount, width, height) {
         return fleetsAsArray;
     };
 
+    var newFleets = {};
+    var newFleetStepFuncs = {};
+
     this.registerFleet = function registerFleet(fleet, stepFunc) {
         var flightId = fleet.getId();
-        fleets[flightId] = fleet;
-        fleetStepFuncs[flightId] = stepFunc;
+        newFleets[flightId] = fleet;
+        newFleetStepFuncs[flightId] = stepFunc;
     };
 
     this.deregisterFleet = function deregisterFleet(fleet) {
@@ -118,12 +121,22 @@ Universe: function Universe(initialPlayers, planetCount, width, height) {
         }
 
         var activePlayers = determineActivePlayers();
+        shuffleArray(activePlayers);
+
         for (var i = 0; i < activePlayers.length; i++) {
             activePlayers[i].think(this);
         }
 
-        var activePlayers = determineActivePlayers();
-        shuffleArray(activePlayers);
+        for (var fleetId in newFleets) {
+            var fleet = newFleets[fleetId];
+            var fleetStepFunc = newFleetStepFuncs[fleetId];
+
+            fleets[fleetId] = fleet;
+            fleetStepFuncs[fleetId] = fleetStepFunc;
+        }
+        newFleets = {};
+        newFleetStepFuncs = {};
+
         this.getActivePlayers = function getActivePlayers() {
             var getSafeClone = function(a) {
                 return a.safeClone();
@@ -166,6 +179,7 @@ Universe: function Universe(initialPlayers, planetCount, width, height) {
 };
 Universe.prototype.mainPlanetRecruitingPerStep = 6;
 Universe.prototype.mainPlanetInitialForces = 300;
+Universe.prototype.minDistanceFromMainPlanet = 100;
 Universe.prototype.maxSecondaryPlanetRecruitingPerStep = 4;
 Universe.prototype.minSecondaryPlanetRecrutingPerStep = 1;
 

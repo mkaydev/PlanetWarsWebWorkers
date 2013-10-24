@@ -17,6 +17,7 @@
     Planet:isNeutral()
     Planet:getForces()
     Planet:distanceTo(otherPlanet)
+    Planet:distanceToCoords(x, y)
     Planet:fleetStepsTo(otherPlanet)
     Planet:ownerEquals(player)
     Planet:getX()
