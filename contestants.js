@@ -2,19 +2,28 @@ var getContestants = function getContestants() {
 
     var contestants = [
         /*
-         RandomPlayer,
-         AttackRandomPlayer,
-         AttackLargestEmpirePlayer,
+         DoNothingPlayer,
+
+         SpiralPlayer,
          KamikazePlayer,
          AttackBestPlanetPlayer,
-         DoNothingPlayer,
+         AttackLargestEmpirePlayer,
+
+         RandomPlayer,
+         AttackRandomPlayer,
+
          SupportNetworkPlayer,
+         AlbatrossPlayer,
+         AttackNearestEnemyPlayer,
+         VirusPlayer,
+
+         RatPlayer,
          */
 
-        AttackNearestEnemyPlayer,
+        SupportNetworkPlayer,
         AlbatrossPlayer,
+        AttackNearestEnemyPlayer,
         VirusPlayer,
-
         RatPlayer,
 
     ];

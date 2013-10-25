@@ -19,10 +19,10 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY, in
         };
         var ownerEquals = this.ownerEquals;
 
-        this.isHostileToTarget = function isHostileToTarget() {
+        this.isHostileToDestination = function isHostileToDestination() {
             return !targetPlanet.ownerEquals(fleetOwner);
         };
-        var isHostileToTarget = this.isHostileToTarget;
+        var isHostileToDestination = this.isHostileToDestination;
 
         this.isHostileTo = function isHostileTo(fleetOrPlanet) {
             return !fleetOrPlanet.ownerEquals(fleetOwner);
@@ -61,8 +61,8 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY, in
             if (destination != this.getDestination()) simulator.alert("getDestination of fleet was manipulated!");
             if (home != this.getSource()) simulator.alert("getSource of fleet was manipulated!");
             if (ownerEquals.toString() != this.ownerEquals.toString()) simulator.alert("ownerEquals of fleet was manipulated!");
-            if (isHostileTo.toString() != this.isHostileTo.toString()) simulator.alert("isHostileToTarget of fleet was manipulated!");
-            if (isHostileToTarget.toString() != this.isHostileToTarget.toString()) simulator.alert("isHostileToTarget of fleet was manipulated!");
+            if (isHostileTo.toString() != this.isHostileTo.toString()) simulator.alert("isHostileToDestination of fleet was manipulated!");
+            if (isHostileToDestination.toString() != this.isHostileToDestination.toString()) simulator.alert("isHostileToDestination of fleet was manipulated!");
             if (fleetMovementPerStep != this.getMovementPerStep()) simulator.alert("getMovementPerStep of fleet was manipulated!");
             if (fleetId != this.getId()) simulator.alert("getId of fleet was manipulated!");
 
@@ -83,7 +83,7 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY, in
         }.bind(this);
 
         this.exportState = function exportState() {
-            var steps = this.stepsToTarget();
+            var steps = this.stepsToDestination();
             var frontX = currentX + (this.getDestination().getX() - currentX) / steps;
             var frontY = currentY + (this.getDestination().getY() - currentY) / steps;
 
@@ -133,12 +133,12 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY, in
         return distance;
     };
 
-    Fleet.prototype.distanceToTarget = function distanceToTarget() {
+    Fleet.prototype.distanceToDestination = function distanceToDestination() {
         return this.distanceToPos(this.getDestination().getX(), this.getDestination().getY());
     };
 
-    Fleet.prototype.stepsToTarget = function stepsToTarget() {
-        var distance = this.distanceToTarget();
+    Fleet.prototype.stepsToDestination = function stepsToDestination() {
+        var distance = this.distanceToDestination();
         return Math.floor(distance / this.getMovementPerStep()) + 1; // players always see fleets after they have stepped or before their first step
     };
 
@@ -204,7 +204,7 @@ Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY, in
     };
 
     var cosmos = universe;
-    var registerPlanet = function registerPlnaet(plOwner) {
+    var registerPlanet = function registerPlanet(plOwner) {
         var sendFleet = function sendFleet(size, destination) {
             if (size > groundForces || size < 0) return;
             var fleetSize = Math.floor(size);
@@ -362,7 +362,7 @@ Planet.prototype.distanceToCoords = function distanceToCoords(x, y) {
     return distance;
 };
 
-Planet.prototype.minDistanceToOther = 10;
+Planet.prototype.minDistanceToOther = 5;
 Planet.prototype.collidesWith = function collidesWith(otherPlanet, minDistance) {
     var distance = this.distanceTo(otherPlanet);
     if (typeof minDistance !== "undefined") {

@@ -7,7 +7,7 @@ $(document).ready(function() {
 
     var width = 800;
     var height = 600;
-    var planetCount = 100;
+    var planetCount = 150;
 
     var game = new PlanetWarsGame(planetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId);
 

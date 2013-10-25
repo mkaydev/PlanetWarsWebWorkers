@@ -18,8 +18,15 @@ Universe: function Universe(initialPlayers, planetCount, width, height) {
         return neutralPlayer;
     };
 
-    this.width = width;
-    this.height = height;
+    var width = width;
+    this.getWidth = function getWidth() {
+        return width;
+    };
+
+    var height = height;
+    this.getHeight = function getHeight() {
+        return height;
+    };
 
     var planetStepFuncs = [];
     this.registerPlanetStepFunction = function registerPlanetStepFunction(stepFunc) {
@@ -39,7 +46,7 @@ Universe: function Universe(initialPlayers, planetCount, width, height) {
             while (!fullyVisible) {
                 coords = this.getNewPlanetCoords();
                 planet = new Planet(this, owner, recruitingPerStep, coords.x, coords.y, initialForces);
-                fullyVisible = planet.fullyVisibleIn(this.width, this.height);
+                fullyVisible = planet.fullyVisibleIn(this.getWidth(), this.getHeight());
             }
 
             collides = false;
@@ -53,9 +60,12 @@ Universe: function Universe(initialPlayers, planetCount, width, height) {
         }
     }.bind(this);
 
+
+    var mainCoords = this.getMainPlanetCoords(players.length);
     for (var i = 0; i < players.length; i++) {
         var player = players[i];
-        var planet = createNewPlanet(this.mainPlanetRecruitingPerStep, player, this.mainPlanetInitialForces, this.minDistanceFromMainPlanet);
+        var coords = mainCoords[i];
+        var planet = new Planet(this, player, this.mainPlanetRecruitingPerStep, coords.x, coords.y, this.mainPlanetInitialForces);
         planets.push(planet);
     }
 
@@ -111,7 +121,6 @@ Universe: function Universe(initialPlayers, planetCount, width, height) {
     };
 
     this.step = function step() {
-        this.currentStep += 1;
         for (var fleetId in fleetStepFuncs) {
             fleetStepFuncs[fleetId]();
         }
@@ -179,13 +188,60 @@ Universe: function Universe(initialPlayers, planetCount, width, height) {
 };
 Universe.prototype.mainPlanetRecruitingPerStep = 6;
 Universe.prototype.mainPlanetInitialForces = 300;
-Universe.prototype.minDistanceFromMainPlanet = 100;
+Universe.prototype.minDistanceFromMainPlanet = 20;  // excludes radius
 Universe.prototype.maxSecondaryPlanetRecruitingPerStep = 4;
 Universe.prototype.minSecondaryPlanetRecrutingPerStep = 1;
 
+Universe.prototype.getMainPlanetCoords = function getMainPlanetCoords(count) {
+    /* The problem is to distribute the main planets in a fair manner, e.g. in a last man standing tournament starting in the center,
+    *  while other players have safe backs by starting in a corner would be extremely unfair.
+    *
+    *  The basic idea is to distribute the main planets equally along the largest circle, which fits the game area.
+    *  - This avoids unfair situations where two players have to fight each other early on, while others can conquer neutral planets.
+    *  - Another factor to consider is the size of the front-line, i.e. the area on which the player has to fight other players.
+    *  -->  This is important for odd numbers of players, because the game area is a rectangle and not a square.
+    *       A bigger front-line is a disadvantage and needs to be balanced out by an advantage,
+    *       e.g. having a greater distance from other players or better access to neutral planets at the beginning.
+    */
+
+    var center = {
+        "x": Math.floor(this.getWidth() / 2),
+        "y": Math.floor(this.getHeight() / 2)
+    };
+    var r = (Math.min(this.getWidth(), this.getHeight()) - (2 * this.minDistanceFromMainPlanet)) / 2;
+    var arcPerPlayer = (2 * Math.PI) / count;
+
+    var start = {};
+    var startAngle = 0;
+    var curAngle = arcPerPlayer;
+    if (count == 4 || count == 2) {
+        startAngle = 1/4 * Math.PI;
+    } else if (count == 5) {
+        startAngle = 5/8 * Math.PI;
+    } else if (count % 2 == 1) {
+        startAngle = 1/2 * Math.PI;
+    } else {
+        startAngle = 0;
+    }
+    start.x = center.x + r * Math.cos(startAngle);
+    start.y = center.y + r * Math.sin(startAngle);
+    curAngle += startAngle;
+
+    var coords = [start];
+    for (var i = 1; i < count; i++) {
+        var next = {
+            "x": center.x + r * Math.cos(curAngle),
+            "y": center.y + r * Math.sin(curAngle)
+        };
+        coords.push(next);
+        curAngle += arcPerPlayer;
+    }
+    return coords;
+};
+
 Universe.prototype.getNewPlanetCoords = function getNewPlanetCoords() {
-    var x = Math.round(this.width * Math.random());
-    var y = Math.round(this.height * Math.random());
+    var x = Math.round(this.getWidth() * Math.random());
+    var y = Math.round(this.getHeight() * Math.random());
     return {"x": x, "y": y};
 };
 
@@ -242,13 +298,22 @@ Universe.prototype.sortByDistance = function sortByDistance(planet, planets) {
     planets.sort(sortByDist);
 };
 
-Universe.prototype.sortByDistanceToTarget = function sortByDistanceToTarget(fleets) {
+Universe.prototype.sortByDistanceToDestination = function sortByDistanceToDestination(fleets) {
     var sortByDist = function sortByDist(a, b) {
-        var distA = a.distanceToTarget();
-        var distB = b.distanceToTarget();
+        var distA = a.distanceToDestination();
+        var distB = b.distanceToDestination();
         return distA - distB;
     };
     fleets.sort(sortByDist);
+};
+
+Universe.prototype.sortByRecruitingPower = function sortByRecruitingPower(planets) {
+    var sortByRecr = function sortByRecr(a, b) {
+        var recrA = a.getRecruitingPerStep();
+        var recrB = b.getRecruitingPerStep();
+        return recrB - recrA;
+    };
+    planets.sort(sortByRecr);
 };
 
 Universe.prototype.getGroundForces = function getGroundForces(player) {

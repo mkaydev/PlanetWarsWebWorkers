@@ -26,8 +26,9 @@ PlanetWarsGame: function PlanetWarsGame(planetCount, width, height, backgroundCa
 PlanetWarsGame.prototype.initialize = function initialize() {
     this.initialized = false;
     this.running = false;
-    this.currentStateCache = [];
-    this.nextStateCache = [];
+    this.lastStepped = 0;
+
+    if (typeof this.simulator !== "undefined") this.simulator.terminate();
     this.simulator = new Worker("simulator.js");
 
     this.simulator.onmessage = function(oEvent) {
@@ -35,6 +36,7 @@ PlanetWarsGame.prototype.initialize = function initialize() {
         var status = oEvent.data.status;
         var message = oEvent.data.message;
         var messageId = oEvent.data.messageId;
+        var simId = oEvent.data.id;
 
         if (status === "error" || status === "log") {
             if (typeof messageId !== "undefined") {
@@ -48,35 +50,35 @@ PlanetWarsGame.prototype.initialize = function initialize() {
             } else {
                 alert(message);
             }
-        } else {
+        } else if (action === "postStates") {
 
-            if (action === "getStates") {
-                this.nextStateCache = message;
-                this.lastGetStateFinished = true;
-            }
+            if (this.initialized && (this.simId === simId)) this.nextStateCache.push.apply(this.nextStateCache, message);
 
-            if (action === "start") {
-                this.currentStateCache = message.current;
-                this.nextStateCache = message.next;
-                this.stepState();
-                this.initialized = true;
-                this.drawGame();
-            }
+        } else if (action === "start") {
+            this.simId = simId;
+            this.currentStateCache = [];
+            this.nextStateCache = [];
+            this.currentStateCache.push.apply(this.currentStateCache, message);
+            this.stepState();
+            this.initialized = true;
+            this.drawGame();
         }
     }.bind(this);
 
+    this.currentStateCache = [];
+    this.nextStateCache = [];
     this.simulator.postMessage(
         {
             "action": "start",
             "planetCount": this.planetCount,
             "width": this.width,
-            "height": this.height
+            "height": this.height,
+            "maxRounds": this.maxRounds
         }
     );
 
     this.round = 0;
-    this.currentStateIndex = 0;
-    this.lastGetStateFinished = true;
+    this.currentStateCount = 0;
 
     this.foregroundCanvas = document.getElementById(this.foregroundCanvasId);
     this.backgroundCanvas = document.getElementById(this.backgroundCanvasId);
@@ -103,18 +105,16 @@ PlanetWarsGame.prototype.initialize = function initialize() {
 };
 
 PlanetWarsGame.prototype.stepState = function stepState() {
-    if (!this.lastGetStateFinished) return false;
-    if (this.currentStateIndex >= this.currentStateCache.length) {
-
-        this.currentStateIndex = 0;
+    if (this.currentStateCount >= this.currentStateCache.length) {
+        this.currentStateCount = 0;
         this.currentStateCache = this.nextStateCache;
-        this.simulator.postMessage({"action": "getStates"});
-        this.lastGetStateFinished = false;
-
+        this.nextStateCache = [];
+        if (this.currentStateCache.length == 0) return false;
     }
     
-    this.currentState = this.currentStateCache[this.currentStateIndex];
-    this.currentStateIndex += 1;
+    this.currentState = this.currentStateCache[this.currentStateCount];
+    this.currentStateCount += 1;
+    this.round += 1;
     this.lastStepped = new Date().getTime();
     
     return true;
@@ -128,7 +128,7 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
     var exportedPlanets = this.currentState.planets;
 
     /* I'd like to keep the planets on the background and draw over them when the owner changes
-     * instead of clearing and redrawing, but it doesn't seem possible with antialiasing, which cannot be deactivated
+     * instead of clearing and redrawing, but it doesn't seem possible with canvas' anti-aliasing, which cannot be deactivated
      */
     var foregroundContext = this.foregroundCanvas.getContext("2d");
     // fastest according to jsperf test
@@ -191,7 +191,7 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
     }
 };
 
-PlanetWarsGame.prototype.stepInterval = 40;
+PlanetWarsGame.prototype.stepInterval = 60;
 PlanetWarsGame.prototype.running = false;
 PlanetWarsGame.prototype.maxRounds = 2000;
 
@@ -209,9 +209,8 @@ PlanetWarsGame.prototype.step = function step() {
                 requestAnimationFrame(this.step.bind(this));
                 return;
             }
-            
-            this.round += 1;
             this.drawGame();
+            this.lastStepped = now;
         }
         if (this.running) requestAnimationFrame(this.step.bind(this));
 
