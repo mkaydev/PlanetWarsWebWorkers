@@ -229,16 +229,14 @@ RatPlayerInitialStrategy.prototype.think = function think(universe) {
         }
 
         // try to conquer a corner as quickly as possible to have a safe back and avoid too many front-lines
-        while (available > minFleetSize) {
-            for (var i = 0; i < cornerTargets.length; i++) {
-                var destPlanet = cornerTargets[i];
-                if (!destPlanet.ownerEquals(this.player)) {
-                    var fleetSize = this.getNeededForces(universe, destPlanet);
-                    fleetSize += reserveFactor * destPlanet.getRecruitingPerStep();
-                    if (fleetSize > available) continue;
-                    this.player.sendFleet(myPlanet, destPlanet, fleetSize);
-                    available -= fleetSize;
-                }
+        for (var i = 0; i < cornerTargets.length; i++) {
+            var destPlanet = cornerTargets[i];
+            if (!destPlanet.ownerEquals(this.player)) {
+                var fleetSize = this.getNeededForces(universe, destPlanet);
+                fleetSize += reserveFactor * destPlanet.getRecruitingPerStep();
+                if (fleetSize > available) continue;
+                this.player.sendFleet(myPlanet, destPlanet, fleetSize);
+                available -= fleetSize;
             }
         }
     }
