@@ -1,9 +1,11 @@
 /*
     to implement a player, set the prototype of the new player object to new Player() and the constructor to the new player constructor
-    there are two things you have to do in the player's constructor:
+    there are three things you have to do in the player's constructor:
         1. set this.color to a color of your choice
-        2. call this.initialize()
-    afterwards implement the .think function, which takes the current universe
+        2. set this.name to the display name (for ranking etc.)
+        3. call this.initialize()
+
+    afterwards implement the .think(universe) method, which takes the current universe as a parameter
 
     publicly accessible functions for use in the .think method:
 
@@ -68,6 +70,7 @@
 
 RandomPlayer: function RandomPlayer() {
     this.color = "red";
+    this.name = "Random";
     this.initialize();
 };
 RandomPlayer.prototype = new Player();
@@ -85,10 +88,11 @@ RandomPlayer.prototype.think = function think(universe) {
             this.sendFleet(myPlanet, allPlanets[targetIndex], fleetSize);
         }
     }
-}
+};
 
 AttackRandomPlayer: function AttackRandomPlayer() {
     this.color = "blue";
+    this.name = "AttackRandom";
     this.initialize();
 };
 AttackRandomPlayer.prototype = new Player();
@@ -113,6 +117,7 @@ AttackRandomPlayer.prototype.think = function think(universe) {
 
 DoNothingPlayer: function DoNothingPlayer() {
     this.color = "yellow";
+    this.name = "DoNothing";
     this.initialize();
 };
 DoNothingPlayer.prototype = new Player();
@@ -121,6 +126,7 @@ DoNothingPlayer.prototype.constructor = DoNothingPlayer;
 
 AttackLargestEmpirePlayer: function AttackLargestEmpirePlayer() {
     this.color = "green";
+    this.name = "AttackLargestEmpire";
     this.initialize();
 };
 AttackLargestEmpirePlayer.prototype = new Player();
@@ -157,6 +163,7 @@ AttackLargestEmpirePlayer.prototype.think = function think(universe) {
 
 KamikazePlayer: function KamikazePlayer() {
     this.color = "salmon";
+    this.name = "Kamikaze";
     this.initialize();
 };
 KamikazePlayer.prototype = new Player();
@@ -193,6 +200,7 @@ KamikazePlayer.prototype.think = function think(universe) {
 
 AttackBestPlanetPlayer: function AttackBestPlanetPlayer() {
     this.color = "AntiqueWhite";
+    this.name = "AttackBestPlanet";
     this.initialize();
 };
 AttackBestPlanetPlayer.prototype = new Player();
@@ -232,6 +240,7 @@ AttackBestPlanetPlayer.prototype.think = function think(universe) {
 
 AttackNearestEnemyPlayer: function AttackNearestEnemyPlayer() {
     this.color = "orange";
+    this.name = "AttackNearestEnemy";
     this.initialize();
 };
 AttackNearestEnemyPlayer.prototype = new Player();
@@ -258,6 +267,7 @@ AttackNearestEnemyPlayer.prototype.think = function think(universe) {
 
 SupportNetworkPlayer: function SupportNetworkPlayer() {
     this.color = "aqua";
+    this.name = "SupportNetwork";
     this.initialize();
 };
 SupportNetworkPlayer.prototype = new Player();
@@ -321,6 +331,7 @@ SupportNetworkPlayer.prototype.getNextDestination = function getNextDestination(
 
 AlbatrossPlayer: function AlbatrossPlayer() {
     this.color = "purple";
+    this.name = "Albatross";
     this.initialize();
 };
 AlbatrossPlayer.prototype = new SupportNetworkPlayer();
@@ -355,6 +366,7 @@ AlbatrossPlayer.prototype.think = function think(universe) {
 
 VirusPlayer: function VirusPlayer() {
     this.color = "Olive";
+    this.name = "Virus";
     this.initialize();
 };
 VirusPlayer.prototype = new Player();
@@ -436,6 +448,7 @@ VirusPlayer.prototype.getPlanetWithMaxForce = function getPlanetWithMaxForce(pla
 
 SpiralPlayer: function SpiralPlayer() {
     this.color = "Chocolate";
+    this.name = "Spiral";
     this.initialize();
 
     this.destinations = {};

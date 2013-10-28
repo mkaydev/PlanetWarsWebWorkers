@@ -37,7 +37,21 @@
 }
 
 #controls {
-    right: -50%;
+    right: -70%;
+    display: inline;
+    position: relative;
+}
+
+#tournament {
+    left: 85%;
+    display: block;
+    position: relative;
+    float: right;
+}
+
+#tournamentType {
+    left: 10%;
     display: inline-block;
     position: relative;
+    float: right;
 }

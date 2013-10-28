@@ -19,8 +19,19 @@
             <button type="button" id="play">play</button>
             <button type="button" id="pause" hidden>pause</button>
             <button type="button" id="step">step</button>
+
+            <form id="tournament">
+                run tournament?<input type="checkbox" id="runTournament">
+                <div id="tournamentSelection" hidden>
+                    <div id="tournamentType">
+                        <input type="radio" name="type" value="duel" checked="checked">duel</br>
+                        <input type="radio" name="type" value="lastManStanding">last man standing
+                    </div>
+                    </br>
+                    repetitions: <input type="number" name="repetitions" id="repeats" min="1" max="100" value="10">
+                </div>
+            </form>
         </div>
     </div>
-
 </body>
 </html>

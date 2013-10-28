@@ -1,5 +1,6 @@
 Player: function Player() {
     this.color = "black";
+    this.name = "default";
 };
 
 Player.prototype.initialize = function initialize() {
@@ -36,7 +37,7 @@ Player.prototype.initialize = function initialize() {
     };
 
     this.safeClone = function safeClone() {
-        return {"getId": this.getId, "color": this.color, "equals": this.equals};
+        return {"getId": this.getId, "color": this.color, "name": this.name, "equals": this.equals};
     }.bind(this);
 
 };
@@ -46,6 +47,7 @@ Player.prototype.think = function think(universe) {};
 
 NeutralPlayer: function NeutralPlayer() {
     this.color = "grey";
+    this.name = "Neutral";
     this.initialize();
 };
 NeutralPlayer.prototype = new Player();

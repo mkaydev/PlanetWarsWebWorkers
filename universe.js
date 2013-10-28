@@ -91,7 +91,11 @@ Universe: function Universe(initialPlayers, planetCount, width, height) {
     var activePlayers = players.slice();
     shuffleArray(activePlayers);
     this.getActivePlayers = function getActivePlayers() {
-        return activePlayers.slice();
+        var getSafeClone = function(a) {
+            return a.safeClone();
+        };
+        var copy = activePlayers.slice();
+        return copy.map(getSafeClone);
     };
 
     var fleets = {};
@@ -163,10 +167,17 @@ Universe: function Universe(initialPlayers, planetCount, width, height) {
         };
 
         var players = this.getActivePlayers();
+        var exportedPlayerStates = [];
+
+        for (var i = 0; i < players.length; i++) {
+            var player = players[i];
+            var playerState = this.exportPlayerState(player);
+            exportedPlayerStates.push(playerState);
+        }
+
         players.push(this.getNeutralPlayer());
         var exportedPlanets = {};
         var exportedFleets = {};
-
         for (var i = 0; i < players.length; i++) {
             var player = players[i];
             var color = player.color;
@@ -179,12 +190,21 @@ Universe: function Universe(initialPlayers, planetCount, width, height) {
         }
 
         var exportedUniverse = {
-            "activePlayersCount": players.length - 1,
+            "players": exportedPlayerStates,
             "planets": exportedPlanets,
             "fleets": exportedFleets
         };
         return exportedUniverse;
-    };
+    }.bind(this);
+
+    this.exportPlayerState = function exportPlayerState(player) {
+        var exportedPlayerState = {
+            "name": player.name,
+            "color": player.color,
+            "forces": this.getForces(player)
+        };
+        return exportedPlayerState;
+    }.bind(this);
 };
 Universe.prototype.mainPlanetRecruitingPerStep = 6;
 Universe.prototype.mainPlanetInitialForces = 300;

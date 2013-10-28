@@ -120,8 +120,6 @@ PlanetWarsGame.prototype.stepState = function stepState() {
     return true;
 };
 
-// TODO add ranking refresh
-// TODO visualize winner
 PlanetWarsGame.prototype.drawGame = function drawGame() {
     if (!this.initialized) return;
     var exportedFleets = this.currentState.fleets;
@@ -197,7 +195,8 @@ PlanetWarsGame.prototype.maxRounds = 2000;
 
 PlanetWarsGame.prototype.step = function step() {
     if (!this.initialized) return;
-    var activePlayersCount = this.currentState.activePlayersCount;
+    var activePlayers = this.currentState.players
+    var activePlayersCount = activePlayers.length;
 
     if (activePlayersCount > 1 && this.round < this.maxRounds) {
         var now = new Date().getTime();
@@ -215,15 +214,18 @@ PlanetWarsGame.prototype.step = function step() {
         if (this.running) requestAnimationFrame(this.step.bind(this));
 
     } else {
-
         this.drawGame();
         this.running = false;
 
+        var result = "win";
+        if (activePlayersCount > 1) result = "draw";
+        this.endedCallback({"result": result, "players": activePlayers, "rounds": this.round});
     }
 };
 
-PlanetWarsGame.prototype.play = function play() {
+PlanetWarsGame.prototype.play = function play(callback) {
     this.running = true;
+    this.endedCallback = callback;
     window.requestAnimationFrame(this.step.bind(this));
 };
 
