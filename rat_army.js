@@ -445,12 +445,13 @@ RatPlayerFinalStrategy.prototype.think = function think(universe) {
 
 RatPlayer: function RatPlayer() {
     this.color = "LightSteelBlue";
-    this.name = "Rat";
     this.initialize();
     this.setStrategies();
 };
 RatPlayer.prototype = new Player();
 RatPlayer.prototype.constructor = RatPlayer;
+contestants.register(RatPlayer);
+
 RatPlayer.prototype.setStrategies = function setStrategies() {
     this.strategies =  {
         "initial": new RatPlayerInitialStrategy().setPlayer(this),

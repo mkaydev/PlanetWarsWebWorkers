@@ -11,9 +11,9 @@
 
 // ---------------------------------------------------------------------------------------------------------------------------------
 
-// TODO add ranking
-// TODO create canvas ids here
-PlanetWarsGame: function PlanetWarsGame(planetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId) {
+// playerNames refers to the constructor-names (equal to the display-names, e.g. "DoNothingPlayer")
+PlanetWarsGame: function PlanetWarsGame(playerNames, planetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId) {
+    this.playerNames = playerNames;
     this.planetCount = planetCount;
     this.foregroundCanvasId = foregroundCanvasId;
     this.backgroundCanvasId = backgroundCanvasId;
@@ -28,7 +28,7 @@ PlanetWarsGame.prototype.initialize = function initialize() {
     this.running = false;
     this.lastStepped = 0;
 
-    if (typeof this.simulator !== "undefined") this.simulator.terminate();
+    this.terminateGame();
     this.simulator = new Worker("simulator.js");
 
     this.simulator.onmessage = function(oEvent) {
@@ -70,6 +70,7 @@ PlanetWarsGame.prototype.initialize = function initialize() {
     this.simulator.postMessage(
         {
             "action": "start",
+            "players": this.playerNames,
             "planetCount": this.planetCount,
             "width": this.width,
             "height": this.height,
@@ -189,7 +190,7 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
     }
 };
 
-PlanetWarsGame.prototype.stepInterval = 60;
+PlanetWarsGame.prototype.stepInterval = 64;
 PlanetWarsGame.prototype.running = false;
 PlanetWarsGame.prototype.maxRounds = 2000;
 
@@ -216,10 +217,7 @@ PlanetWarsGame.prototype.step = function step() {
     } else {
         this.drawGame();
         this.running = false;
-
-        var result = "win";
-        if (activePlayersCount > 1) result = "draw";
-        this.endedCallback({"result": result, "players": activePlayers, "rounds": this.round});
+        this.endedCallback({"players": activePlayers, "rounds": this.round});
     }
 };
 
@@ -229,6 +227,10 @@ PlanetWarsGame.prototype.play = function play(callback) {
     window.requestAnimationFrame(this.step.bind(this));
 };
 
-PlanetWarsGame.prototype.pause = function play() {
+PlanetWarsGame.prototype.pause = function pause() {
     this.running = false;
+};
+
+PlanetWarsGame.prototype.terminateGame = function terminateGame() {
+    if (typeof this.simulator !== "undefined") this.simulator.terminate();
 };

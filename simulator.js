@@ -71,9 +71,9 @@ importScripts(
     "player.js",
     "planet.js",
     "universe.js",
+    "contestants.js",
     "sample_players.js",
-    "battle_school.js",
-    "contestants.js"
+    "battle_school.js"
 );
 
 
@@ -85,7 +85,9 @@ onmessage = function(oEvent) {
         var width = oEvent.data.width;
         var height = oEvent.data.height;
         var maxRounds = oEvent.data.maxRounds;
-        simulator.initialize(getContestants(), planetCount, width, height, maxRounds);
+        var playerNames = oEvent.data.players;
+        var contestantInstances = contestants.getInstances(playerNames);
+        simulator.initialize(contestantInstances, planetCount, width, height, maxRounds);
         simulator.run();
 
     } else {

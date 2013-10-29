@@ -1,9 +1,9 @@
 Player: function Player() {
     this.color = "black";
-    this.name = "default";
 };
 
 Player.prototype.initialize = function initialize() {
+    this.name = arguments.callee.caller.name;
     var id = createId("Player:");
     this.getId = function getId() {
         return id;
@@ -47,7 +47,6 @@ Player.prototype.think = function think(universe) {};
 
 NeutralPlayer: function NeutralPlayer() {
     this.color = "grey";
-    this.name = "Neutral";
     this.initialize();
 };
 NeutralPlayer.prototype = new Player();

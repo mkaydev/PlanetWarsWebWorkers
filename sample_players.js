@@ -1,11 +1,12 @@
 /*
     to implement a player, set the prototype of the new player object to new Player() and the constructor to the new player constructor
-    there are three things you have to do in the player's constructor:
+    there are two things you have to do in the player's constructor:
         1. set this.color to a color of your choice
-        2. set this.name to the display name (for ranking etc.)
-        3. call this.initialize()
+        2. call this.initialize()
 
-    afterwards implement the .think(universe) method, which takes the current universe as a parameter
+    afterwards register your player as a contestant by calling contestants.register(playerConstructor)
+    and implement the .think(universe) method, which takes the current universe as a parameter
+    add the constructor-name (e.g. "DoNothingPlayer") to the players in the main.js to have it participate
 
     publicly accessible functions for use in the .think method:
 
@@ -70,11 +71,11 @@
 
 RandomPlayer: function RandomPlayer() {
     this.color = "red";
-    this.name = "Random";
     this.initialize();
 };
 RandomPlayer.prototype = new Player();
 RandomPlayer.prototype.constructor = RandomPlayer;
+contestants.register(RandomPlayer);
 RandomPlayer.prototype.think = function think(universe) {
     var fleetSize = 25;
 
@@ -92,11 +93,11 @@ RandomPlayer.prototype.think = function think(universe) {
 
 AttackRandomPlayer: function AttackRandomPlayer() {
     this.color = "blue";
-    this.name = "AttackRandom";
     this.initialize();
 };
 AttackRandomPlayer.prototype = new Player();
 AttackRandomPlayer.prototype.constructor = AttackRandomPlayer;
+contestants.register(AttackRandomPlayer);
 
 AttackRandomPlayer.prototype.think = function think(universe) {
     var fleetSize = 25;
@@ -117,20 +118,21 @@ AttackRandomPlayer.prototype.think = function think(universe) {
 
 DoNothingPlayer: function DoNothingPlayer() {
     this.color = "yellow";
-    this.name = "DoNothing";
     this.initialize();
 };
 DoNothingPlayer.prototype = new Player();
 DoNothingPlayer.prototype.constructor = DoNothingPlayer;
+contestants.register(DoNothingPlayer);
+DoNothingPlayer.prototype.think = new function think() {};
 
 
 AttackLargestEmpirePlayer: function AttackLargestEmpirePlayer() {
     this.color = "green";
-    this.name = "AttackLargestEmpire";
     this.initialize();
 };
 AttackLargestEmpirePlayer.prototype = new Player();
 AttackLargestEmpirePlayer.prototype.constructor = AttackLargestEmpirePlayer;
+contestants.register(AttackLargestEmpirePlayer);
 
 AttackLargestEmpirePlayer.prototype.think = function think(universe) {
     var fleetSize = 25;
@@ -163,11 +165,12 @@ AttackLargestEmpirePlayer.prototype.think = function think(universe) {
 
 KamikazePlayer: function KamikazePlayer() {
     this.color = "salmon";
-    this.name = "Kamikaze";
     this.initialize();
 };
 KamikazePlayer.prototype = new Player();
 KamikazePlayer.prototype.constructor = KamikazePlayer;
+contestants.register(KamikazePlayer);
+
 KamikazePlayer.prototype.think = function think(universe) {
     var myPlanets = universe.getPlanets(this);
     var enemyPlanets = universe.getEnemyPlanets(this);
@@ -200,11 +203,12 @@ KamikazePlayer.prototype.think = function think(universe) {
 
 AttackBestPlanetPlayer: function AttackBestPlanetPlayer() {
     this.color = "AntiqueWhite";
-    this.name = "AttackBestPlanet";
     this.initialize();
 };
 AttackBestPlanetPlayer.prototype = new Player();
 AttackBestPlanetPlayer.prototype.constructor = AttackBestPlanetPlayer;
+contestants.register(AttackBestPlanetPlayer);
+
 AttackBestPlanetPlayer.prototype.think = function think(universe) {
     var reserveFactor = 10;
 
@@ -240,11 +244,11 @@ AttackBestPlanetPlayer.prototype.think = function think(universe) {
 
 AttackNearestEnemyPlayer: function AttackNearestEnemyPlayer() {
     this.color = "orange";
-    this.name = "AttackNearestEnemy";
     this.initialize();
 };
 AttackNearestEnemyPlayer.prototype = new Player();
 AttackNearestEnemyPlayer.prototype.constructor = AttackNearestEnemyPlayer;
+contestants.register(AttackNearestEnemyPlayer);
 
 AttackNearestEnemyPlayer.prototype.think = function think(universe) {
     var reserveFactor = 10;
@@ -267,11 +271,11 @@ AttackNearestEnemyPlayer.prototype.think = function think(universe) {
 
 SupportNetworkPlayer: function SupportNetworkPlayer() {
     this.color = "aqua";
-    this.name = "SupportNetwork";
     this.initialize();
 };
 SupportNetworkPlayer.prototype = new Player();
 SupportNetworkPlayer.prototype.constructor = SupportNetworkPlayer;
+contestants.register(SupportNetworkPlayer);
 
 SupportNetworkPlayer.prototype.think = function think(universe) {
     var reserveFactor = 10;
@@ -331,11 +335,12 @@ SupportNetworkPlayer.prototype.getNextDestination = function getNextDestination(
 
 AlbatrossPlayer: function AlbatrossPlayer() {
     this.color = "purple";
-    this.name = "Albatross";
     this.initialize();
 };
 AlbatrossPlayer.prototype = new SupportNetworkPlayer();
 AlbatrossPlayer.prototype.constructor = AlbatrossPlayer;
+contestants.register(AlbatrossPlayer);
+
 AlbatrossPlayer.prototype.think = function think(universe) {
     var fleetSize = 25;
     var reserveFactor = 10;
@@ -366,11 +371,12 @@ AlbatrossPlayer.prototype.think = function think(universe) {
 
 VirusPlayer: function VirusPlayer() {
     this.color = "Olive";
-    this.name = "Virus";
     this.initialize();
 };
 VirusPlayer.prototype = new Player();
 VirusPlayer.prototype.constructor = VirusPlayer;
+contestants.register(VirusPlayer);
+
 VirusPlayer.prototype.think = function think(universe) {
     var fleetSize = 25;
     var reserveFactor = 10;
@@ -448,13 +454,13 @@ VirusPlayer.prototype.getPlanetWithMaxForce = function getPlanetWithMaxForce(pla
 
 SpiralPlayer: function SpiralPlayer() {
     this.color = "Chocolate";
-    this.name = "Spiral";
     this.initialize();
 
     this.destinations = {};
 };
 SpiralPlayer.prototype = new Player();
 SpiralPlayer.prototype.constructor = SpiralPlayer;
+contestants.register(SpiralPlayer);
 
 SpiralPlayer.prototype.think = function think(universe) {
     var reserveFactor = 10;

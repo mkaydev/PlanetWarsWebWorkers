@@ -1,38 +1,26 @@
-var getContestants = function getContestants() {
+Contestants: function Contestants() {
+    var contestantConstructors = [];
 
-    var contestants = [
-        /*
-         DoNothingPlayer,
+    this.register = function register(playerConstructor) {
+        contestantConstructors.push(playerConstructor);
+    };
 
-         SpiralPlayer,
-         KamikazePlayer,
-         AttackBestPlanetPlayer,
-         AttackLargestEmpirePlayer,
+    // constructorNames refers to an array of the .name-attributes of the function objects, not the instances, e.g. "DoNothingPlayer"
+    this.getInstances = function(constructorNames) {
+        var instances = [];
+        for (var i = 0; i < constructorNames.length; i++) {
+            var constructorName = constructorNames[i];
 
-         RandomPlayer,
-         AttackRandomPlayer,
-
-         SupportNetworkPlayer,
-         AlbatrossPlayer,
-         AttackNearestEnemyPlayer,
-         VirusPlayer,
-
-         RatPlayer,
-         */
-
-        SupportNetworkPlayer,
-        AlbatrossPlayer,
-        AttackNearestEnemyPlayer,
-        VirusPlayer,
-        RatPlayer,
-
-    ];
-    var result = [];
-    for (var i = 0; i < contestants.length; i++) {
-        result.push(new contestants[i]());
-    }
-    shuffleArray(result);
-    return result;
+            for (var j = 0; j < contestantConstructors.length; j++) {
+                var constructor = contestantConstructors[j];
+                if (constructor.name === constructorName) {
+                    instances.push(new constructor());
+                }
+            }
+        }
+        shuffleArray(instances);
+        return instances;
+    };
 };
 
-
+var contestants = new Contestants();
