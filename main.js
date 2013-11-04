@@ -1,10 +1,10 @@
 // responsible for running multiple games (tournaments), visualizing the results and getting user input
-var players = [
-    "RatPlayer",
-    "AlbatrossPlayer",
-    "VirusPlayer",
-    "AttackNearestEnemyPlayer",
-    "SupportNetworkPlayer"
+var playerFiles = [
+    "battle_school/RatPlayer.js",
+    "sample_players/VirusPlayer.js",
+    "sample_players/AlbatrossPlayer.js",
+    "sample_players/AttackNearestEnemyPlayer.js",
+    "sample_players/SupportNetworkPlayer.js"
 ];
 
 $(document).ready(function() {
@@ -19,11 +19,14 @@ $(document).ready(function() {
     var height = 600;
     var planetCount = 150;
     var tournamentInput = getTournamentInput();
-    var tournament = new Tournament(players, tournamentInput.duel, tournamentInput.repetitions);
+    var tournament = new Tournament(playerFiles, tournamentInput.duel, tournamentInput.repetitions);
     tournament.initialize();
+
+    var initializedCallback = tournament.initializePoints.bind(tournament);
 
     var game = new PlanetWarsGame(
         tournament.getNextPlayers(),
+        initializedCallback,
         planetCount,
         width,
         height,
@@ -56,17 +59,18 @@ $(document).ready(function() {
         }
     }.bind(this);
 
-    bindControls(game, gameEnded);
+    bindControls(game, gameEnded, initializedCallback);
 
     $("#runTournament").change(function() {
         game.terminateGame();
         unbindControls();
         tournamentInput = getTournamentInput();
-        tournament = new Tournament(players, tournamentInput.duel, tournamentInput.repetitions);
+        tournament = new Tournament(playerFiles, tournamentInput.duel, tournamentInput.repetitions);
         tournament.initialize();
 
         game = new PlanetWarsGame(
             tournament.getNextPlayers(),
+            initializedCallback,
             planetCount,
             width,
             height,
@@ -75,7 +79,7 @@ $(document).ready(function() {
             textCanvasId
         );
 
-        bindControls(game, gameEnded);
+        bindControls(game, gameEnded, initializedCallback);
 
         if (this.checked) {
             $("#tournamentSelection").show();
@@ -88,11 +92,12 @@ $(document).ready(function() {
         game.terminateGame();
         unbindControls();
         tournamentInput = getTournamentInput();
-        tournament = new Tournament(players, tournamentInput.duel, tournamentInput.repetitions);
+        tournament = new Tournament(playerFiles, tournamentInput.duel, tournamentInput.repetitions);
         tournament.initialize();
 
         game = new PlanetWarsGame(
             tournament.getNextPlayers(),
+            initializedCallback,
             planetCount,
             width,
             height,
@@ -101,18 +106,19 @@ $(document).ready(function() {
             textCanvasId
         );
 
-        bindControls(game, gameEnded);
+        bindControls(game, gameEnded, initializedCallback);
     });
 
     $("#lastManStanding").change(function() {
         game.terminateGame();
         unbindControls();
         tournamentInput = getTournamentInput();
-        tournament = new Tournament(players, tournamentInput.duel, tournamentInput.repetitions);
+        tournament = new Tournament(playerFiles, tournamentInput.duel, tournamentInput.repetitions);
         tournament.initialize();
 
         game = new PlanetWarsGame(
             tournament.getNextPlayers(),
+            initializedCallback,
             planetCount,
             width,
             height,
@@ -121,10 +127,12 @@ $(document).ready(function() {
             textCanvasId
         );
 
-        bindControls(game, gameEnded);
+        bindControls(game, gameEnded, initializedCallback);
     });
 
     $("#repetitions").bind("click keyup", function() {
+        tournamentInput = getTournamentInput();
+        tournament.setRepetitions(tournamentInput.repetitions);
         tournament.initialize();
     });
 });
@@ -149,7 +157,7 @@ unbindControls: function unbindControls() {
     $("#step").off("click");
 };
 
-bindControls: function bindControls(game, endedCallback) {
+bindControls: function bindControls(game, endedCallback, initializedCallback) {
     $("#play").click(function() {
         togglePlayPause();
         game.play.bind(game)(endedCallback);
@@ -162,9 +170,11 @@ bindControls: function bindControls(game, endedCallback) {
         $("#tournament :input").removeAttr("disabled");
         $("#play").show();
         $("#pause").hide();
-        game.initialize.bind(game)();
+        game.initialize.bind(game)(initializedCallback);
     });
-    $("#step").click(game.step.bind(game));
+    $("#step").click(function() {
+        game.step.bind(game)(endedCallback);
+    });
 };
 
 togglePlayPause: function togglePlayPause() {
@@ -187,13 +197,11 @@ Tournament: function Tournament(contestants, duel, repetitions) {
     this.contestants = contestants;
 };
 
-Tournament.prototype.initialize = function initialize() {
-    this.points = {};
-    for (var i = 0; i < this.contestants.length; i++) {
-        var contestant = this.contestants[i];
-        this.points[contestant] = 0;
-    }
+Tournament.prototype.setRepetitions = function setRepetitions(repetitions) {
+    this.repetitions = repetitions;
+};
 
+Tournament.prototype.initialize = function initialize() {
     this.gameIndex = 0;
     this.gamesToPlay = [];
     if (!this.duel) {
@@ -216,6 +224,14 @@ Tournament.prototype.initialize = function initialize() {
     }
 };
 
+Tournament.prototype.initializePoints = function initializePoints(activePlayers) {
+    this.points = {};
+    for (var i = 0; i < activePlayers.length; i++) {
+        var contestant = activePlayers[i].name;
+        this.points[contestant] = 0;
+    }
+    this.players = activePlayers;
+};
 
 Tournament.prototype.addResultSummary = function addResultSummary(resultSummary) {
     var players = resultSummary.players;

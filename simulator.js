@@ -1,42 +1,55 @@
-importScripts("helper.js");
+// the simulator pre-calculates states in the background (to avoid laggy animation)
+
+importScripts("helper.js", "player_master.js", "fleet_master.js", "planet_master.js", "universe_master.js");
 
 Simulator: function Simulator() {
     this.initialized = false;
-    this.loggedCount = 0;
-    this.alertCount = 0;
 };
 
-Simulator.prototype.initialize = function(players, planetCount, width, height, maxRounds) {
-    // precalculate some states in advance to avoid laggy animation
-    if (planetCount < players.length) planetCount = players.length;
-    this.universe = new Universe(players, planetCount, width, height);
+Simulator.prototype.initialize = function(playerFiles, planetCount, width, height, maxRounds) {
+    if (planetCount < playerFiles.length) planetCount = players.length;
+    this.universe = new Universe(playerFiles, planetCount, width, height, this.run.bind(this));
     this.maxStates = maxRounds;
-    this.states = [];
     this.currentStateCount = 0;
+    this.states = [];
     this.simId = createId("Simulation:");
     this.initialized = true;
 };
 
-Simulator.prototype.addState = function addState(arr) {
-    var state = this.universe.exportState();
-    arr.push(state);
-    this.currentStateCount += 1;
-    this.universe.step();
+Simulator.prototype.simulate = function simulate() {
+    this.universe.step(this.getSteppedCallback());
 };
 
-Simulator.prototype.fillStates = function fillStates() {
-    var toFillCount = this.statesPerMessage - this.states.length;
-    for (var i = 0; i < toFillCount; i++) {
-        this.addState(this.states);
+Simulator.prototype.getSteppedCallback = function getSteppedCallback() {
+    if (this.currentStateCount < this.maxStates) {
+        return function() {
+            this.states.push(this.universe.toJSON());
+            this.currentStateCount += 1;
+            if (this.states.length == this.statesPerMessage) this.postStates();
+            this.universe.step(this.getSteppedCallback());
+        }.bind(this);
+
+    } else {
+        return function() {
+            this.states.push(this.universe.toJSON());
+            this.currentStateCount += 1;
+            this.postStates();
+        }.bind(this);
     }
 };
 
 Simulator.prototype.postStates = function postStates() {
     var status = "ok";
     var action = "postStates"
-    if (this.currentStateCount == this.statesPerMessage) action = "start";
+    if (this.currentStateCount == 1) action = "start";
     var message = this.states;
-    postMessage({"status": status, "action": action, "message": message, "id": this.simId});
+    postMessage({
+        "status": status,
+        "action": action,
+        "message": message,
+        "id": this.simId,
+        "round": this.currentStateCount
+    });
     this.states = [];
 };
 
@@ -49,33 +62,16 @@ Simulator.prototype.run = function run() {
         postMessage({"status": status, "action": action, "message": message});
 
     } else {
-        while (this.currentStateCount < this.maxStates) {
-            this.fillStates();
-            this.postStates();
-        }
+        this.states = [this.universe.toJSON()];
+        this.currentStateCount += 1;
+        this.postStates();
+        this.simulate();
     }
 };
 
-Simulator.prototype.log = function log(message) {
-    postMessage({"status": "log", "message": message, "messageId": this.loggedCount++});
-};
-
-Simulator.prototype.alert = function alert(message) {
-    postMessage({"status": "alert", "message": message, "messageId": this.alertCount++});
-};
-
 Simulator.prototype.statesPerMessage = 2;
+
 var simulator = new Simulator();
-
-importScripts(
-    "player.js",
-    "planet.js",
-    "universe.js",
-    "contestants.js",
-    "sample_players.js",
-    "battle_school.js"
-);
-
 
 onmessage = function(oEvent) {
     var action = oEvent.data.action;
@@ -85,16 +81,10 @@ onmessage = function(oEvent) {
         var width = oEvent.data.width;
         var height = oEvent.data.height;
         var maxRounds = oEvent.data.maxRounds;
-        var playerNames = oEvent.data.players;
-        var contestantInstances = contestants.getInstances(playerNames);
-        simulator.initialize(contestantInstances, planetCount, width, height, maxRounds);
-        simulator.run();
+        var playerFiles = oEvent.data.playerFiles;
+        simulator.initialize(playerFiles, planetCount, width, height, maxRounds);
 
     } else {
-
-        var status = "error";
-        var message = "in worker - unrecognized action: " + oEvent.data.action;
-        postMessage({"status": status, "action": action, "message": message});
-
+        console.log("unrecognized action " + action);
     }
-}
+};

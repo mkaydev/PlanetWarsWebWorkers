@@ -1,1 +1,0 @@
-importScripts("rat_army.js");
