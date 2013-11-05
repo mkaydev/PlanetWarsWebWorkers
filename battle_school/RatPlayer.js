@@ -465,7 +465,7 @@ RatPlayer.prototype.think = function think(universe) {
     var activePlayers = universe.getActivePlayers();
     var finalFactor = 3/4;
 
-    if (false && (myPlanets.length < Math.max(10, activePlayers.length)) && (myPlanets.length < allPlanets.length / activePlayers.length)) {
+    if ((myPlanets.length < Math.max(10, activePlayers.length)) && (myPlanets.length < allPlanets.length / activePlayers.length)) {
         this.strategies.initial.think(universe);
     } else {
         var myForces = universe.getForces(this);

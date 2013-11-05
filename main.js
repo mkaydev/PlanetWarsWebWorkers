@@ -22,11 +22,11 @@ $(document).ready(function() {
     var tournament = new Tournament(playerFiles, tournamentInput.duel, tournamentInput.repetitions);
     tournament.initialize();
 
-    var initializedCallback = tournament.initializePoints.bind(tournament);
+    var initializedCallback = tournament.initializePoints;
 
     var game = new PlanetWarsGame(
         tournament.getNextPlayers(),
-        initializedCallback,
+        initializedCallback.bind(tournament),
         planetCount,
         width,
         height,
@@ -41,9 +41,9 @@ $(document).ready(function() {
         if (tournament.gameIndex < tournament.gamesToPlay.length) {
             game.terminateGame();
             unbindControls();
-
             game = new PlanetWarsGame(
                 tournament.getNextPlayers(),
+                initializedCallback.bind(tournament),
                 planetCount,
                 width,
                 height,
@@ -54,12 +54,12 @@ $(document).ready(function() {
 
             window.setTimeout(function() {
                 game.play.bind(game)(gameEnded);
-                bindControls(game, gameEnded);
+                bindControls(game, gameEnded, initializedCallback.bind(tournament));
             }, 1000);
         }
     }.bind(this);
 
-    bindControls(game, gameEnded, initializedCallback);
+    bindControls(game, gameEnded, initializedCallback.bind(tournament));
 
     $("#runTournament").change(function() {
         game.terminateGame();
@@ -70,7 +70,7 @@ $(document).ready(function() {
 
         game = new PlanetWarsGame(
             tournament.getNextPlayers(),
-            initializedCallback,
+            initializedCallback.bind(tournament),
             planetCount,
             width,
             height,
@@ -78,8 +78,7 @@ $(document).ready(function() {
             foregroundCanvasId,
             textCanvasId
         );
-
-        bindControls(game, gameEnded, initializedCallback);
+        bindControls(game, gameEnded, initializedCallback.bind(tournament));
 
         if (this.checked) {
             $("#tournamentSelection").show();
@@ -97,7 +96,7 @@ $(document).ready(function() {
 
         game = new PlanetWarsGame(
             tournament.getNextPlayers(),
-            initializedCallback,
+            initializedCallback.bind(tournament),
             planetCount,
             width,
             height,
@@ -106,7 +105,7 @@ $(document).ready(function() {
             textCanvasId
         );
 
-        bindControls(game, gameEnded, initializedCallback);
+        bindControls(game, gameEnded, initializedCallback.bind(tournament));
     });
 
     $("#lastManStanding").change(function() {
@@ -118,7 +117,7 @@ $(document).ready(function() {
 
         game = new PlanetWarsGame(
             tournament.getNextPlayers(),
-            initializedCallback,
+            initializedCallback.bind(tournament),
             planetCount,
             width,
             height,
@@ -127,7 +126,7 @@ $(document).ready(function() {
             textCanvasId
         );
 
-        bindControls(game, gameEnded, initializedCallback);
+        bindControls(game, gameEnded, initializedCallback.bind(tournament));
     });
 
     $("#repetitions").bind("click keyup", function() {
@@ -160,7 +159,7 @@ unbindControls: function unbindControls() {
 bindControls: function bindControls(game, endedCallback, initializedCallback) {
     $("#play").click(function() {
         togglePlayPause();
-        game.play.bind(game)(endedCallback);
+        game.play.bind(game)(endedCallback.bind(game));
     });
     $("#pause").click(function() {
         togglePlayPause();
@@ -225,12 +224,11 @@ Tournament.prototype.initialize = function initialize() {
 };
 
 Tournament.prototype.initializePoints = function initializePoints(activePlayers) {
-    this.points = {};
+    if (typeof this.points === "undefined") this.points = {};
     for (var i = 0; i < activePlayers.length; i++) {
         var contestant = activePlayers[i].name;
-        this.points[contestant] = 0;
+        if (!this.points.hasOwnProperty(contestant)) this.points[contestant] = 0;
     }
-    this.players = activePlayers;
 };
 
 Tournament.prototype.addResultSummary = function addResultSummary(resultSummary) {

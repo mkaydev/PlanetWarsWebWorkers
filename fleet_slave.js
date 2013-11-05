@@ -1,13 +1,13 @@
 Fleet: function Fleet(fleetState, universe) {
     this._universe = universe;
-    this.x = fleetState.x;
-    this.y = fleetState.y;
-    this.id = fleetState.id;
-    this.forces = fleetState.forces;
-    this.movementPerStep = fleetState.movementPerStep;
-    this.owner = this._universe._getPlayer(fleetState.owner.id);
-    this.source = this._universe._getPlanet(fleetState.source.id);
-    this.destination = this._universe._getPlanet(fleetState.destination.id);
+    this.x = fleetState[_STATE_KEYS["x"]];
+    this.y = fleetState[_STATE_KEYS["y"]];
+    this.id = fleetState[_STATE_KEYS["id"]];
+    this.forces = fleetState[_STATE_KEYS["forces"]];
+    this.movementPerStep = fleetState[_STATE_KEYS["movementPerStep"]];
+    this.owner = this._universe._getPlayer(fleetState[_STATE_KEYS["ownerId"]]);
+    this.source = this._universe._getPlanet(fleetState[_STATE_KEYS["sourceId"]]);
+    this.destination = this._universe._getPlanet(fleetState[_STATE_KEYS["destinationId"]]);
 };
 
 Fleet.prototype.getMovementPerStep = function getMovementPerStep() {

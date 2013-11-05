@@ -1,5 +1,5 @@
 Fleet: function Fleet(forces, sourcePlanet, destinationPlanet, movementPerStep) {
-    this.id = createId("Fleet:");
+    this.id = createId();
     this.owner = sourcePlanet.owner;
     this.forces = forces;
     this.source = sourcePlanet;
@@ -73,18 +73,18 @@ Fleet.prototype.toJSON = function toJSON() {
     var backLeftX = backX + 1/2 * diffY;
     var backLeftY = backY - 1/2 * diffX;
 
-    return {
-        "id": this.id,
-        "source": this.source.toJSON(),
-        "destination": this.destination.toJSON(),
-        "owner": this.owner,
-        "forces": this.forces,
-        "x": this.currentX,
-        "y": this.currentY,
-        "movementPerStep": this.movementPerStep,
-        "backRightX": backRightX,
-        "backRightY": backRightY,
-        "backLeftX": backLeftX,
-        "backLeftY": backLeftY
-    }
+    var json = {};
+    json[_STATE_KEYS["id"]] = this.id;
+    json[_STATE_KEYS["sourceId"]] = this.source.id;
+    json[_STATE_KEYS["destinationId"]] = this.destination.id;
+    json[_STATE_KEYS["ownerId"]] = this.owner.id;
+    json[_STATE_KEYS["forces"]] = this.forces;
+    json[_STATE_KEYS["x"]] = this.currentX;
+    json[_STATE_KEYS["y"]] = this.currentY;
+    json[_STATE_KEYS["movementPerStep"]] = this.movementPerStep;
+    json[_STATE_KEYS["backRightX"]] = backRightX;
+    json[_STATE_KEYS["backRightY"]] = backRightY;
+    json[_STATE_KEYS["backLeftX"]] = backLeftX;
+    json[_STATE_KEYS["backLeftY"]] = backLeftY;
+    return json;
 };

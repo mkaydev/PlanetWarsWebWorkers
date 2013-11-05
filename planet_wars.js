@@ -46,23 +46,33 @@ PlanetWarsGame.prototype.initialize = function initialize(initializedCallback) {
             }
 
         } else if (action === "postStates") {
-            if (this.initialized && (this.simId === simId)) this.nextStateCache.push.apply(this.nextStateCache, message);
+            if (this.initialized && (this.simId === simId)) {
+                var round = oEvent.data.round;
+                for (var i = 0; i < message.length; i++) {
+                    var state = message[i];
+                    this.states[round + i] = state;
+                }            }
 
         } else if (action === "start") {
             this.simId = simId;
-            this.currentStateCount = 0;
-            this.currentStateCache = message;
-            this.nextStateCache = [];
+            this.states = {};
+            var round = oEvent.data.round;
+            for (var i = 0; i < message.length; i++) {
+                var state = message[i];
+                this.states[round + i] = state;
+            }
+
             this.stepState();
             this.initialized = true;
             this.drawGame();
 
-            var players = this.currentState.players;
+            var players = this.currentState[_STATE_KEYS["players"]];
             var activePlayers = [];
             for (var playerId in players) {
                 var player = players[playerId];
-                if (player.isNeutral) continue;
-                activePlayers.push(player);
+                if (player[_STATE_KEYS["isNeutral"]]) continue;
+                var exportedPlayer = this.exportPlayer(player);
+                activePlayers.push(exportedPlayer);
             }
             initializedCallback(activePlayers);
 
@@ -84,10 +94,8 @@ PlanetWarsGame.prototype.initialize = function initialize(initializedCallback) {
         }
     }.bind(this);
 
-    this.currentStateCache = [];
-    this.nextStateCache = [];
+    this.states = {};
     this.round = 0;
-    this.currentStateCount = 0;
 
     this.simulator.postMessage(
         {
@@ -124,14 +132,10 @@ PlanetWarsGame.prototype.initialize = function initialize(initializedCallback) {
 };
 
 PlanetWarsGame.prototype.stepState = function stepState() {
-    if (this.currentStateCount >= this.currentStateCache.length) {
-        this.currentStateCount = 0;
-        this.currentStateCache = this.nextStateCache;
-        this.nextStateCache = [];
-        if (this.currentStateCache.length == 0) return false;
-    }
-    this.currentState = this.currentStateCache[this.currentStateCount];
-    this.currentStateCount += 1;
+    if (!this.states.hasOwnProperty(this.round)) return false;
+    this.currentState = this.states[this.round];
+    // I'm thinking about a step back feature. When this should be implemented, the following line needs to be removed. (More memory required while running.)
+    delete this.states[this.round];
     this.round += 1;
     this.lastStepped = new Date().getTime();
     return true;
@@ -139,9 +143,9 @@ PlanetWarsGame.prototype.stepState = function stepState() {
 
 PlanetWarsGame.prototype.drawGame = function drawGame() {
     if (!this.initialized) return;
-    var exportedPlayers = this.currentState.players;
-    var exportedFleets = this.currentState.fleets;
-    var exportedPlanets = this.currentState.planets;
+    var exportedPlayers = this.currentState[_STATE_KEYS["players"]];
+    var exportedFleets = this.currentState[_STATE_KEYS["fleets"]];
+    var exportedPlanets = this.currentState[_STATE_KEYS["planets"]];
 
     /* I'd like to keep the planets on the background and draw over them when the owner changes
      * instead of clearing and redrawing, but it doesn't seem possible with canvas' anti-aliasing, which cannot be deactivated
@@ -153,7 +157,7 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
 
     // to avoid canvas state changes, loop by color, i.e. by player
     for (var playerId in exportedPlayers) {
-        var color = exportedPlayers[playerId].color;
+        var color = exportedPlayers[playerId][_STATE_KEYS["color"]];
         if (!exportedPlanets.hasOwnProperty(playerId)) continue;
 
         var planets = exportedPlanets[playerId];
@@ -161,9 +165,9 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
 
         for (var j = 0; j < planets.length; j++) {
             var planet = planets[j];
-            var centerX = planet.x;
-            var centerY = planet.y;
-            var radius = planet.radius;
+            var centerX = planet[_STATE_KEYS["x"]];
+            var centerY = planet[_STATE_KEYS["y"]];
+            var radius = planet[_STATE_KEYS["radius"]];
 
             foregroundContext.beginPath();
             foregroundContext.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
@@ -172,7 +176,7 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
     }
 
     for (var playerId in exportedPlayers) {
-        var color = exportedPlayers[playerId].color;
+        var color = exportedPlayers[playerId][_STATE_KEYS["color"]];
         if (!exportedFleets.hasOwnProperty(playerId)) continue;
 
 
@@ -181,14 +185,14 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
 
         for (var j = 0; j < fleets.length; j++) {
             var fleet = fleets[j];
-            var currentX = fleet.x;
-            var currentY = fleet.y;
+            var currentX = fleet[_STATE_KEYS["x"]];
+            var currentY = fleet[_STATE_KEYS["y"]];
 
-            var backRightX = fleet.backRightX;
-            var backRightY = fleet.backRightY;
+            var backRightX = fleet[_STATE_KEYS["backRightX"]];
+            var backRightY = fleet[_STATE_KEYS["backRightY"]];
 
-            var backLeftX = fleet.backLeftX;
-            var backLeftY = fleet.backLeftY;
+            var backLeftX = fleet[_STATE_KEYS["backLeftX"]];
+            var backLeftY = fleet[_STATE_KEYS["backLeftY"]];
 
             foregroundContext.beginPath();
             foregroundContext.moveTo(currentX, currentY);
@@ -210,14 +214,17 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
         var planets = exportedPlanets[playerId];
         for (var i = 0; i < planets.length; i++) {
             var planet = planets[i];
-            textContext.strokeText("" + planet.forces, planet.x, planet.y);
-            textContext.fillText("" + planet.forces, planet.x, planet.y);
+            var x = planet[_STATE_KEYS["x"]];
+            var y = planet[_STATE_KEYS["y"]];
+            var forces = planet[_STATE_KEYS["forces"]];
+            textContext.strokeText("" + forces, x, y);
+            textContext.fillText("" + forces, x, y);
         }
     }
 };
 
 PlanetWarsGame.prototype.stepInterval = 64;
-PlanetWarsGame.prototype.maxRounds = 2000;
+PlanetWarsGame.prototype.maxRounds = 1000;
 
 PlanetWarsGame.prototype.step = function step(gameEnded) {
     // either the game is automatically played (play button) -> gameEnded will be a timestamp and this.running will be true
@@ -228,7 +235,7 @@ PlanetWarsGame.prototype.step = function step(gameEnded) {
         return;
     }
 
-    var activePlayersCount = this.currentState.activePlayersCount;
+    var activePlayersCount = this.currentState[_STATE_KEYS["activePlayersCount"]];
 
     if (activePlayersCount > 1 && this.round < this.maxRounds) {
         var now = new Date().getTime();
@@ -248,16 +255,17 @@ PlanetWarsGame.prototype.step = function step(gameEnded) {
         if (this.ended) return;
         this.drawGame();
         this.running = false;
-        var players = this.currentState.players;
+        var players = this.currentState[_STATE_KEYS["players"]];
         var activePlayers = [];
         for (var playerId in players) {
             var player = players[playerId];
-            if (player.isNeutral) continue;
-            activePlayers.push(player);
+            if (player[_STATE_KEYS["isNeutral"]]) continue;
+            var exportedPlayer = this.exportPlayer(player);
+            activePlayers.push(exportedPlayer);
         }
         if (typeof this.endedCallback === "undefined") this.endedCallback = gameEnded;
-        this.endedCallback({"players": activePlayers, "rounds": this.round});
         this.ended = true;
+        this.endedCallback({"players": activePlayers, "rounds": this.round});
     }
 };
 
@@ -276,6 +284,14 @@ PlanetWarsGame.prototype.terminateGame = function terminateGame() {
     if (typeof this.simulator !== "undefined") {
         this.simId = null;
         this.currentState = null;
-        this.simulator.terminate();
+        if (!this.ended) this.simulator.terminate();  // otherwise the worker finished and already closed itself
     }
+};
+
+PlanetWarsGame.prototype.exportPlayer = function exportPlayer(playerState) {
+    var json = {};
+    json["name"] = playerState[_STATE_KEYS["name"]];
+    json["forces"] = playerState[_STATE_KEYS["forces"]];
+    json["color"] = playerState[_STATE_KEYS["color"]];
+    return json;
 };

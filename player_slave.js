@@ -1,6 +1,7 @@
 Player: function Player() {
     this.color = "black";
 };
+Player.prototype.isNeutral = false;
 
 Player.prototype.initialize = function initialize() {
     this.name = arguments.callee.caller.name;
@@ -23,14 +24,20 @@ Player.prototype.sendFleet = function sendFleet(source, destination, forces) {
     return source.sendFleet(destination, forces);
 };
 
-Player.prototype.isNeutral = false;
+Player.prototype.fromJSON = function fromJSON(playerState) {
+    this.id = playerState[_STATE_KEYS["id"]];
+    this.isNeutral = playerState[_STATE_KEYS["isNeutral"]];
+    this.color = playerState[_STATE_KEYS["color"]];
+    this.name = playerState[_STATE_KEYS["name"]];
+};
+
 Player.prototype.toJSON = function toJSON() {
-    return {
-        "id": this.id,
-        "name": this.name,
-        "color": this.color,
-        "isNeutral": this.isNeutral
-    };
+    var json = {};
+    json[_STATE_KEYS["id"]] = this.id;
+    json[_STATE_KEYS["isNeutral"]] = this.isNeutral;
+    json[_STATE_KEYS["color"]] = this.color;
+    json[_STATE_KEYS["name"]] = this.name;
+    return json;
 };
 
 Player.prototype.think = function think(universe) {};

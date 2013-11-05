@@ -38,10 +38,12 @@ onmessage = function(oEvent) {
             "action": "linkPlayer",
             "player": _player.toJSON()
         });
+    } else if (action === "die") {
+        self.close();
     } else {
         console.log("unrecognized action " + action);
     }
-}
+};
 
 
 Universe: function Universe(universeState) {
@@ -49,16 +51,12 @@ Universe: function Universe(universeState) {
 };
 
 Universe.prototype._initialize = function _initialize(universeState) {
-    this.width = universeState.width;
-    this.height = universeState.height;
-    this.fleetMovementPerStep = universeState.fleetMovementPerStep;
+    this.width = universeState[_STATE_KEYS["width"]];
+    this.height = universeState[_STATE_KEYS["height"]];
+    this.fleetMovementPerStep = universeState[_STATE_KEYS["fleetMovementPerStep"]];
 
     this.newFleets = [];
 
-    /*
-        redundant information -> more storage used, but the access will be quicker in the getter functions, because the appropriate data structure can be used
-        performance of the .think method seems more of a concern than the memory used
-     */
     this._players = {};
     this._playersArray = [];
     this._playersJSON = {};
@@ -68,19 +66,16 @@ Universe.prototype._initialize = function _initialize(universeState) {
     this._fleetsArray = [];
     this._neutralPlayerId = null;
 
-    this._playersJSON = universeState.players;
-    var planetsJSON = universeState.planets;
+    this._playersJSON = universeState[_STATE_KEYS["players"]];
+    var planetsJSON = universeState[_STATE_KEYS["planets"]];
+    var fleetsJSON = universeState[_STATE_KEYS["fleets"]];
 
-    var fleetsJSON = universeState.fleets;
     for (var playerId in this._playersJSON) {
         var playerJSON = this._playersJSON[playerId];
         var player = new Player();
-        player._setId(playerId);
+        player.fromJSON(playerJSON);
 
-        var neutral = playerJSON.isNeutral;
-        player._setNeutral(neutral);
-
-        if (neutral) {
+        if (player.isNeutral) {
             this._neutralPlayerId = playerId;
         } else {
             this._playersArray.push(player);
@@ -189,17 +184,17 @@ Universe.prototype.getEnemyFleets = function getEnemyFleets(player) {
 
 Universe.prototype.getForces = function getForces(player) {
     if (!this._playersJSON.hasOwnProperty(player.id)) return 0;
-    return this._playersJSON[player.id].forces;
+    return this._playersJSON[player.id][_STATE_KEYS["forces"]];
 };
 
 Universe.prototype.getAirForces = function getAirForces(player) {
     if (!this._playersJSON.hasOwnProperty(player.id)) return 0;
-    return this._playersJSON[player.id].airForces;
+    return this._playersJSON[player.id][_STATE_KEYS["airForces"]];
 };
 
 Universe.prototype.getGroundForces = function getGroundForces(player) {
     if (!this._playersJSON.hasOwnProperty(player.id)) return 0;
-    return this._playersJSON[player.id].groundForces;
+    return this._playersJSON[player.id][_STATE_KEYS["groundForces"]];
 };
 
 Universe.prototype.sortByDistance = function sortByDistance(planet, planets) {
@@ -230,9 +225,9 @@ Universe.prototype.sortByRecruitingPower = function sortByRecruitingPower(planet
 };
 
 Universe.prototype.registerFleet = function registerFleet(sourceId, destinationId, forces) {
-    this.newFleets.push({
-        "sourceId": sourceId,
-        "destinationId": destinationId,
-        "forces": forces
-    });
+    var json = {};
+    json[_STATE_KEYS["sourceId"]] = sourceId;
+    json[_STATE_KEYS["destinationId"]] = destinationId;
+    json[_STATE_KEYS["forces"]] = forces;
+    this.newFleets.push(json);
 };

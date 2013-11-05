@@ -1,11 +1,11 @@
 Planet: function Planet(planetState, universe) {
-    this.x = planetState.x;
-    this.y = planetState.y;
-    this.id = planetState.id;
-    this.forces = planetState.forces;
-    this.recruitingPerStep = planetState.recruitingPerStep;
+    this.x = planetState[_STATE_KEYS["x"]];
+    this.y = planetState[_STATE_KEYS["y"]];
+    this.id = planetState[_STATE_KEYS["id"]];
+    this.forces = planetState[_STATE_KEYS["forces"]];
+    this.recruitingPerStep = planetState[_STATE_KEYS["recruitingPerStep"]];
     this._universe = universe;
-    this.owner = this._universe._getPlayer(planetState.owner.id);
+    this.owner = this._universe._getPlayer(planetState[_STATE_KEYS["ownerId"]]);
 };
 
 Planet.prototype.equals = function equals(otherPlanet) {

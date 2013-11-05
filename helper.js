@@ -1,3 +1,50 @@
+_STATE_KEYS = function() {
+    var abc = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    var values = [
+        "planets",
+        "players",
+        "fleets",
+        "id",
+        "forces",
+        "airForces",
+        "groundForces",
+        "x",
+        "y",
+        "name",
+        "color",
+        "recruitingPerStep",
+        "owner",
+        "isNeutral",
+        "destination",
+        "source",
+        "movementPerStep",
+        "fleetMovementPerStep",
+        "width",
+        "height",
+        "activePlayersCount",
+        "radius",
+        "backRightX",
+        "backRightY",
+        "backLeftX",
+        "backLeftY",
+        "sourceId",
+        "destinationId",
+        "ownerId"
+    ];
+
+    var keys = {};
+    for (var i = 0; i < values.length; i++) {
+        var key;
+        if (i >= abc.length) {
+            key = "" + (i - abc.length);
+        } else {
+            key = abc[i];
+        }
+        keys[values[i]] = key;
+    }
+    return keys;
+} ();
+
 if (typeof console === "undefined") {
     // used in a worker
     var console = {
@@ -14,10 +61,13 @@ if (typeof window === "undefined") {
     };
 }
 
-createId: function createId(prefix) {
-    if (typeof prefix === "undefined") prefix = "";
-    return "".concat(prefix, Math.random(),  new Date().getTime());
-}
+var createId = function() {
+    var localNext = 0;
+    var createId = function() {
+        return "" + localNext++;
+    };
+    return createId;
+} ();
 
 shuffleArray: function shuffleArray(arr) {
     for (var i = 0; i < arr.length - 1; i++) {

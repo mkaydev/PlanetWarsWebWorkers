@@ -89,7 +89,7 @@ console.log(message) allows logging to the console (only string or json objects)
 window.alert(message) allows creating alert windows (only string or json objects)
 
 If your player manages to freeze your browser, because the .think method takes too long and you're not able to debug the method because of it,
-try setting maxRounds value (planet_wars.js) to a lower value. The simulator tries to pre-calculate this number of states.
+try setting maxRounds value (planet_wars.js) to a lower value. The simulator tries to pre-calculate this number of states in the background.
 
 Be aware that this logging function relies on the asynchronous message passing of the web worker. It seems that the messages don't necessarily arrive in order.
 A messageId (count of logs/alerts sent) is being sent together with the message for this reason. The console and window objects keep track of this value.

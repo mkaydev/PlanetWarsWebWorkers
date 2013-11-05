@@ -1,5 +1,5 @@
 Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY, initialForces) {
-    this.id = createId("Planet:");
+    this.id = createId();
     this.universe = universe;
     this.owner = owner;
     this.recruitingPerStep = recruitingPerStep;
@@ -71,13 +71,13 @@ Planet.prototype.fullyVisibleIn = function fullyVisibleIn(canvasWidth, canvasHei
 };
 
 Planet.prototype.toJSON = function toJSON() {
-    return {
-        "id": this.id,
-        "owner": this.owner,
-        "x": this.x,
-        "y": this.y,
-        "radius": this.radius,
-        "forces": this.forces,
-        "recruitingPerStep": this.recruitingPerStep
-    };
+    var json = {};
+    json[_STATE_KEYS["id"]] = this.id;
+    json[_STATE_KEYS["ownerId"]] = this.owner.id;
+    json[_STATE_KEYS["x"]] = this.x;
+    json[_STATE_KEYS["y"]] = this.y;
+    json[_STATE_KEYS["radius"]] = this.radius;
+    json[_STATE_KEYS["forces"]] = this.forces;
+    json[_STATE_KEYS["recruitingPerStep"]] = this.recruitingPerStep;
+    return json;
 };

@@ -18,7 +18,7 @@ Universe: function Universe(playerFiles, planetCount, width, height, initialized
 
     // workerIds must be kept secret from other sub-workers, playerIds are public
     for (var i = 0; i < playerFiles.length; i++) {
-        var workerId = createId("Worker:");
+        var workerId = createId();
 
         var worker = new Worker("universe_slave.js");
         this.workers[workerId] = worker;
@@ -47,14 +47,15 @@ Universe: function Universe(playerFiles, planetCount, width, height, initialized
 
                 for (var j = 0; j < newFleets.length; j++) {
                     var newFleet = newFleets[j];
-                    var sourceId = newFleet.sourceId;
-                    var destinationId = newFleet.destinationId;
-                    var forces = Math.floor(newFleet.forces);
+                    var sourceId = newFleet[_STATE_KEYS["sourceId"]];
+                    var destinationId = newFleet[_STATE_KEYS["destinationId"]];
+                    var forces = Math.floor(newFleet[_STATE_KEYS["forces"]]);
                     if (forces <= 0) continue;
 
                     var source = this.getPlanet(sourceId);
                     if (source === null) continue;
                     if (source.owner.id !== player.id) continue;
+                    if (source.forces <= 0) continue;
 
                     if (source.forces < forces) forces = source.forces;
 
@@ -66,13 +67,14 @@ Universe: function Universe(playerFiles, planetCount, width, height, initialized
 
                 this.thinkFinished[workerId] = true;
                 if (this.stepFinished()) {
-                    this.activePlayers = this.determineActivePlayers();
+                    this.determineActivePlayers();
                     this.steppedCallback();
                 }
 
             } else if (action === "linkPlayer") {
                 if (this.players.hasOwnProperty(workerId)) return;
-                var player = oEvent.data.player;
+                var playerJSON = oEvent.data.player;
+                var player = new Player(playerJSON)
                 this.players[workerId] = player;
                 this.activePlayers.push(player);
 
@@ -88,7 +90,7 @@ Universe: function Universe(playerFiles, planetCount, width, height, initialized
         }.bind(this);
 
         var file = playerFiles[i];
-        var playerId = createId("Player:");
+        var playerId = createId();
 
         worker.postMessage({
             "action": "initialize",
@@ -131,17 +133,33 @@ Universe.prototype.getWorkerId = function getPlayer(playerId) {
     }
 };
 
+Universe.prototype.terminateWorkers = function terminateWorkers() {
+    for (var workerId in this.workers) {
+        this.workers[workerId].terminate();
+    }
+};
+
 Universe.prototype.determineActivePlayers = function determineActivePlayers() {
     var activePlayers = [];
 
     for (var i = 0; i < this.activePlayers.length; i++) {
         var planetCount = this.getPlanets(this.activePlayers[i]).length;
         var fleetCount = this.getFleets(this.activePlayers[i]).length;
-        if (planetCount + fleetCount > 0) activePlayers.push(this.activePlayers[i]);
+        if (planetCount + fleetCount > 0) {
+            activePlayers.push(this.activePlayers[i]);
+        } else {
+            var player = this.activePlayers[i];
+            var workerId = this.getWorkerId(player.id);
+            this.workers[workerId].postMessage({
+                "action": "die"
+            });
+            delete this.workers[workerId];
+            delete this.players[workerId];
+        }
     }
 
     shuffleArray(activePlayers);
-    return activePlayers;
+    this.activePlayers = activePlayers;
 };
 
 Universe.prototype.step = function step(steppedCallback) {
@@ -208,42 +226,35 @@ Universe.prototype.toJSON = function toJSON() {
         var groundForces = this.sumForces(planets);
         var forces = airForces + groundForces;
 
-        var exportedPlayer = {};
-        for (var key in player) {
-            exportedPlayer[key] = player[key];
-        }
-        exportedPlayer["forces"] = forces;
-        exportedPlayer["airForces"] = airForces;
-        exportedPlayer["groundForces"] = groundForces;
+        var exportedPlayer = player.toJSON();
+        exportedPlayer[_STATE_KEYS["forces"]] = forces;
+        exportedPlayer[_STATE_KEYS["airForces"]] = airForces;
+        exportedPlayer[_STATE_KEYS["groundForces"]] = groundForces;
         exportedPlayers[id] = exportedPlayer;
     }
 
     var id = neutralPlayer.id;
-
     var planets = this.getPlanets(neutralPlayer);
     var jsonPlanets = this.exportArray(planets);
     exportedPlanets[id] = jsonPlanets;
 
     var groundForces = this.sumForces(planets);
 
-    var exportedPlayer = {};
-    for (var key in neutralPlayer) {
-        exportedPlayer[key] = neutralPlayer[key];
-    }
-    exportedPlayer["forces"] = groundForces;
-    exportedPlayer["airForces"] = 0;
-    exportedPlayer["groundForces"] = groundForces;
+    var exportedPlayer = neutralPlayerJSON;
+    exportedPlayer[_STATE_KEYS["forces"]] = groundForces;
+    exportedPlayer[_STATE_KEYS["airForces"]] = 0;
+    exportedPlayer[_STATE_KEYS["groundForces"]] = groundForces;
     exportedPlayers[id] = exportedPlayer;
 
-    return {
-        "activePlayersCount": this.activePlayers.length,
-        "players": exportedPlayers,
-        "planets": exportedPlanets,
-        "fleets": exportedFleets,
-        "width": this.width,
-        "height": this.height,
-        "fleetMovementPerStep": this.fleetMovementPerStep
-    };
+    var json = {};
+    json[_STATE_KEYS["activePlayersCount"]] = this.activePlayers.length;
+    json[_STATE_KEYS["players"]] = exportedPlayers;
+    json[_STATE_KEYS["planets"]] = exportedPlanets;
+    json[_STATE_KEYS["fleets"]] = exportedFleets;
+    json[_STATE_KEYS["width"]] = this.width;
+    json[_STATE_KEYS["height"]] = this.height;
+    json[_STATE_KEYS["fleetMovementPerStep"]] = this.fleetMovementPerStep;
+    return json;
 };
 
 Universe.prototype.getAllFleets = function getAllFleets() {
