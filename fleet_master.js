@@ -1,46 +1,96 @@
 Fleet: function Fleet(forces, sourcePlanet, destinationPlanet, movementPerStep) {
-    this.id = createId();
-    this.owner = sourcePlanet.owner;
-    this.forces = forces;
-    this.source = sourcePlanet;
-    this.destination = destinationPlanet;
-    this.movementPerStep = movementPerStep;
+    this[_STATE_KEYS["id"]] = createId();
+    this[_STATE_KEYS["owner"]] = sourcePlanet.getOwner();
+    this[_STATE_KEYS["forces"]] = forces;
+    this[_STATE_KEYS["source"]] = sourcePlanet;
+    this[_STATE_KEYS["destination"]] = destinationPlanet;
+    this[_STATE_KEYS["movementPerStep"]] = movementPerStep;
 
-    this.currentX = sourcePlanet.x;
-    this.currentY = sourcePlanet.y;
+    this[_STATE_KEYS["x"]] = sourcePlanet.getX();
+    this[_STATE_KEYS["y"]] = sourcePlanet.getY();
+};
+
+Fleet.prototype.getId = function getId() {
+    return this[_STATE_KEYS["id"]];
+};
+
+Fleet.prototype.getOwner = function getOwner() {
+    return this[_STATE_KEYS["owner"]];
+};
+
+Fleet.prototype.getForces = function getForces() {
+    return this[_STATE_KEYS["forces"]];
+};
+
+Fleet.prototype.getSource = function getSource() {
+    return this[_STATE_KEYS["source"]];
+};
+
+Fleet.prototype.getDestination = function getDestination() {
+    return this[_STATE_KEYS["destination"]];
+};
+
+Fleet.prototype.getMovementPerStep = function getMovementPerStep() {
+    return this[_STATE_KEYS["movementPerStep"]];
+};
+
+Fleet.prototype.getX = function getX() {
+    return this[_STATE_KEYS["x"]];
+};
+
+Fleet.prototype.setX = function setX(x) {
+    this[_STATE_KEYS["x"]] = x;
+};
+
+Fleet.prototype.setY = function setY(y) {
+    this[_STATE_KEYS["y"]] = y;
+};
+
+Fleet.prototype.getY = function getY() {
+    return this[_STATE_KEYS["y"]];
 };
 
 Fleet.prototype.step = function step() {
-    var distance = this.distanceToPos(this.destination.x, this.destination.y);
-    if (distance <= this.movementPerStep) {
+    var destination = this.getDestination();
+    var destX = destination.getX();
+    var destY = destination.getY();
+
+    var distance = this.distanceToPos(destX, destY);
+    if (distance <= this.getMovementPerStep()) {
         // attack / defend
-        this.destination.enteredBy(this);
+        destination.enteredBy(this);
 
     } else {
+        var myX = this.getX();
+        var myY = this.getY();
+
         // update position
-        var remainingSteps = Math.floor(distance / this.movementPerStep);
+        var remainingSteps = Math.floor(distance / this.getMovementPerStep());
 
-        var xDiff = this.destination.x - this.currentX;
-        var yDiff = this.destination.y - this.currentY;
+        var xDiff = destX - myX;
+        var yDiff = destY - myY;
 
-        this.currentX += xDiff / remainingSteps;
-        this.currentY += yDiff / remainingSteps;
+        this.setX(myX + xDiff / remainingSteps);
+        this.setY(myY + yDiff / remainingSteps);
     }
 };
 
 Fleet.prototype.distanceToPos = function distanceToPos(x, y) {
     var yDiff;
-    if (y > this.currentY) {
-        yDiff = y - this.currentY;
+    var myY = this.getY();
+    var myX = this.getX();
+
+    if (y > myY) {
+        yDiff = y - myY;
     } else {
-        yDiff = this.currentY - y;
+        yDiff = myY - y;
     }
 
     var xDiff;
-    if (x > this.currentX) {
-        xDiff = x - this.currentX;
+    if (x > myX) {
+        xDiff = x - myX;
     } else {
-        xDiff = this.currentX - x;
+        xDiff = myX - x;
     }
 
     var distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
@@ -48,24 +98,29 @@ Fleet.prototype.distanceToPos = function distanceToPos(x, y) {
 };
 
 Fleet.prototype.distanceToDestination = function distanceToDestination() {
-    return this.distanceToPos(this.destination.x, this.destination.y);
+    var destination = this.getDestination();
+    return this.distanceToPos(destination.getX(), destination.getY());
 };
 
 Fleet.prototype.stepsToDestination = function stepsToDestination() {
     var distance = this.distanceToDestination();
-    return Math.floor(distance / this.movementPerStep) + 1;
+    return Math.floor(distance / this.getMovementPerStep()) + 1;
 };
 
 Fleet.prototype.toJSON = function toJSON() {
     var steps = this.stepsToDestination();
-    var frontX = this.currentX + (this.destination.x - this.currentX) / steps;
-    var frontY = this.currentY + (this.destination.y - this.currentY) / steps;
+    var destination = this.getDestination();
+    var x = this.getX();
+    var y = this.getY();
 
-    var diffX = frontX - this.currentX;
-    var diffY = frontY - this.currentY;
+    var frontX = x + (destination.getX() - x) / steps;
+    var frontY = y + (destination.getY() - y) / steps;
 
-    var backX = this.currentX - diffX;
-    var backY = this.currentY - diffY;
+    var diffX = frontX - x;
+    var diffY = frontY - y;
+
+    var backX = x - diffX;
+    var backY = y - diffY;
 
     var backRightX = backX - 1/2 * diffY;
     var backRightY = backY + 1/2 * diffX;
@@ -74,14 +129,14 @@ Fleet.prototype.toJSON = function toJSON() {
     var backLeftY = backY - 1/2 * diffX;
 
     var json = {};
-    json[_STATE_KEYS["id"]] = this.id;
-    json[_STATE_KEYS["sourceId"]] = this.source.id;
-    json[_STATE_KEYS["destinationId"]] = this.destination.id;
-    json[_STATE_KEYS["ownerId"]] = this.owner.id;
-    json[_STATE_KEYS["forces"]] = this.forces;
-    json[_STATE_KEYS["x"]] = this.currentX;
-    json[_STATE_KEYS["y"]] = this.currentY;
-    json[_STATE_KEYS["movementPerStep"]] = this.movementPerStep;
+    json[_STATE_KEYS["id"]] = this.getId();
+    json[_STATE_KEYS["sourceId"]] = this.getSource().getId();
+    json[_STATE_KEYS["destinationId"]] = destination.getId();
+    json[_STATE_KEYS["ownerId"]] = this.getOwner().id;
+    json[_STATE_KEYS["forces"]] = this.getForces();
+    json[_STATE_KEYS["x"]] = x;
+    json[_STATE_KEYS["y"]] = y;
+    json[_STATE_KEYS["movementPerStep"]] = this.getMovementPerStep();
     json[_STATE_KEYS["backRightX"]] = backRightX;
     json[_STATE_KEYS["backRightY"]] = backRightY;
     json[_STATE_KEYS["backLeftX"]] = backLeftX;

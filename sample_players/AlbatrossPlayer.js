@@ -19,18 +19,22 @@ AlbatrossPlayer.prototype.think = function think(universe) {
 
     for (var i = 0; i < myPlanets.length; i++) {
         var myPlanet = myPlanets[i];
-        var available = myPlanet.forces - reserveFactor * myPlanet.recruitingPerStep;
+        var myForces = myPlanet.getForces();
+        var myRecruiting = myPlanet.getRecruitingPerStep();
+
+        var available = myForces - reserveFactor * myRecruiting;
         if (available < fleetSize) continue;
 
         universe.sortByDistance(myPlanet, enemyPlanets);
         var target = enemyPlanets[0];
         var destination = this.getNextDestination(universe, myPlanet, target, support);
 
+        var targetForces = target.getForces();
         if (target === destination) {
-            if (target.forces > available && target.recruitingPerStep >= myPlanet.recruitingPerStep) continue;
+            if (targetForces > available && target.getRecruitingPerStep() >= myRecruiting) continue;
         }
 
-        var fleetSize = Math.ceil(target.forces / fleetSize) * fleetSize;
+        var fleetSize = Math.ceil(targetForces / fleetSize) * fleetSize;
         this.sendFleet(myPlanet, destination, Math.min(available, fleetSize));
     }
 };

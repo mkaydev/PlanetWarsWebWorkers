@@ -23,8 +23,8 @@ PlanetWarsGame: function PlanetWarsGame(playerFiles, initializedCallback,  plane
 };
 
 PlanetWarsGame.prototype.initialize = function initialize(initializedCallback) {
-    this.terminateGame();
     this.initialized = false;
+    this.terminateGame();
     this.ended = false;
     this.running = false;
     this.lastStepped = 0;
@@ -223,7 +223,7 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
     }
 };
 
-PlanetWarsGame.prototype.stepInterval = 64;
+PlanetWarsGame.prototype.stepInterval = 60;
 PlanetWarsGame.prototype.maxRounds = 1000;
 
 PlanetWarsGame.prototype.step = function step(gameEnded) {

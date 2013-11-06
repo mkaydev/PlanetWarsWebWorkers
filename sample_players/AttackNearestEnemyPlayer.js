@@ -15,7 +15,7 @@ AttackNearestEnemyPlayer.prototype.think = function think(universe) {
 
     for (var i = 0; i < myPlanets.length; i++) {
         var myPlanet = myPlanets[i];
-        var available = myPlanet.forces - reserveFactor * myPlanet.recruitingPerStep;
+        var available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
         if (available < fleetSize) continue;
 
         universe.sortByDistance(myPlanet, enemyPlanets);

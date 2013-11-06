@@ -54,10 +54,12 @@ Universe: function Universe(playerFiles, planetCount, width, height, initialized
 
                     var source = this.getPlanet(sourceId);
                     if (source === null) continue;
-                    if (source.owner.id !== player.id) continue;
-                    if (source.forces <= 0) continue;
+                    if (source.getOwner().id !== player.id) continue;
 
-                    if (source.forces < forces) forces = source.forces;
+                    var sourceForces = source.getForces();
+                    if (sourceForces <= 0) continue;
+
+                    if (sourceForces < forces) forces = sourceForces;
 
                     var destination = this.getPlanet(destinationId);
                     if (destination === null) continue;
@@ -110,18 +112,18 @@ Universe.prototype.stepFinished = function stepFinished() {
 
 Universe.prototype.registerFleet = function registerFleet(source, destination, forces) {
     var fleet = new Fleet(forces, source, destination, this.fleetMovementPerStep);
-    source.forces -= forces;
-    this.fleets[fleet.id] = fleet;
+    source.setForces(source.getForces() - forces);
+    this.fleets[fleet.getId()] = fleet;
 };
 
 Universe.prototype.deregisterFleet = function deregisterFleet(fleet) {
-    delete this.fleets[fleet.id];
+    delete this.fleets[fleet.getId()];
 };
 
 Universe.prototype.getPlanet = function getPlanet(planetId) {
     for (var i = 0; i < this.planets.length; i++) {
         var planet = this.planets[i];
-        if (planetId === planet.id) return planet;
+        if (planetId === planet.getId()) return planet;
     }
     return null;
 };
@@ -200,7 +202,7 @@ Universe.prototype.exportArray = function exportArray(arr) {
 Universe.prototype.sumForces = function sumForces(arr) {
     var sum = 0;
     for (var i = 0; i < arr.length; i++) {
-        sum += arr[i].forces;
+        sum += arr[i].getForces();
     }
     return sum;
 };
@@ -270,7 +272,7 @@ Universe.prototype.getFleets = function getFleets(player) {
     var fleetsAsArray = this.getAllFleets();
     var myFleets = [];
     for (var i = 0; i < fleetsAsArray.length; i++) {
-        if (fleetsAsArray[i].owner.id === player.id) myFleets.push(fleetsAsArray[i]);
+        if (fleetsAsArray[i].getOwner().id === player.id) myFleets.push(fleetsAsArray[i]);
     }
     return myFleets;
 };
@@ -285,7 +287,7 @@ Universe.prototype.getPlanets = function getPlanets(player) {
     var all = this.getAllPlanets();
     var planets = [];
     for (var i = 0; i < all.length; i++) {
-        if (all[i].owner.id === player.id) planets.push(all[i]);
+        if (all[i].getOwner().id === player.id) planets.push(all[i]);
     }
     return planets;
 };
@@ -336,6 +338,7 @@ Universe.prototype.getMainPlanetCoords = function getMainPlanetCoords(count) {
     var start = {};
     var startAngle = 0;
     var curAngle = arcPerPlayer;
+
     if (count == 4 || count == 2) {
         startAngle = 1/4 * Math.PI;
     } else if (count == 5) {
@@ -345,6 +348,7 @@ Universe.prototype.getMainPlanetCoords = function getMainPlanetCoords(count) {
     } else {
         startAngle = 0;
     }
+
     start.x = center.x + r * Math.cos(startAngle);
     start.y = center.y + r * Math.sin(startAngle);
     curAngle += startAngle;

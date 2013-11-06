@@ -1,48 +1,98 @@
 Planet: function Planet(universe, owner, recruitingPerStep, centerX, centerY, initialForces) {
-    this.id = createId();
-    this.universe = universe;
-    this.owner = owner;
-    this.recruitingPerStep = recruitingPerStep;
-    this.x = centerX;
-    this.y = centerY;
-    this.radius = Math.sqrt(recruitingPerStep * 2) * 5;
-    this.forces = 5 * this.recruitingPerStep;
-    if (typeof initialForces !== "undefined") this.forces = initialForces;
+    this[_STATE_KEYS["universe"]] = universe;
+    this[_STATE_KEYS["id"]] = createId();
+    this[_STATE_KEYS["owner"]] = owner;
+    this[_STATE_KEYS["recruitingPerStep"]] = recruitingPerStep;
+    this[_STATE_KEYS["x"]] = centerX;
+    this[_STATE_KEYS["y"]] = centerY;
+    this[_STATE_KEYS["radius"]] = Math.sqrt(recruitingPerStep * 2) * 5;
+    this[_STATE_KEYS["forces"]] = 5 * this.getRecruitingPerStep();
+    if (typeof initialForces !== "undefined") this.setForces(initialForces);
 };
 
+Planet.prototype.getUniverse = function getUniverse() {
+    return this[_STATE_KEYS["universe"]];
+};
+
+Planet.prototype.getOwner = function getOwner() {
+    return this[_STATE_KEYS["owner"]];
+};
+
+Planet.prototype.setOwner = function setOwner(owner) {
+    this[_STATE_KEYS["owner"]] = owner;
+};
+
+Planet.prototype.getX = function getX() {
+    return this[_STATE_KEYS["x"]];
+};
+
+Planet.prototype.getY = function getY() {
+    return this[_STATE_KEYS["y"]];
+};
+
+Planet.prototype.getId = function getId() {
+    return this[_STATE_KEYS["id"]];
+};
+
+Planet.prototype.getForces = function getForces() {
+    return this[_STATE_KEYS["forces"]];
+};
+
+Planet.prototype.setForces = function _setForces(forces) {
+    this[_STATE_KEYS["forces"]] = forces;
+};
+
+Planet.prototype.getRadius = function getRadius() {
+    return this[_STATE_KEYS["radius"]];
+}
+
+Planet.prototype.getRecruitingPerStep = function getRecruitingPerStep() {
+    return this[_STATE_KEYS["recruitingPerStep"]];
+};
+
+
 Planet.prototype.step = function step() {
-    if (this.owner.isNeutral) return;
-    this.forces += this.recruitingPerStep;
+    if (this.getOwner().isNeutral) return;
+    this.setForces(this.getForces() + this.getRecruitingPerStep());
 };
 
 Planet.prototype.enteredBy = function enteredBy(fleet) {
-    if (this.owner.id === fleet.owner.id) {
-        this.forces += fleet.forces;
+    var planetForces = this.getForces();
+    var fleetForces = fleet.getForces();
+    if (this.getOwner().id === fleet.getOwner().id) {
+        this.setForces(planetForces + fleetForces);
     } else {
-        if (fleet.forces >= this.forces) {
-            this.owner = fleet.owner;
-            this.forces = fleet.forces - this.forces;
+        if (fleetForces >= planetForces) {
+            this.setOwner(fleet.getOwner());
+            this.setForces(fleetForces - planetForces);
         } else {
-            this.forces -= fleet.forces;
+            this.setForces(planetForces - fleetForces);
         }
     }
-    this.universe.deregisterFleet(fleet);
+    this.getUniverse().deregisterFleet(fleet);
 };
 
 // uses center coordinates
 Planet.prototype.distanceTo = function distanceTo(otherPlanet) {
+    return this.distanceToCoords(otherPlanet.getX(), otherPlanet.getY());
+};
+
+Planet.prototype.distanceToCoords = function distanceToCoords(x, y) {
+    var planetX = this.getX();
+    var planetY = this.getY();
+
     var yDiff;
-    if (otherPlanet.y > this.y) {
-        yDiff = otherPlanet.y - this.y;
+    if (y > planetY) {
+        yDiff = y - planetY;
     } else {
-        yDiff = this.y - otherPlanet.y;
+        yDiff = planetY - y;
     }
 
     var xDiff;
-    if (otherPlanet.x > this.x) {
-        xDiff = otherPlanet.x - this.x;
+    if (x > planetX) {
+        xDiff = x - planetX;
     } else {
-        xDiff = this.x - otherPlanet.x;
+        xDiff = planetX - x;
     }
 
     var distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
@@ -53,31 +103,35 @@ Planet.prototype.minDistanceToOther = 5;
 Planet.prototype.collidesWith = function collidesWith(otherPlanet, minDistance) {
     var distance = this.distanceTo(otherPlanet);
     if (typeof minDistance !== "undefined") {
-        if (distance - minDistance > this.radius + otherPlanet.radius) return false;
+        if (distance - minDistance > this.getRadius() + otherPlanet.getRadius()) return false;
         return true;
     } else {
-        if (distance - this.minDistanceToOther > this.radius + otherPlanet.radius) return false;
+        if (distance - this.minDistanceToOther > this.getRadius() + otherPlanet.getRadius()) return false;
         return true;
     }
 };
 
 Planet.prototype.margin = 10;
 Planet.prototype.fullyVisibleIn = function fullyVisibleIn(canvasWidth, canvasHeight) {
-    if (this.x - this.radius < this.margin) return false;
-    if (this.y - this.radius < this.margin) return false;
-    if (this.x + this.radius >= canvasWidth - this.margin) return false;
-    if (this.y + this.radius >= canvasHeight - this.margin) return false;
+    var r = this.getRadius();
+    var x = this.getX();
+    var y = this.getY();
+
+    if (x - r < this.margin) return false;
+    if (y - r < this.margin) return false;
+    if (x + r >= canvasWidth - this.margin) return false;
+    if (y + r >= canvasHeight - this.margin) return false;
     return true;
 };
 
 Planet.prototype.toJSON = function toJSON() {
     var json = {};
-    json[_STATE_KEYS["id"]] = this.id;
-    json[_STATE_KEYS["ownerId"]] = this.owner.id;
-    json[_STATE_KEYS["x"]] = this.x;
-    json[_STATE_KEYS["y"]] = this.y;
-    json[_STATE_KEYS["radius"]] = this.radius;
-    json[_STATE_KEYS["forces"]] = this.forces;
-    json[_STATE_KEYS["recruitingPerStep"]] = this.recruitingPerStep;
+    json[_STATE_KEYS["id"]] = this.getId();
+    json[_STATE_KEYS["ownerId"]] = this.getOwner().id;
+    json[_STATE_KEYS["x"]] = this.getX()
+    json[_STATE_KEYS["y"]] = this.getY();
+    json[_STATE_KEYS["radius"]] = this.getRadius();
+    json[_STATE_KEYS["forces"]] = this.getForces();
+    json[_STATE_KEYS["recruitingPerStep"]] = this.getRecruitingPerStep();
     return json;
 };

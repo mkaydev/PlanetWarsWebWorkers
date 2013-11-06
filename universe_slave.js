@@ -45,6 +45,9 @@ onmessage = function(oEvent) {
     }
 };
 
+onerror = function() {
+    self.close();
+};
 
 Universe: function Universe(universeState) {
     this._initialize(universeState);
@@ -108,6 +111,7 @@ Universe.prototype._initialize = function _initialize(universeState) {
     }
 };
 
+// create wrappers for the json, with additional functions for use by the players
 Universe.prototype._toPlanetObject = function _toPlanetObject(planetJSON) {
     return new Planet(planetJSON, this);
 };
@@ -119,7 +123,7 @@ Universe.prototype._toFleetObject = function _toFleetObject(fleetJSON) {
 Universe.prototype._getPlanet = function _getPlanet(planetId) {
     for (var i = 0; i < this._planetsArray.length; i++) {
         var planet = this._planetsArray[i];
-        if (planet.id == planetId) {
+        if (planet.getId() == planetId) {
             return planet;
         }
     }

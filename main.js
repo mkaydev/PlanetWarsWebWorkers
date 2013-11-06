@@ -54,12 +54,12 @@ $(document).ready(function() {
 
             window.setTimeout(function() {
                 game.play.bind(game)(gameEnded);
-                bindControls(game, gameEnded, initializedCallback.bind(tournament));
+                bindControls(game, gameEnded, tournament, initializedCallback.bind(tournament));
             }, 1000);
         }
     }.bind(this);
 
-    bindControls(game, gameEnded, initializedCallback.bind(tournament));
+    bindControls(game, gameEnded, tournament, initializedCallback.bind(tournament));
 
     $("#runTournament").change(function() {
         game.terminateGame();
@@ -78,7 +78,7 @@ $(document).ready(function() {
             foregroundCanvasId,
             textCanvasId
         );
-        bindControls(game, gameEnded, initializedCallback.bind(tournament));
+        bindControls(game, gameEnded, tournament, initializedCallback.bind(tournament));
 
         if (this.checked) {
             $("#tournamentSelection").show();
@@ -105,7 +105,7 @@ $(document).ready(function() {
             textCanvasId
         );
 
-        bindControls(game, gameEnded, initializedCallback.bind(tournament));
+        bindControls(game, gameEnded, tournament, initializedCallback.bind(tournament));
     });
 
     $("#lastManStanding").change(function() {
@@ -126,7 +126,7 @@ $(document).ready(function() {
             textCanvasId
         );
 
-        bindControls(game, gameEnded, initializedCallback.bind(tournament));
+        bindControls(game, gameEnded, tournament, initializedCallback.bind(tournament));
     });
 
     $("#repetitions").bind("click keyup", function() {
@@ -143,6 +143,8 @@ getTournamentInput: function getTournamentInput() {
     if (runTournament) {
         repetitions = $("#repetitions").val();
         if (typeof repetitions === "undefined") repetitions = 1;
+        repetitions = Math.floor(repetitions);
+        if (repetitions < 1) repetitions = 1;
 
         duel = $("#duel").is(":checked");
     }
@@ -156,7 +158,7 @@ unbindControls: function unbindControls() {
     $("#step").off("click");
 };
 
-bindControls: function bindControls(game, endedCallback, initializedCallback) {
+bindControls: function bindControls(game, endedCallback, tournament, initializedCallback) {
     $("#play").click(function() {
         togglePlayPause();
         game.play.bind(game)(endedCallback.bind(game));
@@ -169,6 +171,7 @@ bindControls: function bindControls(game, endedCallback, initializedCallback) {
         $("#tournament :input").removeAttr("disabled");
         $("#play").show();
         $("#pause").hide();
+        tournament.initialize.bind(tournament)();
         game.initialize.bind(game)(initializedCallback);
     });
     $("#step").click(function() {
@@ -203,6 +206,7 @@ Tournament.prototype.setRepetitions = function setRepetitions(repetitions) {
 Tournament.prototype.initialize = function initialize() {
     this.gameIndex = 0;
     this.gamesToPlay = [];
+
     if (!this.duel) {
         for (var i = 0; i < this.repetitions; i++) {
             this.gamesToPlay.push(this.contestants);
@@ -247,6 +251,7 @@ Tournament.prototype.addResultSummary = function addResultSummary(resultSummary)
     }
     this.gameIndex += 1;
     console.log(this.points);
+    if (this.gameIndex >= this.gamesToPlay.length) this.points = {};
 };
 
 Tournament.prototype.addPoints = function addPoints(playerName, points) {

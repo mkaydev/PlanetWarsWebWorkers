@@ -1,53 +1,64 @@
 Planet: function Planet(planetState, universe) {
-    this.x = planetState[_STATE_KEYS["x"]];
-    this.y = planetState[_STATE_KEYS["y"]];
-    this.id = planetState[_STATE_KEYS["id"]];
-    this.forces = planetState[_STATE_KEYS["forces"]];
-    this.recruitingPerStep = planetState[_STATE_KEYS["recruitingPerStep"]];
+    this._state = planetState;
     this._universe = universe;
-    this.owner = this._universe._getPlayer(planetState[_STATE_KEYS["ownerId"]]);
+};
+
+Planet.prototype.getOwner = function getOwner() {
+    return this._universe._getPlayer(this._state[_STATE_KEYS["ownerId"]]);
+};
+
+Planet.prototype.getX = function getX() {
+    return this._state[_STATE_KEYS["x"]];
+};
+
+Planet.prototype.getY = function getY() {
+    return this._state[_STATE_KEYS["y"]];
+};
+
+Planet.prototype.getId = function getId() {
+    return this._state[_STATE_KEYS["id"]];
+};
+
+Planet.prototype.getForces = function getForces() {
+    return this._state[_STATE_KEYS["forces"]];
+};
+
+Planet.prototype.getRecruitingPerStep = function getRecruitingPerStep() {
+    return this._state[_STATE_KEYS["recruitingPerStep"]];
+};
+
+Planet.prototype._setForces = function _setForces(forces) {
+    this._state[_STATE_KEYS["forces"]] = forces;
 };
 
 Planet.prototype.equals = function equals(otherPlanet) {
-    return this.id === otherPlanet.id;
+    return this.getId() === otherPlanet.getId();
 };
 
 Planet.prototype.ownerEquals = function ownerEquals(player) {
-    return this.owner.equals(player);
+    return this.getOwner().equals(player);
 };
 
 Planet.prototype.distanceTo = function distanceTo(otherPlanet) {
-    var yDiff;
-    if (otherPlanet.y > this.y) {
-        yDiff = otherPlanet.y - this.y;
-    } else {
-        yDiff = this.y - otherPlanet.y;
-    }
-
-    var xDiff;
-    if (otherPlanet.x > this.x) {
-        xDiff = otherPlanet.x - this.x;
-    } else {
-        xDiff = this.x - otherPlanet.x;
-    }
-
-    var distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
-    return distance;
+    return this.distanceToCoords(otherPlanet.getX(), otherPlanet.getY());
 };
 
 Planet.prototype.distanceToCoords = function distanceToCoords(x, y) {
+    var planetX = this.getX();
+    var planetY = this.getY();
+
     var yDiff;
-    if (y > this.y) {
-        yDiff = y - this.y;
+    if (y > planetY) {
+        yDiff = y - planetY;
     } else {
-        yDiff = this.y - y;
+        yDiff = planetY - y;
     }
 
     var xDiff;
-    if (x > this.x) {
-        xDiff = x - this.x;
+    if (x > planetX) {
+        xDiff = x - planetX;
     } else {
-        xDiff = this.x - x;
+        xDiff = planetX - x;
     }
 
     var distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
@@ -64,40 +75,41 @@ Planet.prototype.getTargetingFleets = function getTargetingFleets() {
     var targetingFleets = [];
     for (var i = 0; i < fleets.length; i++) {
         var fl = fleets[i];
-        if (fl.destination.equals(this)) targetingFleets.push(fl);
+        if (fl.getDestination().equals(this)) targetingFleets.push(fl);
     }
     return targetingFleets;
 };
 
 Planet.prototype.getAttackingFleets = function getAttackingFleets() {
-    var enemyFleets =  this._universe.getEnemyFleets(this.owner);
+    var enemyFleets =  this._universe.getEnemyFleets(this.getOwner());
     var attackingFleets = [];
     for (var i = 0; i < enemyFleets.length; i++) {
         var fl = enemyFleets[i];
-        if (fl.destination.equals(this)) attackingFleets.push(fl);
+        if (fl.getDestination().equals(this)) attackingFleets.push(fl);
     }
     return attackingFleets;
 };
 
 Planet.prototype.getDefendingFleets = function getDefendingFleets() {
-    var myFleets = this._universe.getFleets(this.owner);
+    var myFleets = this._universe.getFleets(this.getOwner());
     var defendingFleets = [];
     for (var i = 0; i < myFleets.length; i++) {
         var fl = myFleets[i];
-        if (fl.destination.equals(this)) defendingFleets.push(fl);
+        if (fl.getDestination().equals(this)) defendingFleets.push(fl);
     }
     return defendingFleets;
 };
 
 Planet.prototype.isNeutral = function isNeutral() {
-    return this.owner.isNeutral;
+    return this.getOwner().isNeutral;
 };
 
 Planet.prototype.sendFleet = function sendFleet(destination, forces) {
     forces = Math.floor(forces);
-    if (forces > this.forces) forces = this.forces;
+    var planetForces = this.getForces();
+    if (forces > planetForces) forces = planetForces;
     if (forces <= 0) return;
-    this.forces -= forces;
-    this._universe.registerFleet(this.id, destination.id, forces);
+    this._setForces(planetForces - forces);
+    this._universe.registerFleet(this.getId(), destination.getId(), forces);
     return forces;
 };

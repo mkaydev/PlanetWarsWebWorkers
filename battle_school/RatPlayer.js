@@ -28,7 +28,8 @@ RatPlayerStrategy.prototype.getMinStepsTo = function getMinStepsTo(planet, plane
 };
 
 RatPlayerStrategy.prototype.getForcesToConquer = function getForcesToConquer(universe, target, maxSteps) {
-    var defendingForces = target.forces;
+    var defendingForces = target.getForces();
+    var targetRecruiting = target.getRecruitingPerStep();
 
     var fleets = target.getTargetingFleets();
     universe.sortByDistanceToDestination(fleets);
@@ -41,11 +42,13 @@ RatPlayerStrategy.prototype.getForcesToConquer = function getForcesToConquer(uni
         var steps = fleet.stepsToDestination();
         if (steps > maxSteps) break;
 
-        defendingForces += (steps - curSteps) * target.recruitingPerStep;
+        var fleetForces = fleet.getForces();
+
+        defendingForces += (steps - curSteps) * targetRecruiting;
         curSteps = steps;
 
         if (fleet.isHostileTo(lastConqueror)) {
-            defendingForces -= fleet.forces;
+            defendingForces -= fleetForces;
 
             if (defendingForces <= 0) {
                 lastConqueror = fleet;
@@ -53,27 +56,29 @@ RatPlayerStrategy.prototype.getForcesToConquer = function getForcesToConquer(uni
             }
 
         } else {
-            defendingForces += fleet.forces;
+            defendingForces += fleetForces;
         }
     }
 
     if (lastConqueror.ownerEquals(this.player)) return -defendingForces;
     if (target.isNeutral()) return defendingForces;
-    return defendingForces + maxSteps * target.recruitingPerStep;
+    return defendingForces + maxSteps * targetRecruiting;
 };
 
 RatPlayerStrategy.prototype.getFriendlyCluster = function getFriendlyCluster(universe, planet) {
+    var clusterSize = this.getClusterSize(universe);
     var planets = universe.getPlanets(this.player);
     universe.sortByDistance(planet, planets);
-    if (planets.length < this.getClusterSize(universe)) return planets;
-    return planets.slice(0, this.getClusterSize(universe));
+    if (planets.length < clusterSize) return planets;
+    return planets.slice(0, clusterSize);
 };
 
 RatPlayerStrategy.prototype.getHostileCluster = function getHostileCluster(universe, planet) {
+    var clusterSize = this.getClusterSize(universe);
     var planets = universe.getEnemyPlanets(this.player);
     universe.sortByDistance(planet, planets);
-    if (planets.length < this.getClusterSize(universe)) return planets;
-    return planets.slice(0, this.getClusterSize(universe));
+    if (planets.length < clusterSize) return planets;
+    return planets.slice(0, clusterSize);
 };
 
 RatPlayerStrategy.prototype.getNeededForces = function getNeededForces(universe, planet) {
@@ -85,7 +90,7 @@ RatPlayerStrategy.prototype.getNeededForces = function getNeededForces(universe,
 
 RatPlayerStrategy.prototype.getTopForceEnemyPlanets = function getTopForceEnemyPlanets(universe, count) {
     var sortByForces = function(a, b) {
-        return b.forces - a.forces;
+        return b.getForces() - a.getForces();
     };
     var planets = universe.getEnemyPlanets(this.player);
     
@@ -116,9 +121,9 @@ RatPlayerStrategy.prototype.getRecruitmentTarget = function getRecruitmentTarget
 
     for (var i = 0; i < planets.length; i++) {
         var planet = planets[i];
-        var weight = planet.recruitingPerStep;
-        xSum += planet.x * weight;
-        ySum += planet.y * weight;
+        var weight = planet.getRecruitingPerStep();
+        xSum += planet.getX() * weight;
+        ySum += planet.getY() * weight;
         weightSum += weight;
     }
     return {"x": xSum / weightSum, "y": ySum / weightSum};
@@ -168,11 +173,6 @@ RatPlayerStrategy.prototype.getClosestCorner = function getClosestCorner(univers
             maxCorner = corner;
         }
     }
-    if (typeof corners[maxCorner] === "undefined") {
-        simulator.log(closest);
-        simulator.log(corners);
-        simulator.log(maxCorner);
-    }
     return corners[maxCorner];
 };
 
@@ -196,13 +196,18 @@ RatPlayerInitialStrategy.prototype.think = function think(universe) {
     var activePlayers = universe.getActivePlayers();
     var myPlanets = universe.getPlanets(this.player);
     if (myPlanets.length == 0) return;
+
     var cornerCoords = this.getClosestCorner(universe, myPlanets);
     var cornerTargets = universe.getAllPlanets();
     this.sortByDistanceToCoords(cornerTargets, cornerCoords.x, cornerCoords.y);
 
     for (var i = 0; i < myPlanets.length; i++) {
+
         var myPlanet = myPlanets[i];
-        var maxAvailable = myPlanet.forces - minReserveFactor * myPlanet.recruitingPerStep;
+        var myRecruiting = myPlanet.getRecruitingPerStep();
+        var myForces = myPlanet.getForces();
+
+        var maxAvailable = myForces - minReserveFactor * myRecruiting;
         if (maxAvailable < minFleetSize) continue;
 
         var targets = this.getHostileCluster(universe, myPlanet);
@@ -210,12 +215,14 @@ RatPlayerInitialStrategy.prototype.think = function think(universe) {
         if (targets.length == 0) return;
 
         for (var j = 0; j < targets.length; j++) {
+
             var target = targets[j];
             if (this.inTopForceEnemyPlanets(universe, target, activePlayers.length)) continue;
-            var reserveFactor = myPlanet.fleetStepsTo(target);
-            var available = myPlanet.forces - reserveFactor * myPlanet.recruitingPerStep
 
-            var minBreakEven = Math.ceil(minFleetSize / target.recruitingPerStep);
+            var reserveFactor = myPlanet.fleetStepsTo(target);
+            var available = myForces - reserveFactor * myRecruiting;
+
+            var minBreakEven = Math.ceil(minFleetSize / target.getRecruitingPerStep());
             var maxSteps = myPlanet.fleetStepsTo(target) + minBreakEven + 1;
             var desiredFleetSize = this.getForcesToConquer(universe, target, maxSteps);
             if (desiredFleetSize > available || desiredFleetSize < 0) continue;
@@ -227,18 +234,22 @@ RatPlayerInitialStrategy.prototype.think = function think(universe) {
             available -= fleetSize;
             maxAvailable -= fleetSize;
             if (maxAvailable < minFleetSize) break;
+
         }
 
         // try to conquer a corner as quickly as possible to have a safe back and avoid too many front-lines
         for (var j = 0; j < cornerTargets.length; j++) {
             var destPlanet = cornerTargets[i];
+
             if (!destPlanet.ownerEquals(this.player)) {
+
                 var fleetSize = this.getNeededForces(universe, destPlanet);
-                fleetSize += reserveFactor * destPlanet.recruitingPerStep;
+                fleetSize += reserveFactor * destPlanet.getRecruitingPerStep();
                 if (fleetSize > available) continue;
                 this.player.sendFleet(myPlanet, destPlanet, fleetSize);
                 available -= fleetSize;
                 if (available < minFleetSize) break;
+
             }
         }
     }
@@ -266,6 +277,7 @@ RatPlayerMiddleStrategy.prototype.getOrders = function getOrders(universe, sourc
 
     var orders = [];
     for (var i = 0; i < destinations.length && available > Math.min(minFleetSizes.defend, minFleetSizes.attack); i++) {
+
         var destination = destinations[i];
         var destPlanet = destination.planet;
         if (this.inTopForceEnemyPlanets(universe, destPlanet, 5)) continue;
@@ -291,12 +303,14 @@ RatPlayerMiddleStrategy.prototype.getOrders = function getOrders(universe, sourc
             "destination": destPlanet,
             "fleetSize": fleetSize
         };
+
         orders.push(order);
         available -= fleetSize;
         destinations[i].neededForces -= fleetSize;
     }
 
     if (available > minFleetSizes.backup) {
+
         var recruitingCenter = this.getRecruitmentTarget(universe);
         var x = recruitingCenter.x;
         var y = recruitingCenter.y;
@@ -311,6 +325,7 @@ RatPlayerMiddleStrategy.prototype.getOrders = function getOrders(universe, sourc
             };
             orders.push(order);
         }
+
     }
     return orders;
 };
@@ -318,7 +333,9 @@ RatPlayerMiddleStrategy.prototype.getOrders = function getOrders(universe, sourc
 RatPlayerMiddleStrategy.prototype.getTargets = function getTargets(universe, source) {
     var enemyPlanets = this.getHostileCluster(universe, source);
     var targets = [];
+
     for (var i = 0; i < enemyPlanets.length; i++) {
+
         var enemyPlanet = enemyPlanets[i];
         var cluster = this.getFriendlyCluster(universe, enemyPlanet);
         var maxSteps = this.getMaxStepsTo(enemyPlanet, cluster);
@@ -348,8 +365,8 @@ RatPlayerMiddleStrategy.prototype.prioritize = function prioritize(source, avail
         var stepsToA = source.fleetStepsTo(destA);
         var stepsToB = source.fleetStepsTo(destB);
 
-        var recruitingA = destA.recruitingPerStep;
-        var recruitingB = destB.recruitingPerStep;
+        var recruitingA = destA.getRecruitingPerStep();
+        var recruitingB = destB.getRecruitingPerStep();
 
         var neededA = a.neededForces;
         var neededB = b.neededForces;
@@ -391,7 +408,7 @@ RatPlayerMiddleStrategy.prototype.think = function think(universe) {
             needsHelp.push(victim);
         } else {
 
-            var available = myPlanet.forces - reserveFactor * myPlanet.recruitingPerStep;
+            var available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
             if (available > Math.min(minFleetSizes.defend, minFleetSizes.attack)) {
                 var backup = {
                     "planet": myPlanet,
@@ -432,13 +449,16 @@ RatPlayerFinalStrategy.prototype.think = function think(universe) {
     if (enemyPlanets.length === 0) return;
 
     for (var i = 0; i < myPlanets.length; i++) {
+
         var myPlanet = myPlanets[i];
-        var available = myPlanet.forces - reserveFactor * myPlanet.recruitingPerStep;
+        var available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
         if (available < minFleetSize) continue;
+
         var fleetSize = Math.max(Math.ceil(available / 2), minFleetSize);
         universe.sortByDistance(myPlanet, enemyPlanets);
         var target = enemyPlanets[0];
         this.player.sendFleet(myPlanet, target, fleetSize);
+
     }
 };
 
@@ -467,19 +487,25 @@ RatPlayer.prototype.think = function think(universe) {
 
     if ((myPlanets.length < Math.max(10, activePlayers.length)) && (myPlanets.length < allPlanets.length / activePlayers.length)) {
         this.strategies.initial.think(universe);
+
     } else {
+
         var myForces = universe.getForces(this);
         var otherForces = 0;
+
         for (var i = 0; i < activePlayers.length; i++) {
             var other = activePlayers[i];
             if (other.equals(this)) continue;
+
             otherForces += universe.getForces(other);
         }
+
         if (finalFactor * myForces > otherForces) {
             this.strategies.final.think(universe);
         } else {
             this.strategies.middle.think(universe);
         }
+
     }
 };
 

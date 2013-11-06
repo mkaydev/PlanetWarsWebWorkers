@@ -1,44 +1,68 @@
 Fleet: function Fleet(fleetState, universe) {
+    this._state = fleetState;
     this._universe = universe;
-    this.x = fleetState[_STATE_KEYS["x"]];
-    this.y = fleetState[_STATE_KEYS["y"]];
-    this.id = fleetState[_STATE_KEYS["id"]];
-    this.forces = fleetState[_STATE_KEYS["forces"]];
-    this.movementPerStep = fleetState[_STATE_KEYS["movementPerStep"]];
-    this.owner = this._universe._getPlayer(fleetState[_STATE_KEYS["ownerId"]]);
-    this.source = this._universe._getPlanet(fleetState[_STATE_KEYS["sourceId"]]);
-    this.destination = this._universe._getPlanet(fleetState[_STATE_KEYS["destinationId"]]);
+};
+
+Fleet.prototype.getX = function getX() {
+    return this._state[_STATE_KEYS["x"]];
+};
+
+Fleet.prototype.getY = function getY() {
+    return this._state[_STATE_KEYS["y"]];
+};
+
+Fleet.prototype.getId = function getId() {
+    return this._state[_STATE_KEYS["id"]];
+};
+
+Fleet.prototype.getForces = function getForces() {
+    return this._state[_STATE_KEYS["forces"]];
+};
+
+Fleet.prototype.getOwner = function getOwner() {
+    return this._universe._getPlayer(this._state[_STATE_KEYS["ownerId"]]);
+};
+
+Fleet.prototype.getSource = function getSource() {
+    return this._universe._getPlanet(this._state[_STATE_KEYS["sourceId"]]);
+};
+
+Fleet.prototype.getDestination = function getDestination() {
+    return this._universe._getPlanet(this._state[_STATE_KEYS["destinationId"]]);
 };
 
 Fleet.prototype.getMovementPerStep = function getMovementPerStep() {
-    return this._universe.fleetMovementPerStep;
+    return this._state[_STATE_KEYS["movementPerStep"]];
 };
 
 Fleet.prototype.ownerEquals = function ownerEquals(player) {
-    return this.owner.equals(player);
+    return this.getOwner().equals(player);
 };
 
 Fleet.prototype.isHostileToDestination = function isHostileToDestination() {
-    return !this.destination.ownerEquals(this.owner);
+    return !this.getDestination().ownerEquals(this.getOwner());
 };
 
 Fleet.prototype.isHostileTo = function isHostileTo(fleetOrPlanet) {
-    return !fleetOrPlanet.ownerEquals(this.owner);
+    return !fleetOrPlanet.ownerEquals(this.getOwner());
 };
 
 Fleet.prototype.distanceToPos = function distanceToPos(x, y) {
+    var fleetY = this.getY();
+    var fleetX = this.getX();
+
     var yDiff;
-    if (y > this.y) {
-        yDiff = y - this.y;
+    if (y > fleetY) {
+        yDiff = y - fleetY;
     } else {
-        yDiff = this.y - y;
+        yDiff = fleetY - y;
     }
 
     var xDiff;
-    if (x > this.x) {
-        xDiff = x - this.x;
+    if (x > fleetX) {
+        xDiff = x - fleetX;
     } else {
-        xDiff = this.x - x;
+        xDiff = fleetX - x;
     }
 
     var distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
@@ -46,7 +70,8 @@ Fleet.prototype.distanceToPos = function distanceToPos(x, y) {
 };
 
 Fleet.prototype.distanceToDestination = function distanceToDestination() {
-    return this.distanceToPos(this.destination.x, this.destination.y);
+    var destination = this.getDestination();
+    return this.distanceToPos(destination.getX(), destination.getY());
 };
 
 Fleet.prototype.stepsToDestination = function stepsToDestination() {

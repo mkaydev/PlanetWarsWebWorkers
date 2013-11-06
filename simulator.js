@@ -79,7 +79,7 @@ Simulator.prototype.close = function close() {
 };
 
 Simulator.prototype.statesPerMessage = 2;
-Simulator.prototype.preCalculateCount = 10;
+Simulator.prototype.preCalculateCount = 20;
 
 var simulator = new Simulator();
 
@@ -97,4 +97,8 @@ onmessage = function(oEvent) {
     } else {
         console.log("unrecognized action " + action);
     }
+};
+
+onerror = function() {
+    this.close();
 };

@@ -27,7 +27,7 @@ AttackLargestEmpirePlayer.prototype.think = function think(universe) {
 
     for (var i = 0; i < myPlanets.length; i++) {
         var myPlanet = myPlanets[i];
-        if (myPlanet.forces > fleetSize) {
+        if (myPlanet.getForces() > fleetSize) {
             var targetIndex = Math.floor(Math.random() * curTargets.length);
             this.sendFleet(myPlanet, curTargets[targetIndex], fleetSize);
         }

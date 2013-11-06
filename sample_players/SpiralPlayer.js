@@ -21,7 +21,7 @@ SpiralPlayer.prototype.think = function think(universe) {
 
     for (var i = 0; i < myPlanets.length; i++) {
         var myPlanet = myPlanets[i];
-        var available = myPlanet.forces - reserveFactor * myPlanet.recruitingPerStep;
+        var available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
         if (available < minFleetSize) continue;
         var fleetSize = Math.max(minFleetSize, Math.floor(available / 2));
 

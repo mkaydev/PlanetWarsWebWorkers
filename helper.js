@@ -29,7 +29,8 @@ _STATE_KEYS = function() {
         "backLeftY",
         "sourceId",
         "destinationId",
-        "ownerId"
+        "ownerId",
+        "universe"
     ];
 
     var keys = {};
