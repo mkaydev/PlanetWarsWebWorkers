@@ -1,6 +1,10 @@
 Fleet: function Fleet(fleetState, universe) {
-    this._state = fleetState;
     this._universe = universe;
+    this._setState(fleetState);
+};
+
+Fleet.prototype._setState = function _setState(fleetState) {
+    this._state = fleetState;
 };
 
 Fleet.prototype.getX = function getX() {

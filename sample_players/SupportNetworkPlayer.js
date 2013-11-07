@@ -12,9 +12,9 @@ SupportNetworkPlayer.prototype.think = function think(universe) {
 
     var myPlanets = universe.getPlanets(this);
     var enemyPlanets = universe.getEnemyPlanets(this);
-    if (enemyPlanets.length === 0) return;
+    if (enemyPlanets.length == 0) return;
 
-    for (var i = 0; i < myPlanets.length; i++) {
+    for (var i = 0; i < myPlanets.length; ++i) {
         var myPlanet = myPlanets[i];
         var available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
         if (available < fleetSize) continue;
@@ -36,7 +36,7 @@ SupportNetworkPlayer.prototype.getLastHop = function getLastHop(universe, source
 
     var myPlanets = universe.getPlanets(this);
 
-    for (var i = 0; i < myPlanets.length; i++) {
+    for (var i = 0; i < myPlanets.length; ++i) {
         var myPlanet = myPlanets[i];
         if (myPlanet === source) continue;
 

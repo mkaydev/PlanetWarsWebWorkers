@@ -10,7 +10,7 @@ RandomPlayer.prototype.think = function think(universe) {
     var myPlanets = universe.getPlanets(this);
     var allPlanets = universe.getAllPlanets();
 
-    for (var i = 0; i < myPlanets.length; i++) {
+    for (var i = 0; i < myPlanets.length; ++i) {
         var myPlanet = myPlanets[i];
         if (myPlanet.getForces() > fleetSize) {
             var targetIndex = Math.floor(Math.random() * allPlanets.length)

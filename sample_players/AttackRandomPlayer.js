@@ -13,7 +13,7 @@ AttackRandomPlayer.prototype.think = function think(universe) {
     if (enemyPlanets.length === 0) return;
 
 
-    for (var i = 0; i < myPlanets.length; i++) {
+    for (var i = 0; i < myPlanets.length; ++i) {
         var myPlanet = myPlanets[i];
         if (myPlanet.getForces() > fleetSize) {
             var targetIndex = Math.floor(Math.random() * enemyPlanets.length)

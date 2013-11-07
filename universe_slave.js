@@ -5,20 +5,20 @@ var _player = null;
 var _workerId = null;
 var _playerId = null;
 var _playerFile = null;
+var _universe = null;
 
 onmessage = function(oEvent) {
     var action = oEvent.data.action;
 
     if (action === "think") {
 
-        var universeJSON = oEvent.data.universe;
-        var universe = new Universe(universeJSON);
-        _player.think(universe);
+        _universe._fromJSON(oEvent.data.universe);
+        _player.think(_universe);
 
         postMessage({
             "workerId": _workerId,
             "action": "registerFleets",
-            "newFleets": universe.newFleets
+            "newFleets": _universe.newFleets
         });
 
     } else if (action === "initialize") {
@@ -31,6 +31,8 @@ onmessage = function(oEvent) {
         importScripts(_playerFile);
         _player = new _constructor();
         _player._setId(_playerId);
+
+        _universe = new Universe();
         _initialized = true;
 
         postMessage({
@@ -49,11 +51,21 @@ onerror = function() {
     self.close();
 };
 
-Universe: function Universe(universeState) {
-    this._initialize(universeState);
+Universe: function Universe() {
+    this.playerPool = [];
+    this.planetPool = [];
+    this.fleetPool = [];
+
+    this.playerPoolIndex = 0;
+    this.planetPoolIndex = 0;
+    this.fleetPoolIndex = 0;
 };
 
-Universe.prototype._initialize = function _initialize(universeState) {
+Universe.prototype._fromJSON = function _fromJSON(universeState) {
+    this.playerPoolIndex = 0;
+    this.planetPoolIndex = 0;
+    this.fleetPoolIndex = 0;
+
     this.width = universeState[_STATE_KEYS["width"]];
     this.height = universeState[_STATE_KEYS["height"]];
     this.fleetMovementPerStep = universeState[_STATE_KEYS["fleetMovementPerStep"]];
@@ -75,8 +87,7 @@ Universe.prototype._initialize = function _initialize(universeState) {
 
     for (var playerId in this._playersJSON) {
         var playerJSON = this._playersJSON[playerId];
-        var player = new Player();
-        player.fromJSON(playerJSON);
+        var player = this._toPlayerObject(playerJSON);
 
         if (player.isNeutral) {
             this._neutralPlayerId = playerId;
@@ -96,7 +107,7 @@ Universe.prototype._initialize = function _initialize(universeState) {
         }
     }
 
-    for (var i = 0; i < this._playersArray.length; i++) {
+    for (var i = 0; i < this._playersArray.length; ++i) {
         var player = this._playersArray[i];
         var playerId = player.id;
 
@@ -112,16 +123,48 @@ Universe.prototype._initialize = function _initialize(universeState) {
 };
 
 // create wrappers for the json, with additional functions for use by the players
+// recycling objects to avoid unnecessary garbage collection, which tends to freeze the animation
 Universe.prototype._toPlanetObject = function _toPlanetObject(planetJSON) {
-    return new Planet(planetJSON, this);
+    var planet;
+    if (this.planetPoolIndex >= this.planetPool.length) {
+        planet = new Planet(planetJSON, this);
+        this.planetPool.push(planet);
+    } else {
+        planet = this.planetPool[this.planetPoolIndex];
+        planet._setState(planetJSON);
+    }
+    ++this.planetPoolIndex;
+    return planet;
 };
 
 Universe.prototype._toFleetObject = function _toFleetObject(fleetJSON) {
-    return new Fleet(fleetJSON, this);
+    var fleet;
+    if (this.fleetPoolIndex >= this.fleetPool.length) {
+        fleet = new Fleet(fleetJSON, this);
+        this.fleetPool.push(fleet);
+    } else {
+        fleet = this.fleetPool[this.fleetPoolIndex];
+        fleet._setState(fleetJSON);
+    }
+    ++this.fleetPoolIndex;
+    return fleet;
+};
+
+Universe.prototype._toPlayerObject = function _toPlayerObject(playerJSON) {
+    var player;
+    if (this.playerPoolIndex >= this.playerPool.length) {
+        player = new Player();
+        this.playerPool.push(player);
+    } else {
+        player = this.playerPool[this.playerPoolIndex];
+    }
+    player.fromJSON(playerJSON);
+    ++this.playerPoolIndex;
+    return player;
 };
 
 Universe.prototype._getPlanet = function _getPlanet(planetId) {
-    for (var i = 0; i < this._planetsArray.length; i++) {
+    for (var i = 0; i < this._planetsArray.length; ++i) {
         var planet = this._planetsArray[i];
         if (planet.getId() == planetId) {
             return planet;
@@ -201,31 +244,44 @@ Universe.prototype.getGroundForces = function getGroundForces(player) {
     return this._playersJSON[player.id][_STATE_KEYS["groundForces"]];
 };
 
-Universe.prototype.sortByDistance = function sortByDistance(planet, planets) {
-    var sortByDist = function sortByDist(a, b) {
-        var distA = planet.distanceTo(a);
-        var distB = planet.distanceTo(b);
-        return distA - distB;
-    };
-    planets.sort(sortByDist);
+Universe.prototype.sortByDistance = function sortByDistance(planet, planets, reverse) {
+    if (reverse) {
+        planets.sort(this._sortByDistRev.bind(planet));
+    } else {
+        planets.sort(this._sortByDist.bind(planet));
+    }
 };
 
-Universe.prototype.sortByDistanceToDestination = function sortByDistanceToDestination(fleets) {
-    var sortByDist = function sortByDist(a, b) {
-        var distA = a.distanceToDestination();
-        var distB = b.distanceToDestination();
-        return distA - distB;
-    };
-    fleets.sort(sortByDist);
+Universe.prototype.sortByDistanceToDestination = function sortByDistanceToDestination(fleets, reverse) {
+    if (reverse) {
+        fleets.sort(this._sortByDistToDestRev);
+    } else {
+        fleets.sort(this._sortByDistToDest);
+    }
 };
 
-Universe.prototype.sortByRecruitingPower = function sortByRecruitingPower(planets) {
-    var sortByRecr = function sortByRecr(a, b) {
-        var recrA = a.getRecruitingPerStep();
-        var recrB = b.getRecruitingPerStep();
-        return recrB - recrA;
-    };
-    planets.sort(sortByRecr);
+Universe.prototype.sortByRecruitingPower = function sortByRecruitingPower(planets, reverse) {
+    if (reverse) {
+        planets.sort(this._sortByRecrRev);
+    } else {
+        planets.sort(this._sortByRecr);
+    }
+};
+
+Universe.prototype.sortByForces = function sortByForces(planetsOrFleets, reverse) {
+    if (reverse) {
+        planetsOrFleets.sort(this._sortByForcesRev);
+    } else {
+        planetsOrFleets.sort(this._sortByForces);
+    }
+};
+
+Universe.prototype.sortPlayersByForces = function sortPlayersByForces(players, reverse) {
+    if (reverse) {
+        players.sort(this._sortPlayersByForcesRev.bind(this));
+    } else {
+        players.sort(this._sortPlayersByForces.bind(this));
+    }
 };
 
 Universe.prototype.registerFleet = function registerFleet(sourceId, destinationId, forces) {
@@ -234,4 +290,56 @@ Universe.prototype.registerFleet = function registerFleet(sourceId, destinationI
     json[_STATE_KEYS["destinationId"]] = destinationId;
     json[_STATE_KEYS["forces"]] = forces;
     this.newFleets.push(json);
+};
+
+Universe.prototype._sortByRecr = function _sortByRecr(a, b) {
+    var recrA = a.getRecruitingPerStep();
+    var recrB = b.getRecruitingPerStep();
+    return recrA - recrB;
+};
+
+Universe.prototype._sortByRecrRev = function _sortByRecrRev(a, b) {
+    var recrA = a.getRecruitingPerStep();
+    var recrB = b.getRecruitingPerStep();
+    return recrB - recrA;
+};
+
+Universe.prototype._sortByDistToDest = function _sortByDistToDest(a, b) {
+    var distA = a.distanceToDestination();
+    var distB = b.distanceToDestination();
+    return distA - distB;
+};
+
+Universe.prototype._sortByDistToDestRev = function _sortByDistToDestRev(a, b) {
+    var distA = a.distanceToDestination();
+    var distB = b.distanceToDestination();
+    return distB - distA;
+};
+
+Universe.prototype._sortByDist = function _sortByDist(a, b) {
+    var distA = this.distanceTo(a);
+    var distB = this.distanceTo(b);
+    return distA - distB;
+};
+
+Universe.prototype._sortByDistRev = function _sortByDistRev(a, b) {
+    var distA = this.distanceTo(a);
+    var distB = this.distanceTo(b);
+    return distB - distA;
+};
+
+Universe.prototype._sortByForces = function _sortByForces(a, b) {
+    return a.getForces() - b.getForces();
+};
+
+Universe.prototype._sortByForcesRev = function _sortByForcesRev(a, b) {
+    return b.getForces() - a.getForces();
+};
+
+Universe.prototype._sortPlayersByForces = function _sortPlayersByForces(a, b) {
+    return this.getForces(a) - this.getForces(b);
+};
+
+Universe.prototype._sortPlayersByForcesRev = function _sortPlayersByForcesRev(a, b) {
+    return this.getForces(b) - this.getForces(a);
 };

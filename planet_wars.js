@@ -1,8 +1,3 @@
-/*
-    responsible for running the game (e.g. deciding when the game has ended)
-    and for visualizing the current status of the universe
- */
-
 (function() {
   var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
                               window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
@@ -11,18 +6,17 @@
 
 // ---------------------------------------------------------------------------------------------------------------------------------
 
-PlanetWarsGame: function PlanetWarsGame(playerFiles, initializedCallback,  planetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId) {
-    this.playerFiles = playerFiles;
+PlanetWarsGame: function PlanetWarsGame(planetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId) {
     this.planetCount = planetCount;
     this.foregroundCanvasId = foregroundCanvasId;
     this.backgroundCanvasId = backgroundCanvasId;
     this.textCanvasId = textCanvasId;
     this.width = width;
     this.height = height;
-    this.initialize(initializedCallback);
 };
 
-PlanetWarsGame.prototype.initialize = function initialize(initializedCallback) {
+PlanetWarsGame.prototype.initialize = function initialize(playerFiles, initializedCallback) {
+    this.playerFiles = playerFiles;
     this.initialized = false;
     this.terminateGame();
     this.ended = false;
@@ -48,7 +42,7 @@ PlanetWarsGame.prototype.initialize = function initialize(initializedCallback) {
         } else if (action === "postStates") {
             if (this.initialized && (this.simId === simId)) {
                 var round = oEvent.data.round;
-                for (var i = 0; i < message.length; i++) {
+                for (var i = 0; i < message.length; ++i) {
                     var state = message[i];
                     this.states[round + i] = state;
                 }            }
@@ -57,7 +51,7 @@ PlanetWarsGame.prototype.initialize = function initialize(initializedCallback) {
             this.simId = simId;
             this.states = {};
             var round = oEvent.data.round;
-            for (var i = 0; i < message.length; i++) {
+            for (var i = 0; i < message.length; ++i) {
                 var state = message[i];
                 this.states[round + i] = state;
             }
@@ -163,7 +157,7 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
         var planets = exportedPlanets[playerId];
         foregroundContext.fillStyle = color;
 
-        for (var j = 0; j < planets.length; j++) {
+        for (var j = 0; j < planets.length; ++j) {
             var planet = planets[j];
             var centerX = planet[_STATE_KEYS["x"]];
             var centerY = planet[_STATE_KEYS["y"]];
@@ -183,7 +177,7 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
         var fleets = exportedFleets[playerId];
         foregroundContext.strokeStyle = color;
 
-        for (var j = 0; j < fleets.length; j++) {
+        for (var j = 0; j < fleets.length; ++j) {
             var fleet = fleets[j];
             var currentX = fleet[_STATE_KEYS["x"]];
             var currentY = fleet[_STATE_KEYS["y"]];
@@ -212,7 +206,7 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
         if (!exportedPlanets.hasOwnProperty(playerId)) continue;
 
         var planets = exportedPlanets[playerId];
-        for (var i = 0; i < planets.length; i++) {
+        for (var i = 0; i < planets.length; ++i) {
             var planet = planets[i];
             var x = planet[_STATE_KEYS["x"]];
             var y = planet[_STATE_KEYS["y"]];
@@ -223,7 +217,7 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
     }
 };
 
-PlanetWarsGame.prototype.stepInterval = 60;
+PlanetWarsGame.prototype.stepInterval = 64;
 PlanetWarsGame.prototype.maxRounds = 1000;
 
 PlanetWarsGame.prototype.step = function step(gameEnded) {

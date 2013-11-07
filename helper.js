@@ -34,7 +34,7 @@ _STATE_KEYS = function() {
     ];
 
     var keys = {};
-    for (var i = 0; i < values.length; i++) {
+    for (var i = 0; i < values.length; ++i) {
         var key;
         if (i >= abc.length) {
             key = "" + (i - abc.length);
@@ -71,7 +71,7 @@ var createId = function() {
 } ();
 
 shuffleArray: function shuffleArray(arr) {
-    for (var i = 0; i < arr.length - 1; i++) {
+    for (var i = 0; i < arr.length - 1; ++i) {
         var switchIndex = Math.floor(Math.random() * arr.length);
         var tmp = arr[i];
         arr[i] = arr[switchIndex];
@@ -83,7 +83,7 @@ checkUnique: function checkUnique(arr, attr, inner_attr) {
     var known = {};
     var attrs = [];
 
-    for (var i = 0; i < arr.length; i++) {
+    for (var i = 0; i < arr.length; ++i) {
         var attribute = arr[i][attr];
         if (typeof inner_attr !== "undefined") attribute = attribute[inner_attr];
         if (known.hasOwnProperty(attribute) && known[attribute]) return false;

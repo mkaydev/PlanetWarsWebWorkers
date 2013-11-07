@@ -1,5 +1,15 @@
 // responsible for running multiple games (tournaments), visualizing the results and getting user input
 var playerFiles = [
+  //  "sample_players/DoNothingPlayer.js",
+  //  "sample_players/RandomPlayer.js",
+  //  "sample_players/AttackRandomPlayer.js",
+  //  "sample_players/AttackLargestEmpirePlayer.js",
+  //  "sample_players/KamikazePlayer.js",
+  //  "sample_players/SpiralPlayer.js",
+  //  "sample_players/AttackBestPlanetPlayer.js",
+
+
+    "battle_school/SalamanderPlayer.js",
     "battle_school/RatPlayer.js",
     "sample_players/VirusPlayer.js",
     "sample_players/AlbatrossPlayer.js",
@@ -10,6 +20,7 @@ var playerFiles = [
 $(document).ready(function() {
     $("#runTournament").prop('checked', false);
     $("#tournament :input").removeAttr("disabled");
+    $("#step").attr("disabled", false);
 
     var backgroundCanvasId = "game_background";
     var foregroundCanvasId = "game_foreground";
@@ -25,8 +36,6 @@ $(document).ready(function() {
     var initializedCallback = tournament.initializePoints;
 
     var game = new PlanetWarsGame(
-        tournament.getNextPlayers(),
-        initializedCallback.bind(tournament),
         planetCount,
         width,
         height,
@@ -35,27 +44,21 @@ $(document).ready(function() {
         textCanvasId
     );
 
+    game.initialize(tournament.getNextPlayers(), initializedCallback.bind(tournament));
+
     var gameEnded = function gameEnded(gameResults) {
         tournament.addResultSummary(gameResults);
 
         if (tournament.gameIndex < tournament.gamesToPlay.length) {
             game.terminateGame();
             unbindControls();
-            game = new PlanetWarsGame(
-                tournament.getNextPlayers(),
-                initializedCallback.bind(tournament),
-                planetCount,
-                width,
-                height,
-                backgroundCanvasId,
-                foregroundCanvasId,
-                textCanvasId
-            );
+
+            game.initialize(tournament.getNextPlayers(), initializedCallback.bind(tournament));
 
             window.setTimeout(function() {
                 game.play.bind(game)(gameEnded);
                 bindControls(game, gameEnded, tournament, initializedCallback.bind(tournament));
-            }, 1000);
+            }, 1200);
         }
     }.bind(this);
 
@@ -68,16 +71,7 @@ $(document).ready(function() {
         tournament = new Tournament(playerFiles, tournamentInput.duel, tournamentInput.repetitions);
         tournament.initialize();
 
-        game = new PlanetWarsGame(
-            tournament.getNextPlayers(),
-            initializedCallback.bind(tournament),
-            planetCount,
-            width,
-            height,
-            backgroundCanvasId,
-            foregroundCanvasId,
-            textCanvasId
-        );
+        game.initialize(tournament.getNextPlayers(), initializedCallback.bind(tournament));
         bindControls(game, gameEnded, tournament, initializedCallback.bind(tournament));
 
         if (this.checked) {
@@ -94,17 +88,7 @@ $(document).ready(function() {
         tournament = new Tournament(playerFiles, tournamentInput.duel, tournamentInput.repetitions);
         tournament.initialize();
 
-        game = new PlanetWarsGame(
-            tournament.getNextPlayers(),
-            initializedCallback.bind(tournament),
-            planetCount,
-            width,
-            height,
-            backgroundCanvasId,
-            foregroundCanvasId,
-            textCanvasId
-        );
-
+        game.initialize(tournament.getNextPlayers(), initializedCallback.bind(tournament));
         bindControls(game, gameEnded, tournament, initializedCallback.bind(tournament));
     });
 
@@ -115,17 +99,7 @@ $(document).ready(function() {
         tournament = new Tournament(playerFiles, tournamentInput.duel, tournamentInput.repetitions);
         tournament.initialize();
 
-        game = new PlanetWarsGame(
-            tournament.getNextPlayers(),
-            initializedCallback.bind(tournament),
-            planetCount,
-            width,
-            height,
-            backgroundCanvasId,
-            foregroundCanvasId,
-            textCanvasId
-        );
-
+        game.initialize(tournament.getNextPlayers(), initializedCallback.bind(tournament));
         bindControls(game, gameEnded, tournament, initializedCallback.bind(tournament));
     });
 
@@ -169,27 +143,36 @@ bindControls: function bindControls(game, endedCallback, tournament, initialized
     });
     $("#initialize").click(function() {
         $("#tournament :input").removeAttr("disabled");
+        $("#step").attr("disabled", false);
         $("#play").show();
         $("#pause").hide();
         tournament.initialize.bind(tournament)();
-        game.initialize.bind(game)(initializedCallback);
+        game.initialize(tournament.getNextPlayers(), initializedCallback.bind(tournament));
     });
     $("#step").click(function() {
+        disableInput();
         game.step.bind(game)(endedCallback);
     });
 };
 
-togglePlayPause: function togglePlayPause() {
+disableInput: function disableInput() {
     $("#tournament :input").attr("disabled", true);
+};
+
+togglePlayPause: function togglePlayPause() {
+    disableInput();
     var playSel = $("#play");
     var pauseSel = $("#pause");
+    var stepSel = $("#step");
 
     if (playSel.is(":hidden")) {
         playSel.show();
         pauseSel.hide();
+        stepSel.attr("disabled", false);
     } else {
         pauseSel.show();
         playSel.hide();
+        stepSel.attr("disabled", true);
     }
 };
 
@@ -208,20 +191,20 @@ Tournament.prototype.initialize = function initialize() {
     this.gamesToPlay = [];
 
     if (!this.duel) {
-        for (var i = 0; i < this.repetitions; i++) {
+        for (var i = 0; i < this.repetitions; ++i) {
             this.gamesToPlay.push(this.contestants);
         }
 
     } else {
 
         var cycle = [];
-        for (var i = 0; i < this.contestants.length - 1; i++) {
-            for(var j = i + 1; j < this.contestants.length; j++) {
+        for (var i = 0; i < this.contestants.length - 1; ++i) {
+            for(var j = i + 1; j < this.contestants.length; ++j) {
                 cycle.push([this.contestants[i], this.contestants[j]]);
             }
         }
 
-        for (var i = 0; i < this.repetitions; i++) {
+        for (var i = 0; i < this.repetitions; ++i) {
             this.gamesToPlay.push.apply(this.gamesToPlay, cycle);
         }
     }
@@ -229,7 +212,7 @@ Tournament.prototype.initialize = function initialize() {
 
 Tournament.prototype.initializePoints = function initializePoints(activePlayers) {
     if (typeof this.points === "undefined") this.points = {};
-    for (var i = 0; i < activePlayers.length; i++) {
+    for (var i = 0; i < activePlayers.length; ++i) {
         var contestant = activePlayers[i].name;
         if (!this.points.hasOwnProperty(contestant)) this.points[contestant] = 0;
     }
@@ -244,7 +227,7 @@ Tournament.prototype.addResultSummary = function addResultSummary(resultSummary)
 
     } else {
 
-        for (var i = 0; i < players.length; i++) {
+        for (var i = 0; i < players.length; ++i) {
             var survivor = players[i].name;
             this.addPoints(survivor, 1);
         }

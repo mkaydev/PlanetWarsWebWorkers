@@ -12,7 +12,7 @@ AttackLargestEmpirePlayer.prototype.think = function think(universe) {
     var curTargets = [];
     var activePlayers = universe.getActivePlayers();
 
-    for (var i = 0; i < activePlayers.length; i++) {
+    for (var i = 0; i < activePlayers.length; ++i) {
         if (activePlayers[i] === this) continue;
         var planets = universe.getPlanets(activePlayers[i]);
         if (planets.length > curMax) {
@@ -25,7 +25,7 @@ AttackLargestEmpirePlayer.prototype.think = function think(universe) {
 
     var myPlanets = universe.getPlanets(this);
 
-    for (var i = 0; i < myPlanets.length; i++) {
+    for (var i = 0; i < myPlanets.length; ++i) {
         var myPlanet = myPlanets[i];
         if (myPlanet.getForces() > fleetSize) {
             var targetIndex = Math.floor(Math.random() * curTargets.length);

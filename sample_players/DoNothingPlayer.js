@@ -4,6 +4,6 @@ DoNothingPlayer: function DoNothingPlayer() {
 };
 DoNothingPlayer.prototype = new Player();
 DoNothingPlayer.prototype.constructor = DoNothingPlayer;
-DoNothingPlayer.prototype.think = new function think() {};
+DoNothingPlayer.prototype.think = function think() {};
 
-var constructor = DoNothingPlayer;
+var _constructor = DoNothingPlayer;

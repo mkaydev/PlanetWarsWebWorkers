@@ -13,7 +13,7 @@ AttackNearestEnemyPlayer.prototype.think = function think(universe) {
     var enemyPlanets = universe.getEnemyPlanets(this);
     if (enemyPlanets.length === 0) return;
 
-    for (var i = 0; i < myPlanets.length; i++) {
+    for (var i = 0; i < myPlanets.length; ++i) {
         var myPlanet = myPlanets[i];
         var available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
         if (available < fleetSize) continue;

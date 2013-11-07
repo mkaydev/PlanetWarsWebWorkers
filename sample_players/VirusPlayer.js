@@ -13,12 +13,12 @@ VirusPlayer.prototype.think = function think(universe) {
     this.evaluateVictim = function evaluateVictim(target, attacker) {
         var defendingForces = target.getForces();
         var defendingFleets = target.getDefendingFleets();
-        for (var i = 0; i < defendingFleets.length; i++) {
+        for (var i = 0; i < defendingFleets.length; ++i) {
             defendingForces += defendingFleets[i].getForces();
         }
 
         var attackingFleets = target.getAttackingFleets();
-        for (var i = 0; i < attackingFleets.length; i++) {
+        for (var i = 0; i < attackingFleets.length; ++i) {
             defendingForces -= attackingFleets[i].getForces();
         }
 
@@ -34,7 +34,7 @@ VirusPlayer.prototype.think = function think(universe) {
     var myPlanets = universe.getPlanets(this);
     var enemyPlanets = universe.getEnemyPlanets(this);
 
-    for (var i = 0; i < myPlanets.length; i++) {
+    for (var i = 0; i < myPlanets.length; ++i) {
         var myPlanet = myPlanets[i];
         var available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
         if (available < fleetSize) continue;
@@ -43,7 +43,7 @@ VirusPlayer.prototype.think = function think(universe) {
 
         var foundVictim = false;
 
-        for (var j = 0; j < enemyPlanets.length; j++ ) {
+        for (var j = 0; j < enemyPlanets.length; ++j ) {
 
             var target = enemyPlanets[j];
             var evaluation = this.evaluateVictim(target, myPlanet);
@@ -76,7 +76,7 @@ VirusPlayer.prototype.getPlanetWithMaxForce = function getPlanetWithMaxForce(pla
     var curMax = 0;
     var curPlanet;
 
-    for (var i = 0; i < planets.length; i++) {
+    for (var i = 0; i < planets.length; ++i) {
         var planet = planets[i];
         var forces = planet.getForces();
         if (forces > curMax) {

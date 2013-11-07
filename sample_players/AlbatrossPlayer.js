@@ -14,10 +14,10 @@ AlbatrossPlayer.prototype.think = function think(universe) {
 
     var myPlanets = universe.getPlanets(this);
     var enemyPlanets = universe.getEnemyPlanets(this);
-    if (enemyPlanets.length === 0) return;
+    if (enemyPlanets.length == 0) return;
 
 
-    for (var i = 0; i < myPlanets.length; i++) {
+    for (var i = 0; i < myPlanets.length; ++i) {
         var myPlanet = myPlanets[i];
         var myForces = myPlanet.getForces();
         var myRecruiting = myPlanet.getRecruitingPerStep();

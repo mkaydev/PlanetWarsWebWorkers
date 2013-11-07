@@ -15,11 +15,11 @@ SpiralPlayer.prototype.think = function think(universe) {
     var enemyPlanets = universe.getEnemyPlanets(this);
     if (enemyPlanets.length === 0) return;
 
-    universe.sortByRecruitingPower(myPlanets);
+    universe.sortByRecruitingPower(myPlanets, true);
     var centralPlanet = myPlanets[0];
     if (typeof centralPlanet === "undefined") return;
 
-    for (var i = 0; i < myPlanets.length; i++) {
+    for (var i = 0; i < myPlanets.length; ++i) {
         var myPlanet = myPlanets[i];
         var available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
         if (available < minFleetSize) continue;
