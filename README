@@ -125,7 +125,7 @@ The AttackNearestEnemyPlayer performs the best of the sample players.
 The SupportNetworkPlayer performs the worst in a duel of the four. (Will win none against the other three and sometimes fails to finish against the AlbatrossPlayer - even if he has more forces.)
 The VirusPlayer performs the worst in a last man standing setting, but will perform as well as the AttackNearestEnemyPlayer in a duel.
 
-The battle_school folder is for players with more sophisticated strategies. The currently implemented RatPlayer dominates duel and last man standing tournaments against the sample players.
+The battle_school folder is for players with more sophisticated strategies. The players dominate duel and last man standing tournaments against the sample players.
 
 The idiots are good for early sparring and for last man standing setups, e.g. adding a DoNothingPlayer to a last man standing will act as a kind of honeypot for players,
 who don't realize that attacking this player in the early phase of the game is suicide. (One of the differences between the SupportNetworkPlayer and the AlbatrossPlayer.)

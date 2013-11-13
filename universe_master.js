@@ -1,11 +1,20 @@
-Universe: function Universe(playerFiles, planetCount, width, height, initializedCallback) {
+function Universe(playerFiles, planetCount, width, height, initializedCallback) {
+    var i,
+        j,
+        workerId,
+        worker,
+        playerCount,
+        file,
+        playerId;
+
     this.initialized = false;
     this.width = width;
     this.height = height;
     this.fleetMovementPerStep = 10;
 
-    this.playerCount = playerFiles.length;
-    this.neutralPlanetCount = planetCount - this.playerCount;
+    playerCount = playerFiles.length;
+    this.playerCount = playerCount;
+    this.neutralPlanetCount = planetCount - playerCount;
 
     this.workers = {};
     this.players = {};
@@ -17,51 +26,67 @@ Universe: function Universe(playerFiles, planetCount, width, height, initialized
     this.thinkFinished = {};
 
     // workerIds must be kept secret from other sub-workers, playerIds are public
-    for (var i = 0; i < playerFiles.length; ++i) {
-        var workerId = createId();
+    for (i = 0; i < playerCount; ++i) {
+        workerId = createId();
 
-        var worker = new Worker("universe_slave.js");
+        worker = new Worker("universe_slave.js");
         this.workers[workerId] = worker;
 
         worker.onmessage = function(oEvent) {
-            var workerId = oEvent.data.workerId;
-            var action = oEvent.data.action;
+            var playerJSON,
+                player,
+                players,
+                activePlayers,
+                newFleets,
+                newFleet,
+                sourceId,
+                destinationId,
+                forces,
+                source,
+                sourceForces,
+                destination,
+                data = oEvent.data,
+                action = data.action,
+                workerId = data.workerId,
+                workers = this.workers;
 
-            if (!this.workers.hasOwnProperty(workerId)) {
+            if (!workers.hasOwnProperty(workerId)) {
                 if (action === "log") {
-                    console.log(oEvent.data.message);
+                    console.log(data.message);
                 } else if (action === "alert") {
-                    window.alert(oEvent.data.message);
+                    window.alert(data.message);
                 } else {
                     console.log("unrecognized action " + action);
                 }
                 return;
             }
 
+            players = this.players;
+
             if (action === "registerFleets") {
 
                 if (this.thinkFinished[workerId]) return;
 
-                var player = this.players[workerId];
-                var newFleets = oEvent.data.newFleets;
+                player = players[workerId];
+                newFleets = oEvent.data.newFleets;
 
-                for (var j = 0; j < newFleets.length; ++j) {
-                    var newFleet = newFleets[j];
-                    var sourceId = newFleet[_STATE_KEYS["sourceId"]];
-                    var destinationId = newFleet[_STATE_KEYS["destinationId"]];
-                    var forces = Math.floor(newFleet[_STATE_KEYS["forces"]]);
+                for (j = 0; newFleet = newFleets[j]; ++j) {
+                    sourceId = newFleet[_STATE_KEYS["sourceId"]];
+                    destinationId = newFleet[_STATE_KEYS["destinationId"]];
+                    forces = Math.floor(newFleet[_STATE_KEYS["forces"]]);
+
                     if (forces <= 0) continue;
 
-                    var source = this.getPlanet(sourceId);
+                    source = this.getPlanet(sourceId);
                     if (source === null) continue;
                     if (source.getOwner().id !== player.id) continue;
 
-                    var sourceForces = source.getForces();
+                    sourceForces = source.getForces();
                     if (sourceForces <= 0) continue;
 
                     if (sourceForces < forces) forces = sourceForces;
 
-                    var destination = this.getPlanet(destinationId);
+                    destination = this.getPlanet(destinationId);
                     if (destination === null) continue;
 
                     this.registerFleet(source, destination, forces);
@@ -74,13 +99,16 @@ Universe: function Universe(playerFiles, planetCount, width, height, initialized
                 }
 
             } else if (action === "linkPlayer") {
-                if (this.players.hasOwnProperty(workerId)) return;
-                var playerJSON = oEvent.data.player;
-                var player = new Player(playerJSON)
-                this.players[workerId] = player;
-                this.activePlayers.push(player);
 
-                if (this.activePlayers.length == this.playerCount) {
+                if (players.hasOwnProperty(workerId)) return;
+                playerJSON = data.player;
+                player = new Player(playerJSON)
+
+                players[workerId] = player;
+                activePlayers = this.activePlayers;
+                activePlayers.push(player);
+
+                if (activePlayers.length == this.playerCount) {
                     this.createPlanets();
                     this.initialized = true;
                     initializedCallback();
@@ -91,8 +119,8 @@ Universe: function Universe(playerFiles, planetCount, width, height, initialized
             }
         }.bind(this);
 
-        var file = playerFiles[i];
-        var playerId = createId();
+        file = playerFiles[i];
+        playerId = createId();
 
         worker.postMessage({
             "action": "initialize",
@@ -101,11 +129,12 @@ Universe: function Universe(playerFiles, planetCount, width, height, initialized
             "playerFile": file
         });
     }
-};
+}
 
 Universe.prototype.stepFinished = function stepFinished() {
-    for (var workerId in this.thinkFinished) {
-        if (!this.thinkFinished[workerId]) return false;
+    var thinkFinished = this.thinkFinished;
+    for (var workerId in thinkFinished) {
+        if (!thinkFinished[workerId]) return false;
     }
     return true;
 };

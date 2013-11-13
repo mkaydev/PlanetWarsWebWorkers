@@ -1,5 +1,7 @@
 // the simulator pre-calculates states in the background (to avoid laggy animation)
 
+var simulator;
+
 importScripts("helper.js", "player_master.js", "fleet_master.js", "planet_master.js", "universe_master.js");
 
 Simulator: function Simulator() {
@@ -7,14 +9,15 @@ Simulator: function Simulator() {
 };
 
 Simulator.prototype.initialize = function(playerFiles, planetCount, width, height, maxRounds) {
-    if (planetCount < playerFiles.length) planetCount = players.length;
+    var playersCount = playerFiles.length;
+    if (planetCount < playersCount) planetCount = playersCount;
     shuffleArray(playerFiles);
     this.universe = new Universe(playerFiles, planetCount, width, height, this.run.bind(this));
     this.maxStates = maxRounds;
-    this.preCalculateCount = Math.min(this.preCalculateCount, this.maxStates);
+    this.preCalculateCount = Math.min(this.preCalculateCount, maxRounds);
     this.currentStateCount = 0;
     this.states = [];
-    this.simId = createId("Simulation:");
+    this.simId = createId();
     this.initialized = true;
 };
 
@@ -41,29 +44,45 @@ Simulator.prototype.getSteppedCallback = function getSteppedCallback() {
 };
 
 Simulator.prototype.postStates = function postStates() {
-    if (this.currentStateCount < this.preCalculateCount) return;
-    var status = "ok";
-    var action = "postStates"
-    if (this.currentStateCount < this.preCalculateCount + this.statesPerMessage - 1) action = "start";
-    var message = this.states;
+    var status,
+        action,
+        message,
+        messageLen,
+        activePlayerCount,
+        curCount = this.currentStateCount,
+        preCount = this.preCalculateCount;
+
+    if (curCount < preCount) return;
+    status = "ok";
+    action = "postStates"
+    if (curCount < preCount + this.statesPerMessage - 1) action = "start";
+
+    message = this.states;
+    messageLen = message.length;
+
     postMessage({
         "status": status,
         "action": action,
         "message": message,
         "id": this.simId,
-        "round": this.currentStateCount - message.length
+        "round": this.currentStateCount - messageLen
     });
-    var activePlayerCount = message[message.length - 1][_STATE_KEYS["activePlayersCount"]];
-    if (this.currentStateCount >= this.maxRounds || activePlayerCount < 2) this.close();
+
+    activePlayerCount = message[messageLen - 1][_STATE_KEYS["activePlayersCount"]];
+    if (curCount >= this.maxRounds || activePlayerCount < 2) this.close();
     this.states = [];
 };
 
 Simulator.prototype.run = function run() {
+    var status,
+        action,
+        message;
+
     if (!simulator.initialized) {
 
-        var status = "error";
-        var action = "unknown"
-        var message = "trying to simulate without initialization";
+        status = "error";
+        action = "unknown"
+        message = "trying to simulate without initialization";
         postMessage({"status": status, "action": action, "message": message});
 
     } else {
@@ -81,17 +100,24 @@ Simulator.prototype.close = function close() {
 Simulator.prototype.statesPerMessage = 2;
 Simulator.prototype.preCalculateCount = 20;
 
-var simulator = new Simulator();
+simulator = new Simulator();
 
 onmessage = function(oEvent) {
-    var action = oEvent.data.action;
-    if (oEvent.data.action === "start") {
+    var planetCount,
+        width,
+        height,
+        maxRounds,
+        playerFiles,
+        data = oEvent.data,
+        action = data.action;
 
-        var planetCount = oEvent.data.planetCount;
-        var width = oEvent.data.width;
-        var height = oEvent.data.height;
-        var maxRounds = oEvent.data.maxRounds;
-        var playerFiles = oEvent.data.playerFiles;
+    if (action === "start") {
+
+        planetCount = data.planetCount;
+        width = data.width;
+        height = data.height;
+        maxRounds = data.maxRounds;
+        playerFiles = data.playerFiles;
         simulator.initialize(playerFiles, planetCount, width, height, maxRounds);
 
     } else {
