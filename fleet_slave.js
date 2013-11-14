@@ -52,24 +52,25 @@ Fleet.prototype.isHostileTo = function isHostileTo(fleetOrPlanet) {
 };
 
 Fleet.prototype.distanceToPos = function distanceToPos(x, y) {
-    var fleetY = this.getY();
-    var fleetX = this.getX();
+    var yDiff,
+        xDiff,
+        distance,
+        fleetY = this.getY(),
+        fleetX = this.getX();
 
-    var yDiff;
     if (y > fleetY) {
         yDiff = y - fleetY;
     } else {
         yDiff = fleetY - y;
     }
 
-    var xDiff;
     if (x > fleetX) {
         xDiff = x - fleetX;
     } else {
         xDiff = fleetX - x;
     }
 
-    var distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+    distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
     return distance;
 };
 

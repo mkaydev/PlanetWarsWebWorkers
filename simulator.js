@@ -111,7 +111,7 @@ onmessage = function(oEvent) {
         data = oEvent.data,
         action = data.action;
 
-    if (action === "start") {
+    if (action == "start") {
 
         planetCount = data.planetCount;
         width = data.width;

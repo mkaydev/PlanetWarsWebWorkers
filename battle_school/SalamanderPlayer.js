@@ -233,7 +233,7 @@ SalamanderSpreadStrategy: function SalamanderSpreadStrategy() {};
 SalamanderSpreadStrategy.prototype = new RatPlayerStrategy();
 SalamanderSpreadStrategy.prototype.constructor = SalamanderSpreadStrategy;
 SalamanderSpreadStrategy.prototype.getClusterSize = function getClusterSize(universe) {
-    return 8;
+    return 10;
 };
 
 SalamanderSpreadStrategy.prototype.think = function think(universe) {
@@ -312,7 +312,7 @@ SalamanderPlayer.prototype.think = function think(universe) {
         if (finalFactor * myForces > otherForces && myPlanets.length > (planets.length / playersLength)) {
             strategy = "attackNearestEnemy";
 
-        } else if (defensiveFactor * maxForces > myForces) {
+        } else if (defensiveFactor * maxForces > myForces && myPlanets.length < (planets.length / playersLength)) {
             strategy = "albatross";
 
         } else {

@@ -57,13 +57,15 @@ Planet.prototype.step = function step() {
 };
 
 Planet.prototype.enteredBy = function enteredBy(fleet) {
-    var planetForces = this.getForces();
-    var fleetForces = fleet.getForces();
-    if (this.getOwner().id === fleet.getOwner().id) {
+    var planetForces = this.getForces(),
+        fleetForces = fleet.getForces(),
+        fleetOwner = fleet.getOwner();
+
+    if (this.getOwner().id == fleetOwner.id) {
         this.setForces(planetForces + fleetForces);
     } else {
         if (fleetForces >= planetForces) {
-            this.setOwner(fleet.getOwner());
+            this.setOwner(fleetOwner);
             this.setForces(fleetForces - planetForces);
         } else {
             this.setForces(planetForces - fleetForces);
@@ -78,24 +80,25 @@ Planet.prototype.distanceTo = function distanceTo(otherPlanet) {
 };
 
 Planet.prototype.distanceToCoords = function distanceToCoords(x, y) {
-    var planetX = this.getX();
-    var planetY = this.getY();
+    var yDiff,
+        xDiff,
+        distance,
+        planetX = this.getX(),
+        planetY = this.getY();
 
-    var yDiff;
     if (y > planetY) {
         yDiff = y - planetY;
     } else {
         yDiff = planetY - y;
     }
 
-    var xDiff;
     if (x > planetX) {
         xDiff = x - planetX;
     } else {
         xDiff = planetX - x;
     }
 
-    var distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+    distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
     return distance;
 };
 
@@ -113,14 +116,15 @@ Planet.prototype.collidesWith = function collidesWith(otherPlanet, minDistance) 
 
 Planet.prototype.margin = 10;
 Planet.prototype.fullyVisibleIn = function fullyVisibleIn(canvasWidth, canvasHeight) {
-    var r = this.getRadius();
-    var x = this.getX();
-    var y = this.getY();
+    var r = this.getRadius(),
+        x = this.getX(),
+        y = this.getY(),
+        margin = this.margin;
 
-    if (x - r < this.margin) return false;
-    if (y - r < this.margin) return false;
-    if (x + r >= canvasWidth - this.margin) return false;
-    if (y + r >= canvasHeight - this.margin) return false;
+    if (x - r < margin) return false;
+    if (y - r < margin) return false;
+    if (x + r >= canvasWidth - margin) return false;
+    if (y + r >= canvasHeight - margin) return false;
     return true;
 };
 

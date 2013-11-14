@@ -48,24 +48,25 @@ Planet.prototype.distanceTo = function distanceTo(otherPlanet) {
 };
 
 Planet.prototype.distanceToCoords = function distanceToCoords(x, y) {
-    var planetX = this.getX();
-    var planetY = this.getY();
+    var yDiff,
+        xDiff,
+        distance,
+        planetX = this.getX(),
+        planetY = this.getY();
 
-    var yDiff;
     if (y > planetY) {
         yDiff = y - planetY;
     } else {
         yDiff = planetY - y;
     }
 
-    var xDiff;
     if (x > planetX) {
         xDiff = x - planetX;
     } else {
         xDiff = planetX - x;
     }
 
-    var distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+    distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
     return distance;
 };
 
@@ -75,30 +76,36 @@ Planet.prototype.fleetStepsTo = function fleetStepsTo(otherPlanet) {
 };
 
 Planet.prototype.getTargetingFleets = function getTargetingFleets() {
-    var fleets =  this._universe.getAllFleets();
-    var targetingFleets = [];
-    for (var i = 0; i < fleets.length; ++i) {
-        var fl = fleets[i];
+    var i,
+        fl,
+        fleets =  this._universe.getAllFleets(),
+        targetingFleets = [];
+
+    for (i = 0; fl = fleets[i]; ++i) {
         if (fl.getDestination().equals(this)) targetingFleets.push(fl);
     }
     return targetingFleets;
 };
 
 Planet.prototype.getAttackingFleets = function getAttackingFleets() {
-    var enemyFleets =  this._universe.getEnemyFleets(this.getOwner());
-    var attackingFleets = [];
-    for (var i = 0; i < enemyFleets.length; ++i) {
-        var fl = enemyFleets[i];
+    var i,
+        fl,
+        enemyFleets =  this._universe.getEnemyFleets(this.getOwner()),
+        attackingFleets = [];
+
+    for (i = 0; fl = enemyFleets[i]; ++i) {
         if (fl.getDestination().equals(this)) attackingFleets.push(fl);
     }
     return attackingFleets;
 };
 
 Planet.prototype.getDefendingFleets = function getDefendingFleets() {
-    var myFleets = this._universe.getFleets(this.getOwner());
-    var defendingFleets = [];
-    for (var i = 0; i < myFleets.length; ++i) {
-        var fl = myFleets[i];
+    var i,
+        fl,
+        myFleets = this._universe.getFleets(this.getOwner()),
+        defendingFleets = [];
+
+    for (i = 0; fl = myFleets[i]; ++i) {
         if (fl.getDestination().equals(this)) defendingFleets.push(fl);
     }
     return defendingFleets;
@@ -109,10 +116,12 @@ Planet.prototype.isNeutral = function isNeutral() {
 };
 
 Planet.prototype.sendFleet = function sendFleet(destination, forces) {
-    forces = Math.floor(forces);
     var planetForces = this.getForces();
+    forces = Math.floor(forces);
+
     if (forces > planetForces) forces = planetForces;
     if (forces <= 0) return;
+
     this._setForces(planetForces - forces);
     this._universe.registerFleet(this.getId(), destination.getId(), forces);
     return forces;

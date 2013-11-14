@@ -16,6 +16,14 @@ PlanetWarsGame: function PlanetWarsGame(planetCount, width, height, backgroundCa
 };
 
 PlanetWarsGame.prototype.initialize = function initialize(playerFiles, initializedCallback) {
+    var textContext,
+        context,
+        foregroundSel,
+        backgroundSel,
+        textSel,
+        width = this.width,
+        height = this.height;
+
     this.playerFiles = playerFiles;
     this.initialized = false;
     this.terminateGame();
@@ -26,33 +34,43 @@ PlanetWarsGame.prototype.initialize = function initialize(playerFiles, initializ
     this.simulator = new Worker("simulator.js");
 
     this.simulator.onmessage = function(oEvent) {
-        var action = oEvent.data.action;
-        var status = oEvent.data.status;
-        var message = oEvent.data.message;
-        var messageId = oEvent.data.messageId;
-        var simId = oEvent.data.id;
+        var i,
+            state,
+            round,
+            players,
+            activePlayers,
+            playerId,
+            player,
+            exportedPlayer,
+            data = oEvent.data,
+            action = data.action,
+            status = data.status,
+            message = data.message,
+            messageId = data.messageId,
+            simId = data.id;
 
-        if (status === "error") {
+        if (status == "error") {
             if (typeof messageId !== "undefined") {
                 console.log(messageId, message);
             } else {
                 console.log(message);
             }
 
-        } else if (action === "postStates") {
-            if (this.initialized && (this.simId === simId)) {
-                var round = oEvent.data.round;
-                for (var i = 0; i < message.length; ++i) {
-                    var state = message[i];
-                    this.states[round + i] = state;
-                }            }
+        } else if (action == "postStates") {
 
-        } else if (action === "start") {
+            if (this.initialized && (this.simId === simId)) {
+                round = data.round;
+                for (i = 0; state = message[i]; ++i) {
+                    this.states[round + i] = state;
+                }
+            }
+
+        } else if (action == "start") {
             this.simId = simId;
             this.states = {};
-            var round = oEvent.data.round;
-            for (var i = 0; i < message.length; ++i) {
-                var state = message[i];
+            round = data.round;
+
+            for (i = 0; state = message[i]; ++i) {
                 this.states[round + i] = state;
             }
 
@@ -60,24 +78,28 @@ PlanetWarsGame.prototype.initialize = function initialize(playerFiles, initializ
             this.initialized = true;
             this.drawGame();
 
-            var players = this.currentState[_STATE_KEYS["players"]];
-            var activePlayers = [];
-            for (var playerId in players) {
-                var player = players[playerId];
+            players = this.currentState[_STATE_KEYS["players"]];
+            activePlayers = [];
+
+            for (playerId in players) {
+                player = players[playerId];
                 if (player[_STATE_KEYS["isNeutral"]]) continue;
-                var exportedPlayer = this.exportPlayer(player);
+                exportedPlayer = this.exportPlayer(player);
                 activePlayers.push(exportedPlayer);
             }
+
+            shuffleArray(activePlayers);
+            this.activePlayers = activePlayers;
             initializedCallback(activePlayers);
 
-        } else if (action === "log") {
+        } else if (action == "log") {
             if (typeof messageId !== "undefined") {
                 console.log(messageId, message);
             } else {
                 console.log(message);
             }
 
-        } else if (action === "alert") {
+        } else if (action == "alert") {
             if (typeof messageId !== "undefined") {
                 alert([messageId, message]);
             } else {
@@ -96,8 +118,8 @@ PlanetWarsGame.prototype.initialize = function initialize(playerFiles, initializ
             "action": "start",
             "playerFiles": this.playerFiles,
             "planetCount": this.planetCount,
-            "width": this.width,
-            "height": this.height,
+            "width": width,
+            "height": height,
             "maxRounds": this.maxRounds
         }
     );
@@ -106,62 +128,99 @@ PlanetWarsGame.prototype.initialize = function initialize(playerFiles, initializ
     this.backgroundCanvas = document.getElementById(this.backgroundCanvasId);
     this.textCanvas = document.getElementById(this.textCanvasId);
 
-    $("#" + this.foregroundCanvasId).attr("width", this.width);
-    $("#" + this.foregroundCanvasId).attr("height", this.height);
-    $("#" + this.backgroundCanvasId).attr("width", this.width);
-    $("#" + this.backgroundCanvasId).attr("height", this.height);
-    $("#" + this.textCanvasId).attr("width", this.width);
-    $("#" + this.textCanvasId).attr("height", this.height);
+    foregroundSel = $("#" + this.foregroundCanvasId);
+    foregroundSel.attr("width", width);
+    foregroundSel.attr("height", height);
 
-    var textContext = this.textCanvas.getContext("2d");
+    backgroundSel = $("#" + this.backgroundCanvasId);
+    backgroundSel.attr("width", width);
+    backgroundSel.attr("height", height);
+
+    textSel = $("#" + this.textCanvasId);
+    textSel.attr("width", width);
+    textSel.attr("height", height);
+
+    textContext = this.textCanvas.getContext("2d");
     textContext.fillStyle = "white";
     textContext.strokeStyle = "black";
     textContext.font = "10pt sans-serif";
     textContext.textBaseline = "middle";
     textContext.lineWidth = 2;
 
-    var context = this.backgroundCanvas.getContext("2d");
+    context = this.backgroundCanvas.getContext("2d");
     context.fillStyle = "black";
-    context.fillRect(0, 0, this.width, this.height);
+    context.fillRect(0, 0, width, height);
 };
 
 PlanetWarsGame.prototype.stepState = function stepState() {
-    if (!this.states.hasOwnProperty(this.round)) return false;
-    this.currentState = this.states[this.round];
+    var states = this.states,
+        round = this.round;
+    if (!states.hasOwnProperty(round)) return false;
+    this.currentState = states[round];
     // I'm thinking about a step back feature. When this should be implemented, the following line needs to be removed. (More memory required while running.)
-    delete this.states[this.round];
-    this.round += 1;
+    delete states[round];
+    ++this.round;
     this.lastStepped = new Date().getTime();
     return true;
 };
 
 PlanetWarsGame.prototype.drawGame = function drawGame() {
+    var i,
+        exportedPlayers,
+        exportedFleets,
+        exportedPlanets,
+        foregroundContext,
+        playerId,
+        color,
+        planets,
+        planet,
+        fleets,
+        fleet,
+        centerX,
+        centerY,
+        radius,
+        currentX,
+        currentY,
+        backRightX,
+        backRightY,
+        backLeftX,
+        backLeftY,
+        currentState,
+        foregroundCanvas,
+        textCanvas,
+        textContext,
+        x,
+        y,
+        forces;
+
+
     if (!this.initialized) return;
-    var exportedPlayers = this.currentState[_STATE_KEYS["players"]];
-    var exportedFleets = this.currentState[_STATE_KEYS["fleets"]];
-    var exportedPlanets = this.currentState[_STATE_KEYS["planets"]];
+    currentState = this.currentState;
+    exportedPlayers = currentState[_STATE_KEYS["players"]];
+    exportedFleets = currentState[_STATE_KEYS["fleets"]];
+    exportedPlanets = currentState[_STATE_KEYS["planets"]];
 
     /* I'd like to keep the planets on the background and draw over them when the owner changes
      * instead of clearing and redrawing, but it doesn't seem possible with canvas' anti-aliasing, which cannot be deactivated
      */
-    var foregroundContext = this.foregroundCanvas.getContext("2d");
+    foregroundCanvas = this.foregroundCanvas;
+    foregroundContext = foregroundCanvas.getContext("2d");
     // fastest according to jsperf test
     // for Firefox 24.0 on Ubuntu and Chrome 28.0.1500.71 on Ubuntu Chromium
-    foregroundContext.clearRect(0, 0, this.foregroundCanvas.width, this.foregroundCanvas.height);
+    foregroundContext.clearRect(0, 0, foregroundCanvas.width, foregroundCanvas.height);
 
     // to avoid canvas state changes, loop by color, i.e. by player
-    for (var playerId in exportedPlayers) {
-        var color = exportedPlayers[playerId][_STATE_KEYS["color"]];
+    for (playerId in exportedPlayers) {
+        color = exportedPlayers[playerId][_STATE_KEYS["color"]];
         if (!exportedPlanets.hasOwnProperty(playerId)) continue;
 
-        var planets = exportedPlanets[playerId];
+        planets = exportedPlanets[playerId];
         foregroundContext.fillStyle = color;
 
-        for (var j = 0; j < planets.length; ++j) {
-            var planet = planets[j];
-            var centerX = planet[_STATE_KEYS["x"]];
-            var centerY = planet[_STATE_KEYS["y"]];
-            var radius = planet[_STATE_KEYS["radius"]];
+        for (i = 0; planet = planets[i]; ++i) {
+            centerX = planet[_STATE_KEYS["x"]];
+            centerY = planet[_STATE_KEYS["y"]];
+            radius = planet[_STATE_KEYS["radius"]];
 
             foregroundContext.beginPath();
             foregroundContext.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
@@ -169,24 +228,23 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
         }
     }
 
-    for (var playerId in exportedPlayers) {
-        var color = exportedPlayers[playerId][_STATE_KEYS["color"]];
+    for (playerId in exportedPlayers) {
+        color = exportedPlayers[playerId][_STATE_KEYS["color"]];
         if (!exportedFleets.hasOwnProperty(playerId)) continue;
 
 
-        var fleets = exportedFleets[playerId];
+        fleets = exportedFleets[playerId];
         foregroundContext.strokeStyle = color;
 
-        for (var j = 0; j < fleets.length; ++j) {
-            var fleet = fleets[j];
-            var currentX = fleet[_STATE_KEYS["x"]];
-            var currentY = fleet[_STATE_KEYS["y"]];
+        for (i = 0; fleet = fleets[i]; ++i) {
+            currentX = fleet[_STATE_KEYS["x"]];
+            currentY = fleet[_STATE_KEYS["y"]];
 
-            var backRightX = fleet[_STATE_KEYS["backRightX"]];
-            var backRightY = fleet[_STATE_KEYS["backRightY"]];
+            backRightX = fleet[_STATE_KEYS["backRightX"]];
+            backRightY = fleet[_STATE_KEYS["backRightY"]];
 
-            var backLeftX = fleet[_STATE_KEYS["backLeftX"]];
-            var backLeftY = fleet[_STATE_KEYS["backLeftY"]];
+            backLeftX = fleet[_STATE_KEYS["backLeftX"]];
+            backLeftY = fleet[_STATE_KEYS["backLeftY"]];
 
             foregroundContext.beginPath();
             foregroundContext.moveTo(currentX, currentY);
@@ -199,18 +257,18 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
         }
     }
 
-    var textContext = this.textCanvas.getContext("2d");
-    textContext.clearRect(0, 0, this.textCanvas.width, this.textCanvas.height);
+    textCanvas = this.textCanvas;
+    textContext = textCanvas.getContext("2d");
+    textContext.clearRect(0, 0, textCanvas.width, textCanvas.height);
 
-    for (var playerId in exportedPlayers) {
+    for (playerId in exportedPlayers) {
         if (!exportedPlanets.hasOwnProperty(playerId)) continue;
 
-        var planets = exportedPlanets[playerId];
-        for (var i = 0; i < planets.length; ++i) {
-            var planet = planets[i];
-            var x = planet[_STATE_KEYS["x"]];
-            var y = planet[_STATE_KEYS["y"]];
-            var forces = planet[_STATE_KEYS["forces"]];
+        planets = exportedPlanets[playerId];
+        for (i = 0; planet = planets[i]; ++i) {
+            x = planet[_STATE_KEYS["x"]];
+            y = planet[_STATE_KEYS["y"]];
+            forces = planet[_STATE_KEYS["forces"]];
             textContext.strokeText("" + forces, x, y);
             textContext.fillText("" + forces, x, y);
         }
@@ -221,6 +279,15 @@ PlanetWarsGame.prototype.stepInterval = 64;
 PlanetWarsGame.prototype.maxRounds = 1000;
 
 PlanetWarsGame.prototype.step = function step(gameEnded) {
+    var activePlayersCount,
+        now,
+        stepFinished,
+        playerId,
+        players,
+        player,
+        activePlayers,
+        exportedPlayer;
+
     // either the game is automatically played (play button) -> gameEnded will be a timestamp and this.running will be true
     // or the game is run manually (step button) -> gameEnded has to be the endedCallback, i.e. a function and this.running will be false
     if (!this.running && typeof gameEnded !== "function") return;
@@ -229,12 +296,12 @@ PlanetWarsGame.prototype.step = function step(gameEnded) {
         return;
     }
 
-    var activePlayersCount = this.currentState[_STATE_KEYS["activePlayersCount"]];
+    activePlayersCount = this.currentState[_STATE_KEYS["activePlayersCount"]];
 
     if (activePlayersCount > 1 && this.round < this.maxRounds) {
-        var now = new Date().getTime();
+        now = new Date().getTime();
         if (now - this.lastStepped > this.stepInterval) {
-            var stepFinished = this.stepState();
+            stepFinished = this.stepState();
             
             if (!stepFinished) {
                 requestAnimationFrame(this.step.bind(this));
@@ -246,17 +313,21 @@ PlanetWarsGame.prototype.step = function step(gameEnded) {
         if (this.running) requestAnimationFrame(this.step.bind(this));
 
     } else {
+
         if (this.ended) return;
+
         this.drawGame();
         this.running = false;
-        var players = this.currentState[_STATE_KEYS["players"]];
-        var activePlayers = [];
-        for (var playerId in players) {
-            var player = players[playerId];
+        players = this.currentState[_STATE_KEYS["players"]];
+        activePlayers = [];
+
+        for (playerId in players) {
+            player = players[playerId];
             if (player[_STATE_KEYS["isNeutral"]]) continue;
-            var exportedPlayer = this.exportPlayer(player);
+            exportedPlayer = this.exportPlayer(player);
             activePlayers.push(exportedPlayer);
         }
+
         if (typeof this.endedCallback === "undefined") this.endedCallback = gameEnded;
         this.ended = true;
         this.endedCallback({"players": activePlayers, "rounds": this.round});

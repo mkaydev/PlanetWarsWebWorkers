@@ -51,24 +51,30 @@ Fleet.prototype.getY = function getY() {
 };
 
 Fleet.prototype.step = function step() {
-    var destination = this.getDestination();
-    var destX = destination.getX();
-    var destY = destination.getY();
+    var myX,
+        myY,
+        remainingSteps,
+        xDiff,
+        yDiff,
+        movementPerStep = this.getMovementPerStep(),
+        destination = this.getDestination(),
+        destX = destination.getX(),
+        destY = destination.getY(),
+        distance = this.distanceToPos(destX, destY);
 
-    var distance = this.distanceToPos(destX, destY);
-    if (distance <= this.getMovementPerStep()) {
+    if (distance <= movementPerStep) {
         // attack / defend
         destination.enteredBy(this);
 
     } else {
-        var myX = this.getX();
-        var myY = this.getY();
+        myX = this.getX();
+        myY = this.getY();
 
         // update position
-        var remainingSteps = Math.floor(distance / this.getMovementPerStep());
+        remainingSteps = Math.floor(distance / movementPerStep);
 
-        var xDiff = destX - myX;
-        var yDiff = destY - myY;
+        xDiff = destX - myX;
+        yDiff = destY - myY;
 
         this.setX(myX + xDiff / remainingSteps);
         this.setY(myY + yDiff / remainingSteps);
@@ -76,9 +82,11 @@ Fleet.prototype.step = function step() {
 };
 
 Fleet.prototype.distanceToPos = function distanceToPos(x, y) {
-    var yDiff;
-    var myY = this.getY();
-    var myX = this.getX();
+    var yDiff,
+        xDiff,
+        distance,
+        myY = this.getY(),
+        myX = this.getX();
 
     if (y > myY) {
         yDiff = y - myY;
@@ -86,14 +94,13 @@ Fleet.prototype.distanceToPos = function distanceToPos(x, y) {
         yDiff = myY - y;
     }
 
-    var xDiff;
     if (x > myX) {
         xDiff = x - myX;
     } else {
         xDiff = myX - x;
     }
 
-    var distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+    distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
     return distance;
 };
 
@@ -108,27 +115,28 @@ Fleet.prototype.stepsToDestination = function stepsToDestination() {
 };
 
 Fleet.prototype.toJSON = function toJSON() {
-    var steps = this.stepsToDestination();
-    var destination = this.getDestination();
-    var x = this.getX();
-    var y = this.getY();
+    var steps = this.stepsToDestination(),
+        destination = this.getDestination(),
+        x = this.getX(),
+        y = this.getY(),
 
-    var frontX = x + (destination.getX() - x) / steps;
-    var frontY = y + (destination.getY() - y) / steps;
+        frontX = x + (destination.getX() - x) / steps,
+        frontY = y + (destination.getY() - y) / steps,
 
-    var diffX = frontX - x;
-    var diffY = frontY - y;
+        diffX = frontX - x,
+        diffY = frontY - y,
 
-    var backX = x - diffX;
-    var backY = y - diffY;
+        backX = x - diffX,
+        backY = y - diffY,
 
-    var backRightX = backX - 1/2 * diffY;
-    var backRightY = backY + 1/2 * diffX;
+        backRightX = backX - 1/2 * diffY,
+        backRightY = backY + 1/2 * diffX,
 
-    var backLeftX = backX + 1/2 * diffY;
-    var backLeftY = backY - 1/2 * diffX;
+        backLeftX = backX + 1/2 * diffY,
+        backLeftY = backY - 1/2 * diffX,
 
-    var json = {};
+        json = {};
+
     json[_STATE_KEYS["id"]] = this.getId();
     json[_STATE_KEYS["sourceId"]] = this.getSource().getId();
     json[_STATE_KEYS["destinationId"]] = destination.getId();
