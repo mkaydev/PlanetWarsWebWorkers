@@ -51,16 +51,12 @@ Fleet.prototype.getY = function getY() {
 };
 
 Fleet.prototype.step = function step() {
-    var myX,
-        myY,
-        remainingSteps,
-        xDiff,
-        yDiff,
-        movementPerStep = this.getMovementPerStep(),
-        destination = this.getDestination(),
-        destX = destination.getX(),
-        destY = destination.getY(),
-        distance = this.distanceToPos(destX, destY);
+    var myX, myY, remainingSteps, xDiff, yDiff, movementPerStep, destination, destX, destY, distance;
+    movementPerStep = this.getMovementPerStep();
+    destination = this.getDestination();
+    destX = destination.getX();
+    destY = destination.getY();
+    distance = this.distanceToPos(destX, destY);
 
     if (distance <= movementPerStep) {
         // attack / defend
@@ -82,11 +78,9 @@ Fleet.prototype.step = function step() {
 };
 
 Fleet.prototype.distanceToPos = function distanceToPos(x, y) {
-    var yDiff,
-        xDiff,
-        distance,
-        myY = this.getY(),
-        myX = this.getX();
+    var yDiff, xDiff, distance, myY, myX;
+    myY = this.getY();
+    myX = this.getX();
 
     if (y > myY) {
         yDiff = y - myY;
@@ -115,27 +109,37 @@ Fleet.prototype.stepsToDestination = function stepsToDestination() {
 };
 
 Fleet.prototype.toJSON = function toJSON() {
-    var steps = this.stepsToDestination(),
-        destination = this.getDestination(),
-        x = this.getX(),
-        y = this.getY(),
+    var steps,
+        destination,
+        x,
+        y,
+        frontX,
+        frontY,
+        diffX,
+        diffY,
+        backX,
+        backY,
+        backRightX,
+        backRightY,
+        backLeftX,
+        backLeftY,
+        json;
 
-        frontX = x + (destination.getX() - x) / steps,
-        frontY = y + (destination.getY() - y) / steps,
-
-        diffX = frontX - x,
-        diffY = frontY - y,
-
-        backX = x - diffX,
-        backY = y - diffY,
-
-        backRightX = backX - 1/2 * diffY,
-        backRightY = backY + 1/2 * diffX,
-
-        backLeftX = backX + 1/2 * diffY,
-        backLeftY = backY - 1/2 * diffX,
-
-        json = {};
+    steps = this.stepsToDestination();
+    destination = this.getDestination();
+    x = this.getX();
+    y = this.getY();
+    frontX = x + (destination.getX() - x) / steps;
+    frontY = y + (destination.getY() - y) / steps;
+    diffX = frontX - x;
+    diffY = frontY - y;
+    backX = x - diffX;
+    backY = y - diffY;
+    backRightX = backX - 1 / 2 * diffY;
+    backRightY = backY + 1 / 2 * diffX;
+    backLeftX = backX + 1 / 2 * diffY;
+    backLeftY = backY - 1 / 2 * diffX;
+    json = {};
 
     json[_STATE_KEYS["id"]] = this.getId();
     json[_STATE_KEYS["sourceId"]] = this.getSource().getId();

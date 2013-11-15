@@ -16,7 +16,7 @@ Player.prototype._setNeutral = function _setNeutral(isNeutral) {
 };
 
 Player.prototype.equals = function equals(otherPlayer) {
-    return this.id === otherPlayer.id;
+    return this.id == otherPlayer.id;
 };
 
 Player.prototype.sendFleet = function sendFleet(source, destination, forces) {

@@ -4,6 +4,8 @@ Planet: function Planet(planetState, universe) {
 };
 
 Planet.prototype._setState = function _setState(planetState) {
+    this._fleetCache = {};
+    this._planetCache = {};
     this._state = planetState;
 };
 
@@ -36,7 +38,7 @@ Planet.prototype._setForces = function _setForces(forces) {
 };
 
 Planet.prototype.equals = function equals(otherPlanet) {
-    return this.getId() === otherPlanet.getId();
+    return this.getId() == otherPlanet.getId();
 };
 
 Planet.prototype.ownerEquals = function ownerEquals(player) {
@@ -44,7 +46,12 @@ Planet.prototype.ownerEquals = function ownerEquals(player) {
 };
 
 Planet.prototype.distanceTo = function distanceTo(otherPlanet) {
-    return this.distanceToCoords(otherPlanet.getX(), otherPlanet.getY());
+    var id;
+    id = otherPlanet.getId();
+    if (!this._planetCache.hasOwnProperty(id)) {
+        this._planetCache[id] = this.distanceToCoords(otherPlanet.getX(), otherPlanet.getY());
+    }
+    return this._planetCache[id];
 };
 
 Planet.prototype.distanceToCoords = function distanceToCoords(x, y) {
@@ -76,39 +83,55 @@ Planet.prototype.fleetStepsTo = function fleetStepsTo(otherPlanet) {
 };
 
 Planet.prototype.getTargetingFleets = function getTargetingFleets() {
-    var i,
-        fl,
-        fleets =  this._universe.getAllFleets(),
-        targetingFleets = [];
+    var targeting1,
+        targeting2;
 
-    for (i = 0; fl = fleets[i]; ++i) {
-        if (fl.getDestination().equals(this)) targetingFleets.push(fl);
-    }
-    return targetingFleets;
+    targeting1 = this.getAttackingFleets();
+    targeting2 = this.getDefendingFleets();
+
+    targeting1.push.apply(targeting1, targeting2);
+    return targeting1;
 };
 
 Planet.prototype.getAttackingFleets = function getAttackingFleets() {
     var i,
         fl,
-        enemyFleets =  this._universe.getEnemyFleets(this.getOwner()),
-        attackingFleets = [];
+        enemyFleets,
+        attackingFleets;
 
-    for (i = 0; fl = enemyFleets[i]; ++i) {
-        if (fl.getDestination().equals(this)) attackingFleets.push(fl);
+    if (!this._fleetCache.hasOwnProperty(_STATE_KEYS["attackedBy"])) {
+        attackingFleets =  [];
+        enemyFleets =  this._universe.getEnemyFleets(this.getOwner());
+
+        for (i = 0; fl = enemyFleets[i]; ++i) {
+            if (fl.getDestination().equals(this)) attackingFleets.push(fl);
+        }
+        this._fleetCache[_STATE_KEYS["attackedBy"]] = attackingFleets;
     }
-    return attackingFleets;
+
+    attackingFleets = this._fleetCache[_STATE_KEYS["attackedBy"]];
+    return attackingFleets.slice();
 };
 
 Planet.prototype.getDefendingFleets = function getDefendingFleets() {
     var i,
         fl,
-        myFleets = this._universe.getFleets(this.getOwner()),
+        myFleets,
+        defendingFleets;
+
+    if (!this._fleetCache.hasOwnProperty(_STATE_KEYS["defendedBy"])) {
+        myFleets =  this._universe.getFleets(this.getOwner());
         defendingFleets = [];
 
-    for (i = 0; fl = myFleets[i]; ++i) {
-        if (fl.getDestination().equals(this)) defendingFleets.push(fl);
+        for (i = 0; fl = myFleets[i]; ++i) {
+            if (fl.getDestination().equals(this)) defendingFleets.push(fl);
+        }
+
+        this._fleetCache[_STATE_KEYS["defendedBy"]] = defendingFleets;
     }
-    return defendingFleets;
+
+    defendingFleets = this._fleetCache[_STATE_KEYS["defendedBy"]];
+    return defendingFleets.slice();
 };
 
 Planet.prototype.isNeutral = function isNeutral() {

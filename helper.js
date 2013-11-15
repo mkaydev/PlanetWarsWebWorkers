@@ -2,46 +2,48 @@ var _STATE_KEYS,
     createId;
 
 _STATE_KEYS = function() {
-    var i,
-        key,
-        keys = {},
+    var i, key, keys, abc, abcLen, values, valueLen;
 
-        abc = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
-        abcLen = abc.length,
+    keys = {};
+    abc = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    abcLen = abc.length;
 
-        values = [
-            "planets",
-            "players",
-            "fleets",
-            "id",
-            "forces",
-            "airForces",
-            "groundForces",
-            "x",
-            "y",
-            "name",
-            "color",
-            "recruitingPerStep",
-            "owner",
-            "isNeutral",
-            "destination",
-            "source",
-            "movementPerStep",
-            "fleetMovementPerStep",
-            "width",
-            "height",
-            "activePlayersCount",
-            "radius",
-            "backRightX",
-            "backRightY",
-            "backLeftX",
-            "backLeftY",
-            "sourceId",
-            "destinationId",
-            "ownerId",
-            "universe"
-        ],
-        valueLen = values.length;
+    values = [
+        "planets",
+        "players",
+        "fleets",
+        "id",
+        "forces",
+        "airForces",
+        "groundForces",
+        "x",
+        "y",
+        "name",
+        "color",
+        "recruitingPerStep",
+        "owner",
+        "isNeutral",
+        "destination",
+        "source",
+        "movementPerStep",
+        "fleetMovementPerStep",
+        "width",
+        "height",
+        "activePlayersCount",
+        "radius",
+        "backRightX",
+        "backRightY",
+        "backLeftX",
+        "backLeftY",
+        "sourceId",
+        "destinationId",
+        "ownerId",
+        "universe",
+        "attackedBy",
+        "defendedBy"
+    ];
+
+    valueLen = values.length;
 
     for (i = 0; i < valueLen; ++i) {
         if (i >= abcLen) {
@@ -71,8 +73,8 @@ if (typeof window === "undefined") {
 }
 
 createId = function() {
-    var createId,
-        localNext = 0;
+    var createId, localNext;
+    localNext = 0;
 
     createId = function() {
         return "" + localNext++;
@@ -81,10 +83,8 @@ createId = function() {
 } ();
 
 function shuffleArray(arr) {
-    var i,
-        switchIndex,
-        tmp,
-        arrLen = arr.length;
+    var i, switchIndex, tmp, arrLen;
+    arrLen = arr.length;
 
     for (i = 0; i < arrLen - 1; ++i) {
         switchIndex = Math.floor(Math.random() * (arrLen - i)) + i;
@@ -95,11 +95,10 @@ function shuffleArray(arr) {
 }
 
 function checkUnique(arr, attr, inner_attr) {
-    var i,
-        attribute,
-        arrLen = arr.length,
-        known = {},
-        attrs = [];
+    var i, attribute, arrLen, known, attrs;
+    arrLen = arr.length;
+    known = {};
+    attrs = [];
 
     for (i = 0; i < arrLen; ++i) {
         attribute = arr[i][attr];

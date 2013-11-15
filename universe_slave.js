@@ -9,8 +9,9 @@ importScripts("helper.js", "player_slave.js", "planet_slave.js", "fleet_slave.js
 
 
 onmessage = function(oEvent) {
-    var data = oEvent.data,
-        action = data.action;
+    var data, action;
+    data = oEvent.data;
+    action = data.action;
 
     if (action == "think") {
 
@@ -147,18 +148,20 @@ Universe.prototype._fromJSON = function _fromJSON(universeState) {
     this._planetsArray = planetsArray;
     this._fleetsPerPlayer = fleetsPerPlayer;
     this._fleetsArray = fleetsArray;
+
+    // will cache enemy-fleets/planets per player
+    this._fleetCache = {};
+    this._planetCache = {};
 };
 
 // create wrappers for the json, with additional functions for use by the players
 // recycling objects to avoid unnecessary garbage collection, which tends to freeze the animation
 Universe.prototype._toPlanetObjects = function _toPlanetObject(planetsJSON) {
-    var i,
-        planet,
-        planetJSON,
-        planets = [],
-        pool = this.planetPool,
-        poolLen = pool.length,
-        poolIndex = this.planetPoolIndex;
+    var i, planet, planetJSON, planets, pool, poolLen, poolIndex;
+    planets = [];
+    pool = this.planetPool;
+    poolLen = pool.length;
+    poolIndex = this.planetPoolIndex;
 
     for (i = 0; planetJSON = planetsJSON[i]; ++i) {
 
@@ -176,13 +179,11 @@ Universe.prototype._toPlanetObjects = function _toPlanetObject(planetsJSON) {
 };
 
 Universe.prototype._toFleetObjects = function _toFleetObjects(fleetsJSON) {
-    var i,
-        fleet,
-        fleetJSON,
-        fleets = [],
-        pool = this.fleetPool,
-        poolLen = pool.length,
-        poolIndex = this.fleetPoolIndex;
+    var i, fleet, fleetJSON, fleets, pool, poolLen, poolIndex;
+    fleets = [];
+    pool = this.fleetPool;
+    poolLen = pool.length;
+    poolIndex = this.fleetPoolIndex;
 
     for (i = 0; fleetJSON = fleetsJSON[i]; ++i) {
 
@@ -213,9 +214,8 @@ Universe.prototype._toPlayerObject = function _toPlayerObject(playerJSON) {
 };
 
 Universe.prototype._getPlanet = function _getPlanet(planetId) {
-    var i,
-        planet,
-        planetsArr = this._planetsArray;
+    var i, planet, planetsArr;
+    planetsArr = this._planetsArray;
 
     for (i = 0; planet = planetsArr[i]; ++i) {
         if (planet.getId() == planetId) {
@@ -253,17 +253,27 @@ Universe.prototype.getNeutralPlanets = function getNeutralPlanets() {
 Universe.prototype.getEnemyPlanets = function getEnemyPlanets(player) {
     var playerId,
         planets,
-        id = player.id,
-        enemyPlanets = [],
+        id,
+        enemyPlanets,
+        planPerPlayer;
+
+    id = player.id;
+
+    if (!this._planetCache.hasOwnProperty(id)) {
+        enemyPlanets = [];
         planPerPlayer = this._planetsPerPlayer;
 
-    for (playerId in planPerPlayer) {
-        if (playerId != id) {
-            planets = planPerPlayer[playerId];
-            enemyPlanets.push.apply(enemyPlanets, planets);
+        for (playerId in planPerPlayer) {
+            if (playerId != id) {
+                planets = planPerPlayer[playerId];
+                enemyPlanets.push.apply(enemyPlanets, planets);
+            }
         }
+        this._planetCache[id] = enemyPlanets;
     }
-    return enemyPlanets;
+
+    enemyPlanets = this._planetCache[id];
+    return enemyPlanets.slice();
 };
 
 Universe.prototype.getAllFleets = function getAllFleets() {
@@ -276,19 +286,23 @@ Universe.prototype.getFleets = function getFleets(player) {
 };
 
 Universe.prototype.getEnemyFleets = function getEnemyFleets(player) {
-    var playerId,
-        fleets,
-        id = player.id,
-        enemyFleets = [],
+    var playerId, fleets, id, enemyFleets, fleetsPerPlayer;
+    id = player.id;
+
+    if (!this._fleetCache.hasOwnProperty(id)) {
+        enemyFleets = [];
         fleetsPerPlayer = this._fleetsPerPlayer;
 
-    for (playerId in fleetsPerPlayer) {
-        if (playerId != id) {
-            fleets = fleetsPerPlayer[playerId];
-            enemyFleets.push.apply(enemyFleets, fleets);
+        for (playerId in fleetsPerPlayer) {
+            if (playerId != id) {
+                fleets = fleetsPerPlayer[playerId];
+                enemyFleets.push.apply(enemyFleets, fleets);
+            }
         }
+        this._fleetCache[id] = enemyFleets;
     }
-    return enemyFleets;
+    enemyFleets = this._fleetCache[id];
+    return enemyFleets.slice();
 };
 
 Universe.prototype.getForces = function getForces(player) {

@@ -2,20 +2,19 @@
 var playerFiles = [
   //  "sample_players/DoNothingPlayer.js",
 
-    //  "sample_players/RandomPlayer.js",
+  //  "sample_players/RandomPlayer.js",
   //  "sample_players/AttackRandomPlayer.js",
   //  "sample_players/AttackLargestEmpirePlayer.js",
   //  "sample_players/KamikazePlayer.js",
   //  "sample_players/SpiralPlayer.js",
   //  "sample_players/AttackBestPlanetPlayer.js",
-
+  // "sample_players/SupportNetworkPlayer.js"
 
     "battle_school/SalamanderPlayer.js",
     "battle_school/RatPlayer.js",
-   // "sample_players/VirusPlayer.js",
-   // "sample_players/AlbatrossPlayer.js",
-   // "sample_players/AttackNearestEnemyPlayer.js",
-   // "sample_players/SupportNetworkPlayer.js"
+  //  "sample_players/VirusPlayer.js",
+  //  "sample_players/AlbatrossPlayer.js",
+  //  "sample_players/AttackNearestEnemyPlayer.js",
 ];
 
 $(document).ready(function() {
@@ -24,13 +23,21 @@ $(document).ready(function() {
         game,
         initializedCallback,
         gameEnded,
-        backgroundCanvasId = "game_background",
-        foregroundCanvasId = "game_foreground",
-        textCanvasId = "game_text",
-        width = 800,
-        height = 600,
-        planetCount = 150,
-        runTournSel = $("#runTournament");
+        backgroundCanvasId,
+        foregroundCanvasId,
+        textCanvasId,
+        width,
+        height,
+        planetCount,
+        runTournSel;
+
+    backgroundCanvasId = "game_background";
+    foregroundCanvasId = "game_foreground";
+    textCanvasId = "game_text";
+    width = 800;
+    height = 600;
+    planetCount = 150;
+    runTournSel = $("#runTournament");
 
     runTournSel.prop('checked', false);
     $("#tournament").find(":input").removeAttr("disabled");
@@ -119,9 +126,10 @@ $(document).ready(function() {
 });
 
 function getTournamentInput() {
-    var repetitions = 1,
-        duel = false,
-        runTournament = $("#runTournament").is(":checked");
+    var repetitions, duel, runTournament;
+    repetitions = 1;
+    duel = false;
+    runTournament = $("#runTournament").is(":checked");
 
     if (runTournament) {
         repetitions = $("#repetitions").val();
@@ -198,13 +206,11 @@ Tournament.prototype.setRepetitions = function setRepetitions(repetitions) {
 };
 
 Tournament.prototype.initialize = function initialize() {
-    var i,
-        j,
-        cycle,
-        rep = this.repetitions,
-        contestants = this.contestants,
-        contLen = contestants.length,
-        gamesToPlay = [];
+    var i, j, cycle, rep, contestants, contLen, gamesToPlay;
+    rep = this.repetitions;
+    contestants = this.contestants;
+    contLen = contestants.length;
+    gamesToPlay = [];
 
 
     if (!this.duel) {
@@ -231,15 +237,13 @@ Tournament.prototype.initialize = function initialize() {
 };
 
 Tournament.prototype.initializePoints = function initializePoints(activePlayers) {
-    var i,
-        contestant,
-        points = this.points,
-        actLen = activePlayers.length;
+    var i, contestant, points, player;
+    points = this.points;
 
     if (typeof points === "undefined") points = {};
 
-    for (i = 0; i < actLen; ++i) {
-        contestant = activePlayers[i].name;
+    for (i = 0; player = activePlayers[i]; ++i) {
+        contestant = player.name;
         if (!points.hasOwnProperty(contestant)) points[contestant] = 0;
     }
 
@@ -247,11 +251,9 @@ Tournament.prototype.initializePoints = function initializePoints(activePlayers)
 };
 
 Tournament.prototype.addResultSummary = function addResultSummary(resultSummary) {
-    var i,
-        winner,
-        survivor,
-        players = resultSummary.players,
-        playersLen = players.length;
+    var i, winner, survivor, players, playersLen;
+    players = resultSummary.players;
+    playersLen = players.length;
 
     if (playersLen == 1) {
         winner = players[0].name;
@@ -259,8 +261,8 @@ Tournament.prototype.addResultSummary = function addResultSummary(resultSummary)
 
     } else {
 
-        for (i = 0; survivor = players[i].name; ++i) {
-            this.addPoints(survivor, 1);
+        for (i = 0; survivor = players[i]; ++i) {
+            this.addPoints(survivor.name, 1);
         }
     }
     this.gameIndex += 1;

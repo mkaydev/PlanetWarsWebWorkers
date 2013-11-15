@@ -116,10 +116,11 @@ Planet.prototype.collidesWith = function collidesWith(otherPlanet, minDistance) 
 
 Planet.prototype.margin = 10;
 Planet.prototype.fullyVisibleIn = function fullyVisibleIn(canvasWidth, canvasHeight) {
-    var r = this.getRadius(),
-        x = this.getX(),
-        y = this.getY(),
-        margin = this.margin;
+    var r, x, y, margin;
+    r = this.getRadius();
+    x = this.getX();
+    y = this.getY();
+    margin = this.margin;
 
     if (x - r < margin) return false;
     if (y - r < margin) return false;

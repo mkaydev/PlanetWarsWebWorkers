@@ -16,13 +16,9 @@ PlanetWarsGame: function PlanetWarsGame(planetCount, width, height, backgroundCa
 };
 
 PlanetWarsGame.prototype.initialize = function initialize(playerFiles, initializedCallback) {
-    var textContext,
-        context,
-        foregroundSel,
-        backgroundSel,
-        textSel,
-        width = this.width,
-        height = this.height;
+    var textContext, context, foregroundSel, backgroundSel, textSel, width, height;
+    width = this.width;
+    height = this.height;
 
     this.playerFiles = playerFiles;
     this.initialized = false;
@@ -42,12 +38,19 @@ PlanetWarsGame.prototype.initialize = function initialize(playerFiles, initializ
             playerId,
             player,
             exportedPlayer,
-            data = oEvent.data,
-            action = data.action,
-            status = data.status,
-            message = data.message,
-            messageId = data.messageId,
-            simId = data.id;
+            data,
+            action,
+            status,
+            message,
+            messageId,
+            simId;
+
+        data = oEvent.data;
+        action = data.action;
+        status = data.status;
+        message = data.message;
+        messageId = data.messageId;
+        simId = data.id;
 
         if (status == "error") {
             if (typeof messageId !== "undefined") {
@@ -153,12 +156,16 @@ PlanetWarsGame.prototype.initialize = function initialize(playerFiles, initializ
 };
 
 PlanetWarsGame.prototype.stepState = function stepState() {
-    var states = this.states,
-        round = this.round;
+    var states, round;
+    states = this.states;
+    round = this.round;
+
     if (!states.hasOwnProperty(round)) return false;
+
     this.currentState = states[round];
     // I'm thinking about a step back feature. When this should be implemented, the following line needs to be removed. (More memory required while running.)
     delete states[round];
+
     ++this.round;
     this.lastStepped = new Date().getTime();
     return true;
@@ -192,7 +199,6 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
         x,
         y,
         forces;
-
 
     if (!this.initialized) return;
     currentState = this.currentState;
@@ -276,7 +282,7 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
 };
 
 PlanetWarsGame.prototype.stepInterval = 64;
-PlanetWarsGame.prototype.maxRounds = 1000;
+PlanetWarsGame.prototype.maxRounds = 2000;
 
 PlanetWarsGame.prototype.step = function step(gameEnded) {
     var activePlayersCount,

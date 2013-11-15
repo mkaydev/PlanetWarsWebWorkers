@@ -12,6 +12,7 @@ Simulator.prototype.initialize = function(playerFiles, planetCount, width, heigh
     var playersCount = playerFiles.length;
     if (planetCount < playersCount) planetCount = playersCount;
     shuffleArray(playerFiles);
+
     this.universe = new Universe(playerFiles, planetCount, width, height, this.run.bind(this));
     this.maxStates = maxRounds;
     this.preCalculateCount = Math.min(this.preCalculateCount, maxRounds);
@@ -44,13 +45,9 @@ Simulator.prototype.getSteppedCallback = function getSteppedCallback() {
 };
 
 Simulator.prototype.postStates = function postStates() {
-    var status,
-        action,
-        message,
-        messageLen,
-        activePlayerCount,
-        curCount = this.currentStateCount,
-        preCount = this.preCalculateCount;
+    var status, action, message, messageLen, activePlayerCount, curCount, preCount;
+    curCount = this.currentStateCount;
+    preCount = this.preCalculateCount;
 
     if (curCount < preCount) return;
     status = "ok";
@@ -103,13 +100,9 @@ Simulator.prototype.preCalculateCount = 20;
 simulator = new Simulator();
 
 onmessage = function(oEvent) {
-    var planetCount,
-        width,
-        height,
-        maxRounds,
-        playerFiles,
-        data = oEvent.data,
-        action = data.action;
+    var planetCount, width, height, maxRounds, playerFiles, data, action;
+    data = oEvent.data;
+    action = data.action;
 
     if (action == "start") {
 

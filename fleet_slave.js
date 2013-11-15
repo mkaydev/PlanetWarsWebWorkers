@@ -5,6 +5,7 @@ Fleet: function Fleet(fleetState, universe) {
 
 Fleet.prototype._setState = function _setState(fleetState) {
     this._state = fleetState;
+    this._distToDest = 0;
 };
 
 Fleet.prototype.getX = function getX() {
@@ -52,11 +53,9 @@ Fleet.prototype.isHostileTo = function isHostileTo(fleetOrPlanet) {
 };
 
 Fleet.prototype.distanceToPos = function distanceToPos(x, y) {
-    var yDiff,
-        xDiff,
-        distance,
-        fleetY = this.getY(),
-        fleetX = this.getX();
+    var yDiff, xDiff, distance, fleetY, fleetX;
+    fleetY = this.getY();
+    fleetX = this.getX();
 
     if (y > fleetY) {
         yDiff = y - fleetY;
@@ -75,8 +74,12 @@ Fleet.prototype.distanceToPos = function distanceToPos(x, y) {
 };
 
 Fleet.prototype.distanceToDestination = function distanceToDestination() {
-    var destination = this.getDestination();
-    return this.distanceToPos(destination.getX(), destination.getY());
+    var destination;
+    if (this._distToDest == 0) {
+        destination = this.getDestination();
+        this._distToDest = this.distanceToPos(destination.getX(), destination.getY());
+    }
+    return this._distToDest;
 };
 
 Fleet.prototype.stepsToDestination = function stepsToDestination() {

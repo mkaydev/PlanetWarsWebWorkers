@@ -47,10 +47,15 @@ function Universe(playerFiles, planetCount, width, height, initializedCallback) 
                 source,
                 sourceForces,
                 destination,
-                data = oEvent.data,
-                action = data.action,
-                workerId = data.workerId,
-                workers = this.workers;
+                data,
+                action,
+                workerId,
+                workers;
+
+            data = oEvent.data;
+            action = data.action;
+            workerId = data.workerId;
+            workers = this.workers;
 
             if (!workers.hasOwnProperty(workerId)) {
                 if (action == "log") {
@@ -134,8 +139,8 @@ function Universe(playerFiles, planetCount, width, height, initializedCallback) 
 }
 
 Universe.prototype.stepFinished = function stepFinished() {
-    var workerId,
-        thinkFinished = this.thinkFinished;
+    var workerId, thinkFinished;
+    thinkFinished = this.thinkFinished;
 
     for (workerId in thinkFinished) {
         if (!thinkFinished[workerId]) return false;
@@ -154,9 +159,8 @@ Universe.prototype.deregisterFleet = function deregisterFleet(fleet) {
 };
 
 Universe.prototype.getPlanet = function getPlanet(planetId) {
-    var i,
-        planet,
-        planets = this.planets;
+    var i, planet, planets;
+    planets = this.planets;
 
     for (i = 0; planet = planets[i]; ++i) {
         if (planetId == planet.getId()) return planet;
@@ -165,9 +169,8 @@ Universe.prototype.getPlanet = function getPlanet(planetId) {
 };
 
 Universe.prototype.getWorkerId = function getPlayer(playerId) {
-    var workerId,
-        player,
-        players = this.players;
+    var workerId, player, players;
+    players = this.players;
 
     for (workerId in players) {
         player = players[workerId];
@@ -176,8 +179,8 @@ Universe.prototype.getWorkerId = function getPlayer(playerId) {
 };
 
 Universe.prototype.terminateWorkers = function terminateWorkers() {
-    var workerId,
-        workers = this.workers;
+    var workerId, workers;
+    workers = this.workers;
 
     for (workerId in workers) {
         workers[workerId].terminate();
@@ -191,11 +194,17 @@ Universe.prototype.determineActivePlayers = function determineActivePlayers() {
         player,
         workerId,
         workers,
-        activePlayers = [],
-        curActivePlayers = this.activePlayers,
-        curActivePlayersLen = curActivePlayers.length,
-        workers = this.workers,
-        players  = this.players;
+        activePlayers,
+        curActivePlayers,
+        curActivePlayersLen,
+        workers,
+        players;
+
+    activePlayers = [];
+    curActivePlayers = this.activePlayers;
+    curActivePlayersLen = curActivePlayers.length;
+    workers = this.workers;
+    players = this.players;
 
     for (i = 0; i < curActivePlayersLen; ++i) {
         player = curActivePlayers[i];
@@ -228,11 +237,17 @@ Universe.prototype.step = function step(steppedCallback) {
         planet,
         fleetId,
         fleet,
-        thinkFinished = {},
-        activePlayers = this.activePlayers,
-        workers = this.workers,
-        planets = this.planets,
-        fleets = this.fleets;
+        thinkFinished,
+        activePlayers,
+        workers,
+        planets,
+        fleets;
+
+    thinkFinished = {};
+    activePlayers = this.activePlayers;
+    workers = this.workers;
+    planets = this.planets;
+    fleets = this.fleets;
 
     for (fleetId in fleets) {
         fleet = fleets[fleetId];
@@ -267,9 +282,8 @@ Universe.prototype.exportArray = function exportArray(arr) {
 };
 
 Universe.prototype.sumForces = function sumForces(arr) {
-    var i,
-        el,
-        sum = 0;
+    var i, el, sum;
+    sum = 0;
 
     for (i = 0; el = arr[i]; ++i) {
         sum += el.getForces();
@@ -290,10 +304,15 @@ Universe.prototype.toJSON = function toJSON() {
         forces,
         exportedPlayer,
         player,
-        activePlayers = this.activePlayers,
-        exportedFleets = {},
-        exportedPlanets = {},
-        exportedPlayers = {};
+        activePlayers,
+        exportedFleets,
+        exportedPlanets,
+        exportedPlayers;
+
+    activePlayers = this.activePlayers;
+    exportedFleets = {};
+    exportedPlanets = {};
+    exportedPlayers = {};
 
     for (i = 0; player = activePlayers[i]; ++i) {
         id = player.id;
@@ -342,9 +361,9 @@ Universe.prototype.toJSON = function toJSON() {
 };
 
 Universe.prototype.getAllFleets = function getAllFleets() {
-    var fleetId,
-        fleets = this.fleets,
-        fleetsAsArray = [];
+    var fleetId, fleets, fleetsAsArray;
+    fleets = this.fleets;
+    fleetsAsArray = [];
 
     for (fleetId in fleets) {
         fleetsAsArray.push(fleets[fleetId]);
@@ -355,11 +374,10 @@ Universe.prototype.getAllFleets = function getAllFleets() {
 };
 
 Universe.prototype.getFleets = function getFleets(player) {
-    var i,
-        fleetArr,
-        playerId = player.id,
-        fleetsAsArray = this.getAllFleets(),
-        myFleets = [];
+    var i, fleetArr, playerId, fleetsAsArray, myFleets;
+    playerId = player.id;
+    fleetsAsArray = this.getAllFleets();
+    myFleets = [];
 
     for (i = 0; fleetArr = fleetsAsArray[i]; ++i) {
         if (fleetArr.getOwner().id == playerId) myFleets.push(fleetArr);
@@ -374,11 +392,10 @@ Universe.prototype.getAllPlanets = function getAllPlanets() {
 };
 
 Universe.prototype.getPlanets = function getPlanets(player) {
-    var i,
-        planet,
-        playerId = player.id,
-        all = this.getAllPlanets(),
-        planets = [];
+    var i, planet, playerId, all, planets;
+    playerId = player.id;
+    all = this.getAllPlanets();
+    planets = [];
 
     for (i = 0; planet = all[i]; ++i) {
         if (planet.getOwner().id === playerId) planets.push(planet);
@@ -401,13 +418,21 @@ Universe.prototype.createPlanets = function createPlanets() {
         planet,
         mainCoords,
         recruiting,
-        planets = this.planets,
-        players = this.players,
-        neutralCount = this.neutralPlanetCount,
-        mainRecruiting = this.mainPlanetRecruitingPerStep,
-        mainForces = this.mainPlanetInitialForces,
-        maxSecondaryRecr = this.maxSecondaryPlanetRecruitingPerStep,
-        minSecondaryRecr = this.minSecondaryPlanetRecrutingPerStep;
+        planets,
+        players,
+        neutralCount,
+        mainRecruiting,
+        mainForces,
+        maxSecondaryRecr,
+        minSecondaryRecr;
+
+    planets = this.planets;
+    players = this.players;
+    neutralCount = this.neutralPlanetCount;
+    mainRecruiting = this.mainPlanetRecruitingPerStep;
+    mainForces = this.mainPlanetInitialForces;
+    maxSecondaryRecr = this.maxSecondaryPlanetRecruitingPerStep;
+    minSecondaryRecr = this.minSecondaryPlanetRecrutingPerStep;
 
     mainCoords = this.getMainPlanetCoords(this.playerCount);
 
@@ -438,18 +463,18 @@ Universe.prototype.getMainPlanetCoords = function getMainPlanetCoords(count) {
      *       e.g. having a greater distance from other players or better access to neutral planets at the beginning.
      */
 
-    var i, coords, next, centerX, centerY;
+    var i, coords, next, centerX, centerY, center, start, r, arcPerPlayer, startAngle, curAngle;
 
-    var center = {
+    center = {
         "x": Math.floor(this.width / 2),
         "y": Math.floor(this.height / 2)
     };
-    var r = (Math.min(this.width, this.height) - (2 * this.minDistanceFromMainPlanet)) / 2;
-    var arcPerPlayer = (2 * Math.PI) / count;
+    r = (Math.min(this.width, this.height) - (2 * this.minDistanceFromMainPlanet)) / 2;
+    arcPerPlayer = (2 * Math.PI) / count;
 
-    var start = {};
-    var startAngle = 0;
-    var curAngle = arcPerPlayer;
+    start = {};
+    startAngle = 0;
+    curAngle = arcPerPlayer;
 
     centerX = center.x;
     centerY = center.y;
@@ -481,21 +506,18 @@ Universe.prototype.getMainPlanetCoords = function getMainPlanetCoords(count) {
 };
 
 Universe.prototype.getNewPlanetCoords = function getNewPlanetCoords() {
-    var x = Math.round(this.width * Math.random()),
-        y = Math.round(this.height * Math.random());
+    var x, y;
+    x = Math.round(this.width * Math.random());
+    y = Math.round(this.height * Math.random());
     return {"x": x, "y": y};
 };
 
 Universe.prototype.createNewPlanet = function createNewPlanet(recruitingPerStep, owner, initialForces, minDistance) {
-    var i,
-        coords,
-        planet,
-        fullyVisible,
-        curPlanet,
-        planets = this.planets,
-        collides = true,
-        width = this.width,
-        height = this.height;
+    var i, coords, planet, fullyVisible, curPlanet, planets, collides, width, height;
+    planets = this.planets;
+    collides = true;
+    width = this.width;
+    height = this.height;
 
     while (collides) {
         fullyVisible = false;
