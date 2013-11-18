@@ -6,35 +6,47 @@ KamikazePlayer.prototype = new Player();
 KamikazePlayer.prototype.constructor = KamikazePlayer;
 
 KamikazePlayer.prototype.think = function think(universe) {
-    var myPlanets = universe.getPlanets(this);
-    var enemyPlanets = universe.getEnemyPlanets(this);
-    if (enemyPlanets.length === 0) return;
+    var i,
+        j,
+        myPlanets,
+        enemyPlanets,
+        curMax,
+        enemyPlanet,
+        myPlanet,
+        myForces,
+        enemyRecruiting,
+        curTarget,
+        targets;
 
-    var curMax = 0;
-    for (var i = 0; i < enemyPlanets.length; ++i) {
-        var enemyPlanet = enemyPlanets[i];
-        var enemyRecruiting = enemyPlanet.getRecruitingPerStep();
+    myPlanets = universe.getPlanets(this);
+    if (myPlanets.length == 0) return;
+
+    enemyPlanets = universe.getEnemyPlanets(this);
+    if (enemyPlanets.length == 0) return;
+
+    curMax = 0;
+    for (i = 0; enemyPlanet = enemyPlanets[i]; ++i) {
+        enemyRecruiting = enemyPlanet.getRecruitingPerStep();
         if (enemyRecruiting > curMax) {
             curMax = enemyRecruiting;
         }
     }
 
-    var targets = [];
-    for (var i = 0; i < enemyPlanets.length; ++i) {
-        var enemyPlanet = enemyPlanets[i];
-        if (enemyPlanet.getRecruitingPerStep() === curMax) {
+    targets = [];
+    for (i = 0; enemyPlanet = enemyPlanets[i]; ++i) {
+        if (enemyPlanet.getRecruitingPerStep() == curMax) {
             targets.push(enemyPlanet);
         }
     }
-    for (var i = 0; i < myPlanets.length; ++i) {
-        var myPlanet = myPlanets[i];
-        var myForces = myPlanet.getForces();
+    for (i = 0; myPlanet = myPlanets[i]; ++i) {
+        myForces = myPlanet.getForces();
 
         shuffleArray(targets);
 
-        for (var j = 0; j < targets.length; ++j) {
-            var curTarget = targets[j];
-            if (myForces > curTarget.getForces()) this.sendFleet(myPlanet, curTarget, myForces);
+        for (j = 0; curTarget = targets[j]; ++j) {
+            if (myForces > curTarget.getForces()) {
+                this.sendFleet(myPlanet, curTarget, myForces);
+            }
         }
     }
 };

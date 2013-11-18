@@ -317,7 +317,7 @@ SalamanderPlayer.prototype.think = function think(universe) {
 
         } else {
 
-            if (playersLength > 2) {
+            if (playersLength > 2 && playersLength < 7) {
                 strategy = "conquerClosestCorner";
             } else {
                 strategy = "conquerRecruitingCenter";

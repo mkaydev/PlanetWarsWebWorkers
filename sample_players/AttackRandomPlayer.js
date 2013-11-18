@@ -4,19 +4,28 @@ AttackRandomPlayer: function AttackRandomPlayer() {
 };
 AttackRandomPlayer.prototype = new Player();
 AttackRandomPlayer.prototype.constructor = AttackRandomPlayer;
+AttackRandomPlayer.prototype.fleetSize = 25;
 
 AttackRandomPlayer.prototype.think = function think(universe) {
-    var fleetSize = 25;
+    var i,
+        myPlanet,
+        myPlanets,
+        enemyPlanets,
+        targetIndex,
+        length,
+        fleetSize;
 
-    var myPlanets = universe.getPlanets(this);
-    var enemyPlanets = universe.getEnemyPlanets(this);
-    if (enemyPlanets.length === 0) return;
+    myPlanets = universe.getPlanets(this);
+    if (myPlanets.length == 0) return;
 
+    enemyPlanets = universe.getEnemyPlanets(this);
+    length = enemyPlanets.length;
+    if (length == 0) return;
 
-    for (var i = 0; i < myPlanets.length; ++i) {
-        var myPlanet = myPlanets[i];
+    fleetSize = this.fleetSize;
+    for (i = 0; myPlanet = myPlanets[i]; ++i) {
         if (myPlanet.getForces() > fleetSize) {
-            var targetIndex = Math.floor(Math.random() * enemyPlanets.length)
+            targetIndex = Math.floor(Math.random() * length)
             this.sendFleet(myPlanet, enemyPlanets[targetIndex], fleetSize);
         }
     }

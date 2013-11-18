@@ -4,43 +4,63 @@ SupportNetworkPlayer: function SupportNetworkPlayer() {
 };
 SupportNetworkPlayer.prototype = new Player();
 SupportNetworkPlayer.prototype.constructor = SupportNetworkPlayer;
+SupportNetworkPlayer.prototype.reserveFactor = 10;
+SupportNetworkPlayer.prototype.fleetSize = 30;
+SupportNetworkPlayer.prototype.support = 2.5;
 
 SupportNetworkPlayer.prototype.think = function think(universe) {
-    var reserveFactor = 10;
-    var fleetSize = 30;
-    var support = 2.5;
+    var i,
+        myPlanets,
+        enemyPlanets,
+        reserveFactor,
+        fleetSize,
+        support,
+        myPlanet,
+        available,
+        target,
+        destination;
 
-    var myPlanets = universe.getPlanets(this);
-    var enemyPlanets = universe.getEnemyPlanets(this);
+    myPlanets = universe.getPlanets(this);
+    if (myPlanets.length == 0) return;
+
+    enemyPlanets = universe.getEnemyPlanets(this);
     if (enemyPlanets.length == 0) return;
 
-    for (var i = 0; i < myPlanets.length; ++i) {
-        var myPlanet = myPlanets[i];
-        var available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
+    reserveFactor = this.reserveFactor;
+    fleetSize = this.fleetSize;
+    support = this.support;
+
+    for (i = 0; myPlanet = myPlanets[i]; ++i) {
+        available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
         if (available < fleetSize) continue;
 
         universe.sortByDistance(myPlanet, enemyPlanets);
-        var target = enemyPlanets[0];
-        var destination = this.getNextDestination(universe, myPlanet, target, support);
+        target = enemyPlanets[0];
+        destination = this.getNextDestination(universe, myPlanet, target, support);
 
         this.sendFleet(myPlanet, destination, fleetSize);
     }
 };
 
 SupportNetworkPlayer.prototype.getLastHop = function getLastHop(universe, source, target, support) {
-    if (typeof target === "undefined") {
-        return;
-    }
-    var minDist = Math.pow(source.distanceTo(target), support);
-    var destination = target;
+    var i,
+        minDist,
+        destination,
+        myPlanets,
+        dist,
+        myPlanet;
 
-    var myPlanets = universe.getPlanets(this);
+    if (typeof target === "undefined") return;
 
-    for (var i = 0; i < myPlanets.length; ++i) {
-        var myPlanet = myPlanets[i];
-        if (myPlanet === source) continue;
+    minDist = Math.pow(source.distanceTo(target), support);
+    destination = target;
 
-        var dist = Math.pow(myPlanet.distanceTo(target), support) + source.distanceTo(myPlanet);
+    myPlanets = universe.getPlanets(this);
+
+    for (i = 0; myPlanet = myPlanets[i]; ++i) {
+        if (myPlanet.equals(source)) continue;
+
+        dist = Math.pow(myPlanet.distanceTo(target), support) + source.distanceTo(myPlanet);
         if (dist < minDist) {
             minDist = dist;
             destination = myPlanet;
@@ -50,9 +70,13 @@ SupportNetworkPlayer.prototype.getLastHop = function getLastHop(universe, source
 };
 
 SupportNetworkPlayer.prototype.getNextDestination = function getNextDestination(universe, source, target, support) {
+    var lastHop,
+        hopBeforeLast;
+
     if (typeof target === "undefined") return;
-    var lastHop = this.getLastHop(universe, source, target, support);
-    var hopBeforeLast = this.getLastHop(universe, source, lastHop, support);
+
+    lastHop = this.getLastHop(universe, source, target, support);
+    hopBeforeLast = this.getLastHop(universe, source, lastHop, support);
 
     while (hopBeforeLast !== lastHop) {
         lastHop = hopBeforeLast;

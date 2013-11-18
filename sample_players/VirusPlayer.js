@@ -5,53 +5,50 @@ VirusPlayer: function VirusPlayer() {
 VirusPlayer.prototype = new Player();
 VirusPlayer.prototype.constructor = VirusPlayer;
 
+VirusPlayer.prototype.fleetSize = 25;
+VirusPlayer.prototype.reserveFactor = 10;
+VirusPlayer.prototype.fullOutFactor = 3;
+
 VirusPlayer.prototype.think = function think(universe) {
-    var fleetSize = 25;
-    var reserveFactor = 10;
-    var fullOutFactor = 3;
+    var i,
+        j,
+        myPlanets,
+        myPlanet,
+        enemyPlanets,
+        available,
+        fleetSize,
+        reserveFactor,
+        fullOutFactor,
+        target,
+        evaluation,
+        foundVictim,
+        attackSize,
+        destination;
 
-    this.evaluateVictim = function evaluateVictim(target, attacker) {
-        var defendingForces = target.getForces();
-        var defendingFleets = target.getDefendingFleets();
-        for (var i = 0; i < defendingFleets.length; ++i) {
-            defendingForces += defendingFleets[i].getForces();
-        }
 
-        var attackingFleets = target.getAttackingFleets();
-        for (var i = 0; i < attackingFleets.length; ++i) {
-            defendingForces -= attackingFleets[i].getForces();
-        }
+    myPlanets = universe.getPlanets(this);
+    if (myPlanets.length == 0) return;
+    enemyPlanets = universe.getEnemyPlanets(this);
 
-        var attackerForces = attacker.getForces();
-        var evaluation = {
-            "attack": defendingForces < fleetSize || attackerForces > fullOutFactor * defendingForces,
-            "fullOut": attackerForces > fullOutFactor * defendingForces
-        };
+    fleetSize = this.fleetSize;
+    fullOutFactor = this.fullOutFactor;
+    reserveFactor = this.reserveFactor;
 
-        return evaluation;
-    }.bind(this);
-
-    var myPlanets = universe.getPlanets(this);
-    var enemyPlanets = universe.getEnemyPlanets(this);
-
-    for (var i = 0; i < myPlanets.length; ++i) {
-        var myPlanet = myPlanets[i];
-        var available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
+    for (i = 0; myPlanet = myPlanets[i]; ++i) {
+        available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
         if (available < fleetSize) continue;
 
         universe.sortByDistance(myPlanet, enemyPlanets);
 
-        var foundVictim = false;
+        foundVictim = false;
 
-        for (var j = 0; j < enemyPlanets.length; ++j ) {
-
-            var target = enemyPlanets[j];
-            var evaluation = this.evaluateVictim(target, myPlanet);
+        for (j = 0; target = enemyPlanets[j]; ++j ) {
+            evaluation = this.evaluateVictim(target, myPlanet);
 
             if (evaluation.attack) {
 
                 if (evaluation.fullOut) {
-                    var attackSize =  Math.max(Math.floor(available / fullOutFactor), fleetSize);
+                    attackSize =  Math.max(Math.floor(available / fullOutFactor), fleetSize);
                     this.sendFleet(myPlanet, target, attackSize);
                     available -= attackSize;
                 } else {
@@ -66,19 +63,50 @@ VirusPlayer.prototype.think = function think(universe) {
         }
 
         if (available > fleetSize && !foundVictim) {
-            var destination = this.getPlanetWithMaxForce(myPlanets);
-            if (myPlanet !== destination) this.sendFleet(myPlanet, destination, Math.max(Math.floor(available / fullOutFactor), fleetSize));
+            destination = this.getPlanetWithMaxForce(myPlanets);
+            if (!myPlanet.equals(destination)) {
+                this.sendFleet(myPlanet, destination, Math.max(Math.floor(available / fullOutFactor), fleetSize));
+            }
         };
     }
 };
 
-VirusPlayer.prototype.getPlanetWithMaxForce = function getPlanetWithMaxForce(planets) {
-    var curMax = 0;
-    var curPlanet;
+VirusPlayer.prototype.evaluateVictim = function evaluateVictim(target, attacker) {
+    var i,
+        fleet,
+        defendingForces,
+        defendingFleets,
+        attackerForces,
+        attackingFleets,
+        evaluation;
 
-    for (var i = 0; i < planets.length; ++i) {
-        var planet = planets[i];
-        var forces = planet.getForces();
+    defendingForces = target.getForces();
+    defendingFleets = target.getDefendingFleets();
+
+    for (i = 0; fleet = defendingFleets[i]; ++i) {
+        defendingForces += fleet.getForces();
+    }
+
+    attackingFleets = target.getAttackingFleets();
+    for (i = 0; fleet = attackingFleets[i]; ++i) {
+        defendingForces -= fleet.getForces();
+    }
+
+    attackerForces = attacker.getForces();
+    evaluation = {
+        "attack": defendingForces < this.fleetSize || attackerForces > this.fullOutFactor * defendingForces,
+        "fullOut": attackerForces > this.fullOutFactor * defendingForces
+    };
+
+    return evaluation;
+};
+
+VirusPlayer.prototype.getPlanetWithMaxForce = function getPlanetWithMaxForce(planets) {
+    var i, planet, forces, curPlanet, curMax;
+    curMax = 0;
+
+    for (i = 0; planet = planets[i]; ++i) {
+        forces = planet.getForces();
         if (forces > curMax) {
             curMax = forces;
             curPlanet = planet;

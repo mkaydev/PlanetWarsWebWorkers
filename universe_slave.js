@@ -115,6 +115,14 @@ Universe.prototype._fromJSON = function _fromJSON(universeState) {
         }
 
         players[playerId] = player;
+    }
+
+    this._players = players;
+    this._playersArray = playersArray;
+    this._playersJSON = playersJSON;
+
+    for (var i = 0; player = playersArray[i]; ++i) {
+        playerId = player.id;
 
         if (planetsJSON.hasOwnProperty(playerId)) {
             playersPlanetsJSON = planetsJSON[playerId];
@@ -125,6 +133,18 @@ Universe.prototype._fromJSON = function _fromJSON(universeState) {
         } else {
             planetsPerPlayer[playerId] = [];
         }
+    }
+
+    playerId = this._neutralPlayerId;
+
+    if (planetsJSON.hasOwnProperty(playerId)) {
+        playersPlanetsJSON = planetsJSON[playerId];
+        playersPlanets = this._toPlanetObjects(playersPlanetsJSON);
+        planetsPerPlayer[playerId] = playersPlanets;
+        planetsArray.push.apply(planetsArray, playersPlanets);
+
+    } else {
+        planetsPerPlayer[playerId] = [];
     }
 
     for (var i = 0; player = playersArray[i]; ++i) {
@@ -141,9 +161,6 @@ Universe.prototype._fromJSON = function _fromJSON(universeState) {
         }
     }
 
-    this._players = players;
-    this._playersArray = playersArray;
-    this._playersJSON = playersJSON;
     this._planetsPerPlayer = planetsPerPlayer;
     this._planetsArray = planetsArray;
     this._fleetsPerPlayer = fleetsPerPlayer;
@@ -213,7 +230,7 @@ Universe.prototype._toPlayerObject = function _toPlayerObject(playerJSON) {
     return player;
 };
 
-Universe.prototype._getPlanet = function _getPlanet(planetId) {
+Universe.prototype.getPlanet = function getPlanet(planetId) {
     var i, planet, planetsArr;
     planetsArr = this._planetsArray;
 
@@ -225,7 +242,7 @@ Universe.prototype._getPlanet = function _getPlanet(planetId) {
     return null;
 };
 
-Universe.prototype._getPlayer = function _getPlayer(playerId) {
+Universe.prototype.getPlayer = function getPlayer(playerId) {
     if (!this._players.hasOwnProperty(playerId)) return null;
     return this._players[playerId];
 };

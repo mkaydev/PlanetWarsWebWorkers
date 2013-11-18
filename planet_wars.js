@@ -173,6 +173,7 @@ PlanetWarsGame.prototype.stepState = function stepState() {
 
 PlanetWarsGame.prototype.drawGame = function drawGame() {
     var i,
+        j,
         exportedPlayers,
         exportedFleets,
         exportedPlanets,
@@ -198,7 +199,8 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
         textContext,
         x,
         y,
-        forces;
+        forces,
+        expPlayerKeys;
 
     if (!this.initialized) return;
     currentState = this.currentState;
@@ -215,15 +217,17 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
     // for Firefox 24.0 on Ubuntu and Chrome 28.0.1500.71 on Ubuntu Chromium
     foregroundContext.clearRect(0, 0, foregroundCanvas.width, foregroundCanvas.height);
 
+    expPlayerKeys = Object.keys(exportedPlayers);
+
     // to avoid canvas state changes, loop by color, i.e. by player
-    for (playerId in exportedPlayers) {
+    for (i = 0; playerId = expPlayerKeys[i]; ++i) {
         color = exportedPlayers[playerId][_STATE_KEYS["color"]];
         if (!exportedPlanets.hasOwnProperty(playerId)) continue;
 
         planets = exportedPlanets[playerId];
         foregroundContext.fillStyle = color;
 
-        for (i = 0; planet = planets[i]; ++i) {
+        for (j = 0; planet = planets[j]; ++j) {
             centerX = planet[_STATE_KEYS["x"]];
             centerY = planet[_STATE_KEYS["y"]];
             radius = planet[_STATE_KEYS["radius"]];
@@ -234,7 +238,7 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
         }
     }
 
-    for (playerId in exportedPlayers) {
+    for (i = 0; playerId = expPlayerKeys[i]; ++i) {
         color = exportedPlayers[playerId][_STATE_KEYS["color"]];
         if (!exportedFleets.hasOwnProperty(playerId)) continue;
 
@@ -242,7 +246,7 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
         fleets = exportedFleets[playerId];
         foregroundContext.strokeStyle = color;
 
-        for (i = 0; fleet = fleets[i]; ++i) {
+        for (j = 0; fleet = fleets[j]; ++j) {
             currentX = fleet[_STATE_KEYS["x"]];
             currentY = fleet[_STATE_KEYS["y"]];
 
@@ -267,11 +271,11 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
     textContext = textCanvas.getContext("2d");
     textContext.clearRect(0, 0, textCanvas.width, textCanvas.height);
 
-    for (playerId in exportedPlayers) {
+    for (i = 0; playerId = expPlayerKeys[i]; ++i) {
         if (!exportedPlanets.hasOwnProperty(playerId)) continue;
 
         planets = exportedPlanets[playerId];
-        for (i = 0; planet = planets[i]; ++i) {
+        for (j = 0; planet = planets[j]; ++j) {
             x = planet[_STATE_KEYS["x"]];
             y = planet[_STATE_KEYS["y"]];
             forces = planet[_STATE_KEYS["forces"]];
@@ -282,7 +286,7 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
 };
 
 PlanetWarsGame.prototype.stepInterval = 64;
-PlanetWarsGame.prototype.maxRounds = 2000;
+PlanetWarsGame.prototype.maxRounds = 1500;
 
 PlanetWarsGame.prototype.step = function step(gameEnded) {
     var activePlayersCount,
@@ -307,6 +311,7 @@ PlanetWarsGame.prototype.step = function step(gameEnded) {
     if (activePlayersCount > 1 && this.round < this.maxRounds) {
         now = new Date().getTime();
         if (now - this.lastStepped > this.stepInterval) {
+            //console.log(now - this.lastStepped);
             stepFinished = this.stepState();
             
             if (!stepFinished) {

@@ -6,35 +6,53 @@ AlbatrossPlayer: function AlbatrossPlayer() {
 };
 AlbatrossPlayer.prototype = new SupportNetworkPlayer();
 AlbatrossPlayer.prototype.constructor = AlbatrossPlayer;
+AlbatrossPlayer.prototype.fleetSize = 25;
+AlbatrossPlayer.prototype.reserveFactor = 10;
+AlbatrossPlayer.prototype.support = 3;
 
 AlbatrossPlayer.prototype.think = function think(universe) {
-    var fleetSize = 25;
-    var reserveFactor = 10;
-    var support = 3;
+    var i,
+        myPlanets,
+        enemyPlanets,
+        fleetSize,
+        reserveFactor,
+        support,
+        myPlanet,
+        myForces,
+        myRecruiting,
+        available,
+        target,
+        destination,
+        targetForces;
 
-    var myPlanets = universe.getPlanets(this);
-    var enemyPlanets = universe.getEnemyPlanets(this);
+
+    myPlanets = universe.getPlanets(this);
+    if (myPlanets.length == 0) return;
+
+    enemyPlanets = universe.getEnemyPlanets(this);
     if (enemyPlanets.length == 0) return;
 
+    fleetSize = this.fleetSize;
+    reserveFactor = this.reserveFactor;
+    support = this.support;
 
-    for (var i = 0; i < myPlanets.length; ++i) {
-        var myPlanet = myPlanets[i];
-        var myForces = myPlanet.getForces();
-        var myRecruiting = myPlanet.getRecruitingPerStep();
+    for (i = 0; myPlanet = myPlanets[i]; ++i) {
+        myForces = myPlanet.getForces();
+        myRecruiting = myPlanet.getRecruitingPerStep();
 
-        var available = myForces - reserveFactor * myRecruiting;
+        available = myForces - reserveFactor * myRecruiting;
         if (available < fleetSize) continue;
 
         universe.sortByDistance(myPlanet, enemyPlanets);
-        var target = enemyPlanets[0];
-        var destination = this.getNextDestination(universe, myPlanet, target, support);
+        target = enemyPlanets[0];
+        destination = this.getNextDestination(universe, myPlanet, target, support);
 
-        var targetForces = target.getForces();
+        targetForces = target.getForces();
         if (target === destination) {
             if (targetForces > available && target.getRecruitingPerStep() >= myRecruiting) continue;
         }
 
-        var fleetSize = Math.ceil(targetForces / fleetSize) * fleetSize;
+        fleetSize = Math.ceil(targetForces / fleetSize) * fleetSize;
         this.sendFleet(myPlanet, destination, Math.min(available, fleetSize));
     }
 };

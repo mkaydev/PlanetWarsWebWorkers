@@ -4,16 +4,26 @@ RandomPlayer: function RandomPlayer() {
 };
 RandomPlayer.prototype = new Player();
 RandomPlayer.prototype.constructor = RandomPlayer;
+RandomPlayer.prototype.fleetSize = 25;
 RandomPlayer.prototype.think = function think(universe) {
-    var fleetSize = 25;
+    var i,
+        myPlanets,
+        allPlanets,
+        myPlanet,
+        targetIndex,
+        length,
+        fleetSize;
 
-    var myPlanets = universe.getPlanets(this);
-    var allPlanets = universe.getAllPlanets();
+    myPlanets = universe.getPlanets(this);
+    if (myPlanets.length == 0) return;
 
-    for (var i = 0; i < myPlanets.length; ++i) {
-        var myPlanet = myPlanets[i];
+    allPlanets = universe.getAllPlanets();
+    length = allPlanets.length;
+
+    fleetSize = this.fleetSize;
+    for (i = 0; myPlanet = myPlanets[i]; ++i) {
         if (myPlanet.getForces() > fleetSize) {
-            var targetIndex = Math.floor(Math.random() * allPlanets.length)
+            targetIndex = Math.floor(Math.random() * length)
             this.sendFleet(myPlanet, allPlanets[targetIndex], fleetSize);
         }
     }

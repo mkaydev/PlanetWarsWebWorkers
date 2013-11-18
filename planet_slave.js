@@ -7,10 +7,11 @@ Planet.prototype._setState = function _setState(planetState) {
     this._fleetCache = {};
     this._planetCache = {};
     this._state = planetState;
+    this._owner = this._universe.getPlayer(this._state[_STATE_KEYS["ownerId"]]);
 };
 
 Planet.prototype.getOwner = function getOwner() {
-    return this._universe._getPlayer(this._state[_STATE_KEYS["ownerId"]]);
+    return this._owner;
 };
 
 Planet.prototype.getX = function getX() {

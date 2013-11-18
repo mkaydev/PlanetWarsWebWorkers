@@ -4,22 +4,33 @@ AttackNearestEnemyPlayer: function AttackNearestEnemyPlayer() {
 };
 AttackNearestEnemyPlayer.prototype = new Player();
 AttackNearestEnemyPlayer.prototype.constructor = AttackNearestEnemyPlayer;
+AttackNearestEnemyPlayer.prototype.reserveFactor = 10;
+AttackNearestEnemyPlayer.prototype.fleetSize = 25;
 
 AttackNearestEnemyPlayer.prototype.think = function think(universe) {
-    var reserveFactor = 10;
-    var fleetSize = 25;
+    var i,
+        myPlanets,
+        enemyPlanets,
+        myPlanet,
+        available,
+        target,
+        fleetSize,
+        reserveFactor;
 
-    var myPlanets = universe.getPlanets(this);
-    var enemyPlanets = universe.getEnemyPlanets(this);
-    if (enemyPlanets.length === 0) return;
+    myPlanets = universe.getPlanets(this);
+    if (myPlanets.length == 0) return;
 
-    for (var i = 0; i < myPlanets.length; ++i) {
-        var myPlanet = myPlanets[i];
-        var available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
+    enemyPlanets = universe.getEnemyPlanets(this);
+    if (enemyPlanets.length == 0) return;
+
+    fleetSize = this.fleetSize;
+    reserveFactor = this.reserveFactor;
+    for (i = 0; myPlanet = myPlanets[i]; ++i) {
+        available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
         if (available < fleetSize) continue;
 
         universe.sortByDistance(myPlanet, enemyPlanets);
-        var target = enemyPlanets[0];
+        target = enemyPlanets[0];
         this.sendFleet(myPlanet, target, fleetSize);
     }
 };

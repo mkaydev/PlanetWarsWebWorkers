@@ -52,7 +52,7 @@ Simulator.prototype.postStates = function postStates() {
     if (curCount < preCount) return;
     status = "ok";
     action = "postStates"
-    if (curCount < preCount + this.statesPerMessage - 1) action = "start";
+    if (curCount <= preCount + this.statesPerMessage - 1) action = "start";
 
     message = this.states;
     messageLen = message.length;
@@ -94,7 +94,7 @@ Simulator.prototype.close = function close() {
     self.close();
 };
 
-Simulator.prototype.statesPerMessage = 2;
+Simulator.prototype.statesPerMessage = 1;
 Simulator.prototype.preCalculateCount = 20;
 
 simulator = new Simulator();

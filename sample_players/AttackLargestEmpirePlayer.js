@@ -4,31 +4,46 @@ AttackLargestEmpirePlayer: function AttackLargestEmpirePlayer() {
 };
 AttackLargestEmpirePlayer.prototype = new Player();
 AttackLargestEmpirePlayer.prototype.constructor = AttackLargestEmpirePlayer;
+AttackLargestEmpirePlayer.prototype.fleetSize = 25;
 
 AttackLargestEmpirePlayer.prototype.think = function think(universe) {
-    var fleetSize = 25;
+    var i,
+        player,
+        myPlanet,
+        myPlanets,
+        targetIndex,
+        planets,
+        curMax,
+        curTargets,
+        curTarLen,
+        activePlayers,
+        fleetSize;
 
-    var curMax = 0;
-    var curTargets = [];
-    var activePlayers = universe.getActivePlayers();
+    myPlanets = universe.getPlanets(this);
+    if (myPlanets.length == 0) return;
 
-    for (var i = 0; i < activePlayers.length; ++i) {
-        if (activePlayers[i] === this) continue;
-        var planets = universe.getPlanets(activePlayers[i]);
+    curMax = 0;
+    curTargets = [];
+    activePlayers = universe.getActivePlayers();
+
+    for (i = 0; player = activePlayers[i]; ++i) {
+        if (player.equals(this)) continue;
+
+        planets = universe.getPlanets(player);
         if (planets.length > curMax) {
             curMax = planets.length;
             curTargets = planets;
         }
     }
 
-    if (curTargets.length == 0) return;
+    curTarLen = curTargets.length;
+    if (curTarLen == 0) return;
 
-    var myPlanets = universe.getPlanets(this);
+    fleetSize = this.fleetSize;
 
-    for (var i = 0; i < myPlanets.length; ++i) {
-        var myPlanet = myPlanets[i];
+    for (i = 0; myPlanet = myPlanets[i]; ++i) {
         if (myPlanet.getForces() > fleetSize) {
-            var targetIndex = Math.floor(Math.random() * curTargets.length);
+            targetIndex = Math.floor(Math.random() * curTarLen);
             this.sendFleet(myPlanet, curTargets[targetIndex], fleetSize);
         }
     }

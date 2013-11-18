@@ -5,6 +5,9 @@ Fleet: function Fleet(fleetState, universe) {
 
 Fleet.prototype._setState = function _setState(fleetState) {
     this._state = fleetState;
+    this._owner = this._universe.getPlayer(this._state[_STATE_KEYS["ownerId"]]);
+    this._source = this._universe.getPlanet(this._state[_STATE_KEYS["sourceId"]])
+    this._destination = this._universe.getPlanet(this._state[_STATE_KEYS["destinationId"]])
     this._distToDest = 0;
 };
 
@@ -25,15 +28,15 @@ Fleet.prototype.getForces = function getForces() {
 };
 
 Fleet.prototype.getOwner = function getOwner() {
-    return this._universe._getPlayer(this._state[_STATE_KEYS["ownerId"]]);
+    return this._owner;
 };
 
 Fleet.prototype.getSource = function getSource() {
-    return this._universe._getPlanet(this._state[_STATE_KEYS["sourceId"]]);
+    return this._source;
 };
 
 Fleet.prototype.getDestination = function getDestination() {
-    return this._universe._getPlanet(this._state[_STATE_KEYS["destinationId"]]);
+    return this._destination;
 };
 
 Fleet.prototype.getMovementPerStep = function getMovementPerStep() {
