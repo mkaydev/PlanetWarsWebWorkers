@@ -48,7 +48,7 @@ AlbatrossPlayer.prototype.think = function think(universe) {
         destination = this.getNextDestination(universe, myPlanet, target, support);
 
         targetForces = target.getForces();
-        if (target === destination) {
+        if (target.equals(destination)) {
             if (targetForces > available && target.getRecruitingPerStep() >= myRecruiting) continue;
         }
 

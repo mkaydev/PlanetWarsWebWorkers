@@ -66,8 +66,10 @@ Simulator.prototype.postStates = function postStates() {
     });
 
     activePlayerCount = message[messageLen - 1][_STATE_KEYS["activePlayersCount"]];
-    if (curCount >= this.maxRounds || activePlayerCount < 2) this.close();
     this.states = [];
+    if (curCount >= this.maxRounds || activePlayerCount < 2) {
+        this.universe.terminateWorkers();
+    }
 };
 
 Simulator.prototype.run = function run() {
@@ -87,11 +89,6 @@ Simulator.prototype.run = function run() {
         this.currentStateCount += 1;
         this.simulate();
     }
-};
-
-Simulator.prototype.close = function close() {
-    this.universe.terminateWorkers();
-    self.close();
 };
 
 Simulator.prototype.statesPerMessage = 1;
@@ -119,5 +116,6 @@ onmessage = function(oEvent) {
 };
 
 onerror = function() {
-    this.close();
+    this.universe.terminateWorkers();
+    self.close();
 };

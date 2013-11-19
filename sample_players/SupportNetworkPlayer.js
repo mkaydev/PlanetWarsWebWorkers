@@ -78,7 +78,7 @@ SupportNetworkPlayer.prototype.getNextDestination = function getNextDestination(
     lastHop = this.getLastHop(universe, source, target, support);
     hopBeforeLast = this.getLastHop(universe, source, lastHop, support);
 
-    while (hopBeforeLast !== lastHop) {
+    while (!hopBeforeLast.equals(lastHop)) {
         lastHop = hopBeforeLast;
         hopBeforeLast = this.getLastHop(universe, source, lastHop, support);
     }

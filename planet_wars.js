@@ -356,11 +356,12 @@ PlanetWarsGame.prototype.pause = function pause() {
     this.running = false;
 };
 
+// I tried using self.close within the worker instead, however sometimes it failed and caused a memory leak, because the workers wouldn't be destroyed.
 PlanetWarsGame.prototype.terminateGame = function terminateGame() {
     if (typeof this.simulator !== "undefined") {
         this.simId = null;
         this.currentState = null;
-        if (!this.ended) this.simulator.terminate();  // otherwise the worker finished and already closed itself
+        this.simulator.terminate();
     }
 };
 
