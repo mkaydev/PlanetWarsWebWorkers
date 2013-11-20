@@ -65,13 +65,16 @@ Universe: function Universe() {
 };
 
 Universe.prototype._fromJSON = function _fromJSON(universeState) {
-    var planetsJSON,
+    var i,
+        planetsJSON,
         fleetsJSON,
         playerId,
         playersJSON,
         playerJSON,
         player,
         players,
+        playersWithFleetsIds,
+        playersWithPlanetsIds,
         playersArray,
         planetsPerPlayer,
         planetsArray,
@@ -96,8 +99,10 @@ Universe.prototype._fromJSON = function _fromJSON(universeState) {
     playersArray = [];
     planetsPerPlayer = {};
     planetsArray = [];
+    playersWithPlanetsIds = [];
     fleetsPerPlayer = {};
     fleetsArray = [];
+    playersWithFleetsIds = [];
     this._neutralPlayerId = null;
 
     playersJSON = universeState[_STATE_KEYS["players"]];
@@ -121,7 +126,7 @@ Universe.prototype._fromJSON = function _fromJSON(universeState) {
     this._playersArray = playersArray;
     this._playersJSON = playersJSON;
 
-    for (var i = 0; player = playersArray[i]; ++i) {
+    for (i = 0; player = playersArray[i]; ++i) {
         playerId = player.id;
 
         if (planetsJSON.hasOwnProperty(playerId)) {
@@ -129,13 +134,14 @@ Universe.prototype._fromJSON = function _fromJSON(universeState) {
             playersPlanets = this._toPlanetObjects(playersPlanetsJSON);
             planetsPerPlayer[playerId] = playersPlanets;
             planetsArray.push.apply(planetsArray, playersPlanets);
-
+            playersWithPlanetsIds.push(playerId);
         } else {
             planetsPerPlayer[playerId] = [];
         }
     }
 
     playerId = this._neutralPlayerId;
+    playersWithPlanetsIds.push(playerId);
 
     if (planetsJSON.hasOwnProperty(playerId)) {
         playersPlanetsJSON = planetsJSON[playerId];
@@ -147,7 +153,7 @@ Universe.prototype._fromJSON = function _fromJSON(universeState) {
         planetsPerPlayer[playerId] = [];
     }
 
-    for (var i = 0; player = playersArray[i]; ++i) {
+    for (i = 0; player = playersArray[i]; ++i) {
         playerId = player.id;
 
         if (fleetsJSON.hasOwnProperty(playerId)) {
@@ -155,6 +161,7 @@ Universe.prototype._fromJSON = function _fromJSON(universeState) {
             playersFleets = this._toFleetObjects(playersFleetsJSON);
             fleetsPerPlayer[playerId] = playersFleets;
             fleetsArray.push.apply(fleetsArray, playersFleets);
+            playersWithFleetsIds.push(playerId);
 
         } else {
             fleetsPerPlayer[playerId] = [];
@@ -165,6 +172,8 @@ Universe.prototype._fromJSON = function _fromJSON(universeState) {
     this._planetsArray = planetsArray;
     this._fleetsPerPlayer = fleetsPerPlayer;
     this._fleetsArray = fleetsArray;
+    this._playersWithPlanetsIds = playersWithPlanetsIds;
+    this._playersWithFleetsIds = playersWithFleetsIds;
 
     // will cache enemy-fleets/planets per player
     this._fleetCache = {};
@@ -268,19 +277,22 @@ Universe.prototype.getNeutralPlanets = function getNeutralPlanets() {
 };
 
 Universe.prototype.getEnemyPlanets = function getEnemyPlanets(player) {
-    var playerId,
+    var i,
+        playerId,
         planets,
         id,
         enemyPlanets,
-        planPerPlayer;
+        planPerPlayer,
+        playersWithPlanetIds;
 
     id = player.id;
 
     if (!this._planetCache.hasOwnProperty(id)) {
         enemyPlanets = [];
         planPerPlayer = this._planetsPerPlayer;
+        playersWithPlanetIds = this._playersWithPlanetsIds;
 
-        for (playerId in planPerPlayer) {
+        for (i = 0; playerId = playersWithPlanetIds[i]; ++i) {
             if (playerId != id) {
                 planets = planPerPlayer[playerId];
                 enemyPlanets.push.apply(enemyPlanets, planets);
@@ -303,14 +315,22 @@ Universe.prototype.getFleets = function getFleets(player) {
 };
 
 Universe.prototype.getEnemyFleets = function getEnemyFleets(player) {
-    var playerId, fleets, id, enemyFleets, fleetsPerPlayer;
+    var i,
+        playerId,
+        fleets,
+        id,
+        enemyFleets,
+        fleetsPerPlayer,
+        playersWithFleetsIds;
+
     id = player.id;
 
     if (!this._fleetCache.hasOwnProperty(id)) {
         enemyFleets = [];
         fleetsPerPlayer = this._fleetsPerPlayer;
+        playersWithFleetsIds = this._playersWithFleetsIds;
 
-        for (playerId in fleetsPerPlayer) {
+        for (i = 0; playerId = playersWithFleetsIds[i]; ++i) {
             if (playerId != id) {
                 fleets = fleetsPerPlayer[playerId];
                 enemyFleets.push.apply(enemyFleets, fleets);
@@ -361,11 +381,23 @@ Universe.prototype.sortByRecruitingPower = function sortByRecruitingPower(planet
     }
 };
 
-Universe.prototype.sortByForces = function sortByForces(planetsOrFleets, reverse) {
+/*
+    according to http://coding.smashingmagazine.com/2012/11/05/writing-fast-memory-efficient-javascript/
+    different types for the same variables/function arguments should be avoided
+*/
+Universe.prototype.sortPlanetsByForces = function sortPlanetsByForces(planets, reverse) {
     if (reverse) {
-        planetsOrFleets.sort(this._sortByForcesRev);
+        planets.sort(this._sortPlanetsByForcesRev);
     } else {
-        planetsOrFleets.sort(this._sortByForces);
+        planets.sort(this._sortPlanetsByForces);
+    }
+};
+
+Universe.prototype.sortFleetsByForces = function sortFleetsByForces(fleets, reverse) {
+    if (reverse) {
+        fleets.sort(this._sortFleetsByForcesRev);
+    } else {
+        fleets.sort(this._sortFleetsByForces);
     }
 };
 
@@ -409,11 +441,23 @@ Universe.prototype._sortByDistRev = function _sortByDistRev(a, b) {
     return this.distanceTo(b) - this.distanceTo(a);
 };
 
-Universe.prototype._sortByForces = function _sortByForces(a, b) {
+/*
+ according to http://coding.smashingmagazine.com/2012/11/05/writing-fast-memory-efficient-javascript/
+ different types for the same variables/function arguments should be avoided
+ */
+Universe.prototype._sortPlanetsByForces = function _sortByForces(a, b) {
     return a.getForces() - b.getForces();
 };
 
-Universe.prototype._sortByForcesRev = function _sortByForcesRev(a, b) {
+Universe.prototype._sortPlanetsByForcesRev = function _sortPlanetsByForcesRev(a, b) {
+    return b.getForces() - a.getForces();
+};
+
+Universe.prototype._sortFleetsByForces = function _sortFleetsByForces(a, b) {
+    return a.getForces() - b.getForces();
+};
+
+Universe.prototype._sortFleetsByForcesRev = function _sortFleetsByForcesRev(a, b) {
     return b.getForces() - a.getForces();
 };
 

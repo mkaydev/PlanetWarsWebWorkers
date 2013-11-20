@@ -288,7 +288,12 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
 PlanetWarsGame.prototype.stepInterval = 64;
 PlanetWarsGame.prototype.maxRounds = 1500;
 
-PlanetWarsGame.prototype.step = function step(gameEnded) {
+PlanetWarsGame.prototype.stepGame = function stepGame(gameEnded) {
+    this.endedCallback = gameEnded;
+    this.step();
+};
+
+PlanetWarsGame.prototype.step = function step() {
     var activePlayersCount,
         now,
         stepFinished,
@@ -300,7 +305,6 @@ PlanetWarsGame.prototype.step = function step(gameEnded) {
 
     // either the game is automatically played (play button) -> gameEnded will be a timestamp and this.running will be true
     // or the game is run manually (step button) -> gameEnded has to be the endedCallback, i.e. a function and this.running will be false
-    if (!this.running && typeof gameEnded !== "function") return;
     if (!this.initialized) {
         window.requestAnimationFrame(this.step.bind(this));
         return;

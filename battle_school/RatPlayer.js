@@ -117,7 +117,7 @@ RatPlayerStrategy.prototype.getTopForceEnemyPlanets = function getTopForceEnemyP
         if (!planet.isNeutral()) nonNeutral.push(planet);
     }
 
-    universe.sortByForces(nonNeutral, true);
+    universe.sortPlanetsByForces(nonNeutral, true);
     return nonNeutral.slice(0, count);
 };
 

@@ -169,7 +169,7 @@ function bindControls(game, endedCallback, tournament, initializedCallback) {
     });
     $("#step").click(function() {
         disableInput();
-        game.step.bind(game)(endedCallback);
+        game.stepGame.bind(game)(endedCallback);
     });
 }
 
