@@ -4,35 +4,40 @@
     <script type="text/javascript" src="jquery-2.0.3.js"></script>
     <script type="text/javascript" src="helper.js"></script>
     <script type="text/javascript" src="planet_wars.js"></script>
+    <script type="text/javascript" src="tournament.js"></script>
+    <script type="text/javascript" src="game_stats.js"></script>
     <script type="text/javascript" src="main.js"></script>
     <link type="text/css" rel="stylesheet" href="planet_wars.css">
     <title>Planet Wars</title>
 </head>
 <body>
-    <div id="game_outer">
-        <canvas id="game_background">It looks like your browser doesn't support the HTML5 canvas element.</canvas>
-        <canvas id="game_foreground"></canvas>
-        <canvas id="game_text"></canvas>
+    <div id="gameOuter">
+        <canvas id="gameBackground">It looks like your browser doesn't support the HTML5 canvas element.</canvas>
+        <canvas id="gameForeground"></canvas>
+        <canvas id="gameText"></canvas>
     </div>
-    <div id="controls_outer">
+    <div id="bottomInterface">
+        <div id="gameStats">
+            <div class="gamePlayerStats">
+                <div class="statsPlayerColor"></div>
+                <div class="statsPlayerName"></div>
+                <div class="statsPlayerForces"></div>
+            </div>
+        </div>
         <div id="controls">
             <button type="button" id="initialize">initialize</button>
             <button type="button" id="play">play</button>
             <button type="button" id="pause" hidden>pause</button>
             <button type="button" id="step">step</button>
-
-            <form id="tournament">
-                run tournament?<input type="checkbox" id="runTournament">
-                <div id="tournamentSelection" hidden>
-                    <div id="tournamentType">
-                        <input type="radio" name="type" value="duel" id="duel">duel</br>
-                        <input type="radio" name="type" value="lastManStanding" id="lastManStanding" checked=true>last man standing
-                    </div>
-                    </br>
-                    repetitions: <input type="number" name="repetitions" id="repetitions" min="1" max="100" value="10">
-                </div>
-            </form>
         </div>
+        <form id="tournament">
+            run tournament?<input type="checkbox" id="runTournament">
+            <div id="tournamentSelection" hidden>
+                duel<input type="radio" name="type" value="duel" id="duel"></br>
+                last man standing<input type="radio" name="type" value="lastManStanding" id="lastManStanding" checked=true></br>
+                repetitions: <input type="number" name="repetitions" id="repetitions" min="1" max="1000" value="10">
+            </div>
+        </form>
     </div>
 </body>
 </html>

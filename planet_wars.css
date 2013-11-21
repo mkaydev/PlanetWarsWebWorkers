@@ -1,11 +1,11 @@
-#game_outer {
+#gameOuter {
     float: right;
     right: 50%;
     position: relative;
     margin-bottom: 10px;
 }
 
-#game_background {
+#gameBackground {
     border: 1px solid black;
     float: right;
     right: -50%;
@@ -13,7 +13,7 @@
     z-index: 0;
 }
 
-#game_foreground {
+#gameForeground {
     border: 1px solid black;
     float: right;
     right: -50%;
@@ -21,7 +21,7 @@
     z-index: 1;
 }
 
-#game_text {
+#gameText {
     border: 1px solid black;
     float: right;
     right: -50%;
@@ -29,29 +29,73 @@
     z-index: 2;
 }
 
-#controls_outer {
+#bottomInterface {
+    width: 100%;
     clear: both;
-    float: right;
-    right: 50%;
+    float: left;
     position: relative;
 }
 
 #controls {
-    right: -70%;
-    display: inline;
+    width: 30%;
     position: relative;
+    float: left;
+    left: 10%;
+    margin-right: 10px;
+}
+
+#play {
+    width: 50px;
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+#pause {
+    width: 50px;
+    margin-left: 2px;
+    margin-right: 2px;
 }
 
 #tournament {
-    left: 85%;
-    display: block;
+    width: 30%;
     position: relative;
     float: right;
+    text-align: right;
 }
 
-#tournamentType {
-    left: 10%;
-    display: inline-block;
+#repetitions {
+    width: 36px;
+}
+
+#gameStats {
+    width: 30%;
+    font-size: 16px;
     position: relative;
-    float: right;
+    float: left;
+    display: table;
+    border-collapse: collapse;
+}
+
+.gamePlayerStats {
+    display: table-row;
+    border: 1px solid black;
+}
+
+.statsPlayerColor {
+    border: 1px solid black;
+    display: table-cell;
+    width: 16px;
+}
+
+.statsPlayerName {
+    display: table-cell;
+    padding-left: 2px;
+    text-align: left;
+}
+
+.statsPlayerForces {
+    display: table-cell;
+    padding-left: 2px;
+    padding-right: 2px;
+    text-align: right;
 }

@@ -6,13 +6,14 @@
 
 // ---------------------------------------------------------------------------------------------------------------------------------
 
-PlanetWarsGame: function PlanetWarsGame(planetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId) {
+PlanetWarsGame: function PlanetWarsGame(planetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId, gameStats) {
     this.planetCount = planetCount;
     this.foregroundCanvasId = foregroundCanvasId;
     this.backgroundCanvasId = backgroundCanvasId;
     this.textCanvasId = textCanvasId;
     this.width = width;
     this.height = height;
+    this.gameStats = gameStats;
 };
 
 PlanetWarsGame.prototype.initialize = function initialize(playerFiles, initializedCallback) {
@@ -91,8 +92,7 @@ PlanetWarsGame.prototype.initialize = function initialize(playerFiles, initializ
                 activePlayers.push(exportedPlayer);
             }
 
-            shuffleArray(activePlayers);
-            this.activePlayers = activePlayers;
+            this.gameStats.setPlayerEntries(activePlayers);
             initializedCallback(activePlayers);
 
         } else if (action == "log") {
@@ -312,6 +312,16 @@ PlanetWarsGame.prototype.step = function step() {
 
     activePlayersCount = this.currentState[_STATE_KEYS["activePlayersCount"]];
 
+    players = this.currentState[_STATE_KEYS["players"]];
+    activePlayers = [];
+
+    for (playerId in players) {
+        player = players[playerId];
+        if (player[_STATE_KEYS["isNeutral"]]) continue;
+        exportedPlayer = this.exportPlayer(player);
+        activePlayers.push(exportedPlayer);
+    }
+
     if (activePlayersCount > 1 && this.round < this.maxRounds) {
         now = new Date().getTime();
         if (now - this.lastStepped > this.stepInterval) {
@@ -323,28 +333,18 @@ PlanetWarsGame.prototype.step = function step() {
                 return;
             }
             this.drawGame();
+            this.gameStats.updatePlayerEntries(activePlayers);
             this.lastStepped = now;
         }
         if (this.running) requestAnimationFrame(this.step.bind(this));
 
     } else {
-
         if (this.ended) return;
 
         this.drawGame();
         this.running = false;
-        players = this.currentState[_STATE_KEYS["players"]];
-        activePlayers = [];
-
-        for (playerId in players) {
-            player = players[playerId];
-            if (player[_STATE_KEYS["isNeutral"]]) continue;
-            exportedPlayer = this.exportPlayer(player);
-            activePlayers.push(exportedPlayer);
-        }
-
-        if (typeof this.endedCallback === "undefined") this.endedCallback = gameEnded;
         this.ended = true;
+        this.gameStats.updatePlayerEntries(activePlayers);
         this.endedCallback({"players": activePlayers, "rounds": this.round});
     }
 };
@@ -374,5 +374,6 @@ PlanetWarsGame.prototype.exportPlayer = function exportPlayer(playerState) {
     json["name"] = playerState[_STATE_KEYS["name"]];
     json["forces"] = playerState[_STATE_KEYS["forces"]];
     json["color"] = playerState[_STATE_KEYS["color"]];
+    json["id"] = playerState[_STATE_KEYS["id"]];
     return json;
 };

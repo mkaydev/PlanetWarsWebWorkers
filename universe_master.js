@@ -330,6 +330,7 @@ Universe.prototype.toJSON = function toJSON() {
         forces = airForces + groundForces;
 
         exportedPlayer = player.toJSON();
+        exportedPlayer[_STATE_KEYS["id"]] = id;
         exportedPlayer[_STATE_KEYS["forces"]] = forces;
         exportedPlayer[_STATE_KEYS["airForces"]] = airForces;
         exportedPlayer[_STATE_KEYS["groundForces"]] = groundForces;
@@ -344,6 +345,7 @@ Universe.prototype.toJSON = function toJSON() {
     groundForces = this.sumForces(planets);
 
     exportedPlayer = neutralPlayerJSON;
+    exportedPlayer[_STATE_KEYS["id"]] = id;
     exportedPlayer[_STATE_KEYS["forces"]] = groundForces;
     exportedPlayer[_STATE_KEYS["airForces"]] = 0;
     exportedPlayer[_STATE_KEYS["groundForces"]] = groundForces;
