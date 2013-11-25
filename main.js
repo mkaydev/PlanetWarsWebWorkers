@@ -31,25 +31,31 @@ $(document).ready(function() {
         width,
         height,
         planetCount,
-        runTournSel;
+        runTournSel,
+        tournamentOverview,
+        tournamentOverviewDivId;
 
     backgroundCanvasId = "gameBackground";
     foregroundCanvasId = "gameForeground";
     textCanvasId = "gameText";
     gameStatsDivId = "gameStats";
+    tournamentOverviewDivId = "tournamentOverview";
+
     width = 800;
     height = 600;
     planetCount = 150;
-    runTournSel = $("#runTournament");
 
+    enableInput();
+    runTournSel = $("#runTournament");
     runTournSel.prop('checked', false);
-    $("#tournament").find(":input").removeAttr("disabled");
+
     $("#step").attr("disabled", false);
 
     gameStats = new GameStats(gameStatsDivId);
+    tournamentOverview = new TournamentOverview(tournamentOverviewDivId);
 
     tournamentInput = getTournamentInput();
-    tournament = new Tournament(playerFiles, tournamentInput.duel, tournamentInput.repetitions);
+    tournament = new Tournament(playerFiles, tournamentInput.duel, tournamentInput.repetitions, tournamentOverview);
     tournament.initialize();
 
     initializedCallback = tournament.initializePoints;
@@ -88,16 +94,16 @@ $(document).ready(function() {
         game.terminateGame();
         unbindControls();
         tournamentInput = getTournamentInput();
-        tournament = new Tournament(playerFiles, tournamentInput.duel, tournamentInput.repetitions);
+        tournament = new Tournament(playerFiles, tournamentInput.duel, tournamentInput.repetitions, tournamentOverview);
         tournament.initialize();
 
         game.initialize(tournament.getNextPlayers(), initializedCallback.bind(tournament));
         bindControls(game, gameEnded, tournament, initializedCallback.bind(tournament));
 
         if (this.checked) {
-            $("#tournamentSelection").show();
+            $("#tournamentType").show();
         } else {
-            $("#tournamentSelection").hide();
+            $("#tournamentType").hide();
         }
     });
 
@@ -105,7 +111,7 @@ $(document).ready(function() {
         game.terminateGame();
         unbindControls();
         tournamentInput = getTournamentInput();
-        tournament = new Tournament(playerFiles, tournamentInput.duel, tournamentInput.repetitions);
+        tournament = new Tournament(playerFiles, tournamentInput.duel, tournamentInput.repetitions, tournamentOverview);
         tournament.initialize();
 
         game.initialize(tournament.getNextPlayers(), initializedCallback.bind(tournament));
@@ -116,7 +122,7 @@ $(document).ready(function() {
         game.terminateGame();
         unbindControls();
         tournamentInput = getTournamentInput();
-        tournament = new Tournament(playerFiles, tournamentInput.duel, tournamentInput.repetitions);
+        tournament = new Tournament(playerFiles, tournamentInput.duel, tournamentInput.repetitions, tournamentOverview);
         tournament.initialize();
 
         game.initialize(tournament.getNextPlayers(), initializedCallback.bind(tournament));
@@ -165,7 +171,7 @@ function bindControls(game, endedCallback, tournament, initializedCallback) {
         game.pause.bind(game)();
     });
     $("#initialize").click(function() {
-        $("#tournament").find(":input").removeAttr("disabled");
+        enableInput();
         $("#step").attr("disabled", false);
         $("#play").show();
         $("#pause").hide();
@@ -179,7 +185,18 @@ function bindControls(game, endedCallback, tournament, initializedCallback) {
 }
 
 function disableInput() {
-    $("#tournament").find(":input").attr("disabled", true);
+    var tournSel = $("#tournamentSelection");
+    tournSel.find(":input").attr("disabled", true);
+    tournSel.hide();
+    $("#tournamentOverview").show();
+}
+
+function enableInput() {
+    var tournSel = $("#tournamentSelection");
+    $("#tournamentOverview").hide();
+
+    tournSel.find(":input").removeAttr("disabled");
+    tournSel.show();
 }
 
 function togglePlayPause() {

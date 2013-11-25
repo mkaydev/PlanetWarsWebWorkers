@@ -1,53 +1,3 @@
-function PlayerEntry(playerJSON) {
-    this.name = playerJSON.name;
-    this.id = playerJSON.id;
-    this.color = playerJSON.color;
-    this.forces = playerJSON.forces;
-
-    this.domRepresentation = this.createDomRepresentation();
-};
-
-PlayerEntry.prototype.playerStatsClass = "gamePlayerStats";
-PlayerEntry.prototype.colorCellClass = "statsPlayerColor";
-PlayerEntry.prototype.nameCellClass = "statsPlayerName";
-PlayerEntry.prototype.forcesCellClass = "statsPlayerForces";
-
-PlayerEntry.prototype.createDomRepresentation = function createDomRepresentation() {
-    var forcesDiv,
-        colorDiv,
-        nameDiv,
-        playerEntry;
-
-    forcesDiv = document.createElement("div");
-    forcesDiv.className = this.forcesCellClass;
-    forcesDiv.innerHTML = this.forces;
-
-    colorDiv = document.createElement("div");
-    colorDiv.className = this.colorCellClass;
-    colorDiv.style.cssText = "background-color: " + this.color + ";";
-
-    nameDiv = document.createElement("div");
-    nameDiv.className = this.nameCellClass;
-    nameDiv.innerHTML = this.name;
-
-    playerEntry = document.createElement("div");
-    playerEntry.appendChild(colorDiv);
-    playerEntry.appendChild(nameDiv);
-    playerEntry.appendChild(forcesDiv);
-    playerEntry.className = this.playerStatsClass;
-
-    return playerEntry;
-};
-
-PlayerEntry.prototype.updateForces = function updateForces(newForces) {
-    var forcesDiv;
-    if (newForces == this.forces) return;
-    this.forces = newForces;
-    forcesDiv = this.domRepresentation.getElementsByClassName(this.forcesCellClass)[0];
-    forcesDiv.innerHTML = newForces;
-};
-
-
 function GameStats(divId) {
     this.domRepresentation = document.getElementById(divId);
 }
@@ -63,7 +13,7 @@ GameStats.prototype.setPlayerEntries = function setPlayerEntries(playersJSON) {
 
     for (i = 0; playerJSON = playersJSON[i]; ++i) {
         playerId = playerJSON.id;
-        entry = new PlayerEntry(playerJSON);
+        entry = new PlayerEntry(playerJSON, "forces");
         this.playerEntries.push(entry);
     }
 
@@ -85,8 +35,8 @@ GameStats.prototype.refreshDom = function refreshDom() {
 };
 
 GameStats.prototype._sortPlayerEntries = function _sortPlayerEntries(a, b) {
-    if (a.forces != b.forces) {
-        return b.forces - a.forces;
+    if (a.value != b.value) {
+        return b.value - a.value;
     } else {
         if (a.name > b.name) return 1;
         if (b.name > a.name) return -1;
@@ -119,7 +69,7 @@ GameStats.prototype.updatePlayerEntries = function updatePlayerEntries(playersJS
     for (i = 0; playerEntry = playerEntries[i]; ++i) {
         playerId = playerEntry.id;
         newForces = newForcesPerPlayer[playerId];
-        playerEntry.updateForces(newForces);
+        playerEntry.updateValue(newForces);
     }
 
     this.refreshDom();

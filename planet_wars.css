@@ -36,12 +36,16 @@
     position: relative;
 }
 
-#controls {
+#controlsOuter {
     width: 30%;
     position: relative;
     float: left;
-    left: 15%;
-    margin-right: 10px;
+    left: 5%;
+    text-align: center;
+}
+
+#controls {
+    margin: 0 auto;
 }
 
 #play {
@@ -56,7 +60,7 @@
     margin-right: 2px;
 }
 
-#tournament {
+#tournamentSelection {
     width: 30%;
     position: relative;
     float: right;
@@ -76,7 +80,25 @@
     border-collapse: collapse;
 }
 
-.gamePlayerStats {
+#tournamentOverview {
+    width: 30%;
+    font-size: 16px;
+    position: relative;
+    float: right;
+}
+
+.tournamentStats {
+    width: 100%;
+    display: table;
+    border-collapse: collapse;
+    border: 1px solid black;
+}
+
+.tournamentGameInfo {
+    float: right;
+}
+
+.playerStats {
     display: table-row;
     border: 1px solid black;
 }
@@ -93,7 +115,7 @@
     text-align: left;
 }
 
-.statsPlayerForces {
+.statsPlayerValue {
     display: table-cell;
     padding-left: 2px;
     padding-right: 2px;
