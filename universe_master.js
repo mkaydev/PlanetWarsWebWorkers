@@ -8,6 +8,11 @@ function Universe(playerFiles, planetCount, width, height, initializedCallback) 
         file,
         playerId;
 
+    this.allFleets = null;
+    this.allPlanets = null;
+    this.planetCache = {};
+    this.fleetCache = {};
+
     this.initialized = false;
     this.width = width;
     this.height = height;
@@ -261,6 +266,11 @@ Universe.prototype.step = function step(steppedCallback) {
     this.thinkFinished = thinkFinished;
     this.steppedCallback = steppedCallback;
 
+    this.allFleets = null;
+    this.allPlanets = null;
+    this.fleetCache = {};
+    this.planetCache = {};
+
     json = this.toJSON();
     for (i = 0; player = activePlayers[i]; ++i) {
         playerId = player.id;
@@ -364,6 +374,7 @@ Universe.prototype.toJSON = function toJSON() {
 
 Universe.prototype.getAllFleets = function getAllFleets() {
     var fleetId, fleets, fleetsAsArray;
+    if (this.allFleets !== null) return this.allFleets;
     fleets = this.fleets;
     fleetsAsArray = [];
 
@@ -372,36 +383,47 @@ Universe.prototype.getAllFleets = function getAllFleets() {
     };
 
     shuffleArray(fleetsAsArray);
+    this.allFleets = fleetsAsArray;
     return fleetsAsArray;
 };
 
 Universe.prototype.getFleets = function getFleets(player) {
     var i, fleetArr, playerId, fleetsAsArray, myFleets;
     playerId = player.id;
+    if (this.fleetCache.hasOwnProperty(playerId)) {
+        return this.fleetCache[playerId];
+    }
+
     fleetsAsArray = this.getAllFleets();
     myFleets = [];
 
     for (i = 0; fleetArr = fleetsAsArray[i]; ++i) {
         if (fleetArr.getOwner().id == playerId) myFleets.push(fleetArr);
     }
+
+    this.fleetCache[playerId] = myFleets;
     return myFleets;
 };
 
 Universe.prototype.getAllPlanets = function getAllPlanets() {
-    var copy = this.planets.slice();
-    shuffleArray(copy);
-    return copy;
+    return this.planets;
 };
 
 Universe.prototype.getPlanets = function getPlanets(player) {
     var i, planet, playerId, all, planets;
     playerId = player.id;
+    if (this.planetCache.hasOwnProperty(playerId)) {
+        return this.planetCache[playerId];
+    }
+
     all = this.getAllPlanets();
     planets = [];
 
     for (i = 0; planet = all[i]; ++i) {
         if (planet.getOwner().id === playerId) planets.push(planet);
     }
+
+    this.planetCache[playerId] = planets;
     return planets;
 };
 
