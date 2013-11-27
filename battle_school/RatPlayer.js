@@ -88,15 +88,25 @@ RatPlayerStrategy.prototype.getFriendlyCluster = function getFriendlyCluster(uni
     return planets.slice(0, clusterSize);
 };
 
-RatPlayerStrategy.prototype.getHostileCluster = function getHostileCluster(universe, planet) {
+RatPlayerStrategy.prototype.getHostileCluster = function getHostileCluster(universe, planet, noNeutral) {
     var clusterSize, planets;
 
     clusterSize = this.getClusterSize(universe);
     planets = universe.getEnemyPlanets(this.player);
     universe.sortByDistance(planet, planets);
 
+    if (noNeutral) planets = this.filterNeutral(planets);
     if (planets.length < clusterSize) return planets;
     return planets.slice(0, clusterSize);
+};
+
+RatPlayerStrategy.prototype.filterNeutral = function filterNeutral(planets) {
+    var i, nonNeutral, planet;
+    nonNeutral = [];
+    for (i = 0; planet = planets[i]; ++i) {
+        if (!planet.isNeutral()) nonNeutral.push(planet);
+    }
+    return nonNeutral;
 };
 
 RatPlayerStrategy.prototype.getNeededForces = function getNeededForces(universe, planet) {

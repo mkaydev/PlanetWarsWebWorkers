@@ -398,7 +398,7 @@ SalamanderPlayer.prototype.think = function think(universe) {
         if (finalFactor * myForces > otherForces && myPlanets.length > planPerPlayer) {
             strategy = "attackNearestEnemy";
 
-        } else if (defensiveFactor * maxForces > myForces && myPlanets.length < planPerPlayer) {
+        } else if (defensiveFactor * maxForces > myForces && myPlanets.length < 20) {
             strategy = "albatross";
 
         } else {

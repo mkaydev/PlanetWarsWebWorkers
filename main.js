@@ -1,15 +1,16 @@
 // responsible for running multiple games (tournaments), visualizing the results and getting user input
 var playerFiles = [
-    "sample_players/DoNothingPlayer.js",
+//    "sample_players/DoNothingPlayer.js",
+//
+//    "sample_players/RandomPlayer.js",
+//    "sample_players/AttackRandomPlayer.js",
+//    "sample_players/AttackLargestEmpirePlayer.js",
+//    "sample_players/KamikazePlayer.js",
+//    "sample_players/SpiralPlayer.js",
+//    "sample_players/AttackBestPlanetPlayer.js",
+//    "sample_players/SupportNetworkPlayer.js",
 
-    "sample_players/RandomPlayer.js",
-    "sample_players/AttackRandomPlayer.js",
-    "sample_players/AttackLargestEmpirePlayer.js",
-    "sample_players/KamikazePlayer.js",
-    "sample_players/SpiralPlayer.js",
-    "sample_players/AttackBestPlanetPlayer.js",
-    "sample_players/SupportNetworkPlayer.js",
-
+    "battle_school/BadgerPlayer.js",
     "battle_school/SalamanderPlayer.js",
     "battle_school/RatPlayer.js",
     "sample_players/VirusPlayer.js",
