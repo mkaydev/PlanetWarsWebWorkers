@@ -324,7 +324,6 @@ PlanetWarsGame.prototype.step = function step() {
     if (activePlayersCount > 1 && this.round < this.maxRounds) {
         now = new Date().getTime();
         if (now - this.lastStepped > this.stepInterval) {
-            //console.log(now - this.lastStepped);
             stepFinished = this.stepState();
             
             if (!stepFinished) {

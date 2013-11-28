@@ -106,6 +106,8 @@ function Universe(playerFiles, planetCount, width, height, initializedCallback) 
 
                 this.thinkFinished[workerId] = true;
                 if (this.stepFinished()) {
+//                    this.lend = new Date().getTime();
+//                    console.log(this.lend - this.lstart);
                     this.determineActivePlayers();
                     this.steppedCallback();
                 }
@@ -247,6 +249,7 @@ Universe.prototype.step = function step(steppedCallback) {
         workers,
         planets,
         fleets;
+    //this.lstart = new Date().getTime();
 
     thinkFinished = {};
     activePlayers = this.activePlayers;
@@ -267,7 +270,6 @@ Universe.prototype.step = function step(steppedCallback) {
     this.steppedCallback = steppedCallback;
 
     this.allFleets = null;
-    this.allPlanets = null;
     this.fleetCache = {};
     this.planetCache = {};
 
