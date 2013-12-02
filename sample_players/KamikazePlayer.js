@@ -1,5 +1,5 @@
 KamikazePlayer: function KamikazePlayer() {
-    this.color = "salmon";
+    this.color = [250, 128, 114]; //salmon
     this.initialize();
 };
 KamikazePlayer.prototype = new Player();

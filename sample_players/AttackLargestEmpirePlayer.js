@@ -1,5 +1,5 @@
 AttackLargestEmpirePlayer: function AttackLargestEmpirePlayer() {
-    this.color = "green";
+    this.color = [0, 128, 0]; //green
     this.initialize();
 };
 AttackLargestEmpirePlayer.prototype = new Player();

@@ -6,7 +6,7 @@
 
 // ---------------------------------------------------------------------------------------------------------------------------------
 
-PlanetWarsGame: function PlanetWarsGame(planetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId, gameStats) {
+PlanetWarsGame: function PlanetWarsGame(planetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId, gameStats, useWebGL) {
     this.planetCount = planetCount;
     this.foregroundCanvasId = foregroundCanvasId;
     this.backgroundCanvasId = backgroundCanvasId;
@@ -14,13 +14,10 @@ PlanetWarsGame: function PlanetWarsGame(planetCount, width, height, backgroundCa
     this.width = width;
     this.height = height;
     this.gameStats = gameStats;
+    this.renderer = this.createRenderer(useWebGL);
 };
 
 PlanetWarsGame.prototype.initialize = function initialize(playerFiles, initializedCallback) {
-    var textContext, context, foregroundSel, backgroundSel, textSel, width, height;
-    width = this.width;
-    height = this.height;
-
     this.playerFiles = playerFiles;
     this.initialized = false;
     this.terminateGame();
@@ -121,38 +118,53 @@ PlanetWarsGame.prototype.initialize = function initialize(playerFiles, initializ
             "action": "start",
             "playerFiles": this.playerFiles,
             "planetCount": this.planetCount,
-            "width": width,
-            "height": height,
+            "width": this.width,
+            "height": this.height,
             "maxRounds": this.maxRounds
         }
     );
+};
 
-    this.foregroundCanvas = document.getElementById(this.foregroundCanvasId);
-    this.backgroundCanvas = document.getElementById(this.backgroundCanvasId);
-    this.textCanvas = document.getElementById(this.textCanvasId);
-
+PlanetWarsGame.prototype.createRenderer = function createRenderer(useWebGL) {
+    var foregroundSel,
+        backgroundSel,
+        textSel,
+        foregroundCanvas,
+        backgroundCanvas,
+        textCanvas;
     foregroundSel = $("#" + this.foregroundCanvasId);
-    foregroundSel.attr("width", width);
-    foregroundSel.attr("height", height);
+    foregroundSel.attr("width", this.width);
+    foregroundSel.attr("height", this.height);
 
     backgroundSel = $("#" + this.backgroundCanvasId);
-    backgroundSel.attr("width", width);
-    backgroundSel.attr("height", height);
+    backgroundSel.attr("width", this.width);
+    backgroundSel.attr("height", this.height);
 
     textSel = $("#" + this.textCanvasId);
-    textSel.attr("width", width);
-    textSel.attr("height", height);
+    textSel.attr("width", this.width);
+    textSel.attr("height", this.height);
 
-    textContext = this.textCanvas.getContext("2d");
-    textContext.fillStyle = "white";
-    textContext.strokeStyle = "black";
-    textContext.font = "10pt sans-serif";
-    textContext.textBaseline = "middle";
-    textContext.lineWidth = 2;
+    foregroundCanvas = foregroundSel[0];
+    backgroundCanvas = backgroundSel[0];
+    textCanvas = textSel[0];
 
-    context = this.backgroundCanvas.getContext("2d");
-    context.fillStyle = "black";
-    context.fillRect(0, 0, width, height);
+    if (useWebGL && (foregroundCanvas.getContext("webgl") || foregroundCanvas.getContext("experimental-webgl"))) {
+        return new HybridRenderer(
+            backgroundCanvas,
+            foregroundCanvas,
+            textCanvas,
+            this.width,
+            this.height
+        );
+    } else {
+        return new Canvas2dRenderer(
+            backgroundCanvas,
+            foregroundCanvas,
+            textCanvas,
+            this.width,
+            this.height
+        );
+    }
 };
 
 PlanetWarsGame.prototype.stepState = function stepState() {
@@ -172,116 +184,11 @@ PlanetWarsGame.prototype.stepState = function stepState() {
 };
 
 PlanetWarsGame.prototype.drawGame = function drawGame() {
-    var i,
-        j,
-        exportedPlayers,
-        exportedFleets,
-        exportedPlanets,
-        foregroundContext,
-        playerId,
-        color,
-        planets,
-        planet,
-        fleets,
-        fleet,
-        centerX,
-        centerY,
-        radius,
-        currentX,
-        currentY,
-        backRightX,
-        backRightY,
-        backLeftX,
-        backLeftY,
-        currentState,
-        foregroundCanvas,
-        textCanvas,
-        textContext,
-        x,
-        y,
-        forces,
-        expPlayerKeys;
-
     if (!this.initialized) return;
-    currentState = this.currentState;
-    exportedPlayers = currentState[_STATE_KEYS["players"]];
-    exportedFleets = currentState[_STATE_KEYS["fleets"]];
-    exportedPlanets = currentState[_STATE_KEYS["planets"]];
-
-    /* I'd like to keep the planets on the background and draw over them when the owner changes
-     * instead of clearing and redrawing, but it doesn't seem possible with canvas' anti-aliasing, which cannot be deactivated
-     */
-    foregroundCanvas = this.foregroundCanvas;
-    foregroundContext = foregroundCanvas.getContext("2d");
-    // fastest according to jsperf test
-    // for Firefox 24.0 on Ubuntu and Chrome 28.0.1500.71 on Ubuntu Chromium
-    foregroundContext.clearRect(0, 0, foregroundCanvas.width, foregroundCanvas.height);
-
-    expPlayerKeys = Object.keys(exportedPlayers);
-
-    // to avoid canvas state changes, loop by color, i.e. by player
-    for (i = 0; playerId = expPlayerKeys[i]; ++i) {
-        color = exportedPlayers[playerId][_STATE_KEYS["color"]];
-        if (!exportedPlanets.hasOwnProperty(playerId)) continue;
-
-        planets = exportedPlanets[playerId];
-        foregroundContext.fillStyle = color;
-
-        for (j = 0; planet = planets[j]; ++j) {
-            centerX = planet[_STATE_KEYS["x"]];
-            centerY = planet[_STATE_KEYS["y"]];
-            radius = planet[_STATE_KEYS["radius"]];
-
-            foregroundContext.beginPath();
-            foregroundContext.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
-            foregroundContext.fill();
-        }
-    }
-
-    for (i = 0; playerId = expPlayerKeys[i]; ++i) {
-        color = exportedPlayers[playerId][_STATE_KEYS["color"]];
-        if (!exportedFleets.hasOwnProperty(playerId)) continue;
-
-
-        fleets = exportedFleets[playerId];
-        foregroundContext.strokeStyle = color;
-
-        for (j = 0; fleet = fleets[j]; ++j) {
-            currentX = fleet[_STATE_KEYS["x"]];
-            currentY = fleet[_STATE_KEYS["y"]];
-
-            backRightX = fleet[_STATE_KEYS["backRightX"]];
-            backRightY = fleet[_STATE_KEYS["backRightY"]];
-
-            backLeftX = fleet[_STATE_KEYS["backLeftX"]];
-            backLeftY = fleet[_STATE_KEYS["backLeftY"]];
-
-            foregroundContext.beginPath();
-            foregroundContext.moveTo(currentX, currentY);
-            foregroundContext.lineTo(backLeftX, backLeftY);
-            foregroundContext.lineTo(backRightX, backRightY);
-            foregroundContext.lineTo(currentX, currentY);
-            foregroundContext.closePath();
-            foregroundContext.stroke();
-        }
-    }
-
-    textCanvas = this.textCanvas;
-    textContext = textCanvas.getContext("2d");
-    textContext.clearRect(0, 0, textCanvas.width, textCanvas.height);
-
-    for (i = 0; playerId = expPlayerKeys[i]; ++i) {
-        if (!exportedPlanets.hasOwnProperty(playerId)) continue;
-
-        planets = exportedPlanets[playerId];
-        for (j = 0; planet = planets[j]; ++j) {
-            x = planet[_STATE_KEYS["x"]];
-            y = planet[_STATE_KEYS["y"]];
-            forces = planet[_STATE_KEYS["forces"]];
-            textContext.strokeText("" + forces, x, y);
-            textContext.fillText("" + forces, x, y);
-        }
-    }
+//    var start = new Date().getTime();
+    this.renderer.drawGame(this.currentState);
+//    var end = new Date().getTime();
+//    console.log(end - start);
 };
 
 PlanetWarsGame.prototype.stepInterval = 64;
@@ -327,14 +234,14 @@ PlanetWarsGame.prototype.step = function step() {
             stepFinished = this.stepState();
             
             if (!stepFinished) {
-                requestAnimationFrame(this.step.bind(this));
+                window.requestAnimationFrame(this.step.bind(this));
                 return;
             }
             this.drawGame();
             this.gameStats.updatePlayerEntries(activePlayers);
             this.lastStepped = now;
         }
-        if (this.running) requestAnimationFrame(this.step.bind(this));
+        if (this.running) window.requestAnimationFrame(this.step.bind(this));
 
     } else {
         if (this.ended) return;

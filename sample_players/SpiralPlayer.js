@@ -1,5 +1,5 @@
 SpiralPlayer: function SpiralPlayer() {
-    this.color = "Chocolate";
+    this.color = [210, 105, 30]; //chocolate
     this.initialize();
     this.destinations = {};
 };

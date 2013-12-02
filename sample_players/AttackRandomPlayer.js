@@ -1,5 +1,5 @@
 AttackRandomPlayer: function AttackRandomPlayer() {
-    this.color = "blue";
+    this.color = [0, 0, 255]; //blue
     this.initialize();
 };
 AttackRandomPlayer.prototype = new Player();

@@ -575,7 +575,7 @@ RatPlayerFinalStrategy.prototype.think = function think(universe) {
 
 
 RatPlayer: function RatPlayer() {
-    this.color = "LightSteelBlue";
+    this.color = [176, 196, 222]; //LightSteelBlue
     this.initialize();
     this.setStrategies();
 };

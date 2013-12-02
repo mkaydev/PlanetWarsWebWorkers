@@ -2,7 +2,7 @@ importScripts("battle_school/SalamanderPlayer.js");
 
 
 BadgerPlayer: function BadgerPlayer() {
-    this.color = "BurlyWood";
+    this.color = [222, 184, 135]; //BurlyWood
     this.initialize();
     this.setStrategies();
 };

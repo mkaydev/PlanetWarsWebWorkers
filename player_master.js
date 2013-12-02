@@ -20,6 +20,6 @@ Player.prototype.toJSON = function toJSON() {
 
 neutralPlayerJSON[_STATE_KEYS["id"]] = createId("Player:");
 neutralPlayerJSON[_STATE_KEYS["isNeutral"]] = true;
-neutralPlayerJSON[_STATE_KEYS["color"]] = "grey";
+neutralPlayerJSON[_STATE_KEYS["color"]] = [128, 128, 128]; //gray
 neutralPlayerJSON[_STATE_KEYS["name"]] = "NeutralPlayer";
 neutralPlayer = new Player(neutralPlayerJSON);

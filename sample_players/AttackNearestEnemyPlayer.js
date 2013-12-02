@@ -1,5 +1,5 @@
 AttackNearestEnemyPlayer: function AttackNearestEnemyPlayer() {
-    this.color = "orange";
+    this.color = [255, 185, 0]; //orange
     this.initialize();
 };
 AttackNearestEnemyPlayer.prototype = new Player();

@@ -34,7 +34,8 @@ $(document).ready(function() {
         planetCount,
         runTournSel,
         tournamentOverview,
-        tournamentOverviewDivId;
+        tournamentOverviewDivId,
+        useWebGL;
 
     backgroundCanvasId = "gameBackground";
     foregroundCanvasId = "gameForeground";
@@ -42,15 +43,17 @@ $(document).ready(function() {
     gameStatsDivId = "gameStats";
     tournamentOverviewDivId = "tournamentOverview";
 
-    width = 800;
-    height = 600;
+    width = Math.min(screen.width, 1024);
+    height = Math.min(screen.height - 200, 600);
     planetCount = 150;
+    useWebGL = true;
 
     enableInput();
     runTournSel = $("#runTournament");
     runTournSel.prop('checked', false);
 
     $("#step").attr("disabled", false);
+
 
     gameStats = new GameStats(gameStatsDivId);
     tournamentOverview = new TournamentOverview(tournamentOverviewDivId);
@@ -68,7 +71,8 @@ $(document).ready(function() {
         backgroundCanvasId,
         foregroundCanvasId,
         textCanvasId,
-        gameStats
+        gameStats,
+        useWebGL
     );
 
     game.initialize(tournament.getNextPlayers(), initializedCallback.bind(tournament));
@@ -160,6 +164,7 @@ function unbindControls() {
     $("#pause").off("click");
     $("#initialize").off("click");
     $("#step").off("click");
+    $("#webGL").off("change");
 }
 
 function bindControls(game, endedCallback, tournament, initializedCallback) {

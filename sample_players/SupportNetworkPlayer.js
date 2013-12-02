@@ -1,5 +1,5 @@
 SupportNetworkPlayer: function SupportNetworkPlayer() {
-    this.color = "aqua";
+    this.color = [0, 255, 255]; //aqua
     this.initialize();
 };
 SupportNetworkPlayer.prototype = new Player();

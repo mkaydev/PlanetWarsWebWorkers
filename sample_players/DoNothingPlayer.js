@@ -1,5 +1,5 @@
 DoNothingPlayer: function DoNothingPlayer() {
-    this.color = "yellow";
+    this.color = [255, 255, 0]; //yellow
     this.initialize();
 };
 DoNothingPlayer.prototype = new Player();

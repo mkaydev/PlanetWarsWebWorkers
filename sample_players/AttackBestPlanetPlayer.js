@@ -1,5 +1,5 @@
 AttackBestPlanetPlayer: function AttackBestPlanetPlayer() {
-    this.color = "AntiqueWhite";
+    this.color = [250, 235, 215]; //AntiqueWhite
     this.initialize();
 };
 AttackBestPlanetPlayer.prototype = new Player();

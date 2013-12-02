@@ -1,5 +1,5 @@
 RandomPlayer: function RandomPlayer() {
-    this.color = "red";
+    this.color = [255, 0, 0]; //red
     this.initialize();
 };
 RandomPlayer.prototype = new Player();
