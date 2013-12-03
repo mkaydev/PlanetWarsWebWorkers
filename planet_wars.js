@@ -218,15 +218,7 @@ PlanetWarsGame.prototype.step = function step() {
 
     activePlayersCount = this.currentState[_STATE_KEYS["activePlayersCount"]];
 
-    players = this.currentState[_STATE_KEYS["players"]];
-    activePlayers = [];
 
-    for (playerId in players) {
-        player = players[playerId];
-        if (player[_STATE_KEYS["isNeutral"]]) continue;
-        exportedPlayer = this.exportPlayer(player);
-        activePlayers.push(exportedPlayer);
-    }
 
     if (activePlayersCount > 1 && this.round < this.maxRounds) {
         now = new Date().getTime();
@@ -238,20 +230,29 @@ PlanetWarsGame.prototype.step = function step() {
                 return;
             }
             this.drawGame();
-            this.gameStats.updatePlayerEntries(activePlayers);
             this.lastStepped = now;
         }
-        if (this.running) window.requestAnimationFrame(this.step.bind(this));
 
     } else {
         if (this.ended) return;
-
         this.drawGame();
         this.running = false;
         this.ended = true;
-        this.gameStats.updatePlayerEntries(activePlayers);
-        this.endedCallback({"players": activePlayers, "rounds": this.round});
     }
+
+    players = this.currentState[_STATE_KEYS["players"]];
+    activePlayers = [];
+
+    for (playerId in players) {
+        player = players[playerId];
+        if (player[_STATE_KEYS["isNeutral"]]) continue;
+        exportedPlayer = this.exportPlayer(player);
+        activePlayers.push(exportedPlayer);
+    }
+
+    this.gameStats.updatePlayerEntries(activePlayers);
+    if (this.running) window.requestAnimationFrame(this.step.bind(this));
+    if (this.ended) this.endedCallback({"players": activePlayers, "rounds": this.round});
 };
 
 PlanetWarsGame.prototype.play = function play(callback) {

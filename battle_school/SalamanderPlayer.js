@@ -35,6 +35,7 @@ SalamanderConquerFirstCornerStrategy.prototype.think = function think(universe) 
         target,
         fleetSize;
 
+    this.setupRound(universe);
     myPlanets = universe.getPlanets(this.player);
     myLength = myPlanets.length;
     if (myLength == 0) return;
@@ -42,7 +43,7 @@ SalamanderConquerFirstCornerStrategy.prototype.think = function think(universe) 
     minFleetSize = 20;
     reserveFactor = 5;
 
-    cornerCoords = this.getClosestCorner(universe, myPlanets);
+    cornerCoords = this.getClosestCorner(myPlanets);
     cornerTargets = universe.getEnemyPlanets(this.player);
     if (cornerTargets.length == 0) return;
     this.sortByDistanceToCoords(cornerTargets, cornerCoords);
@@ -51,7 +52,7 @@ SalamanderConquerFirstCornerStrategy.prototype.think = function think(universe) 
         available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
         if (available < minFleetSize) continue;
 
-        targets = this.getHostileCluster(universe, myPlanet);
+        targets = this.getHostileCluster(myPlanet);
         targetsLength = targets.length;
 
         if (targetsLength == 0) return;
@@ -60,7 +61,7 @@ SalamanderConquerFirstCornerStrategy.prototype.think = function think(universe) 
         topEnemy = [];
         all = true;
         for (j = 0; target = targets[j]; ++j) {
-            top = this.inTopForceEnemyPlanets(universe, target, 5);
+            top = this.inTopForceEnemyPlanets(target, 5);
             topEnemy.push(top);
             if (!top) all = false;
         }
@@ -71,7 +72,7 @@ SalamanderConquerFirstCornerStrategy.prototype.think = function think(universe) 
             if (available < minFleetSize) break;
 
             if (topEnemy[j]) continue;
-            fleetSize = this.getNeededForces(universe, target);
+            fleetSize = this.getNeededForces(target);
             if (fleetSize > available) continue;
             if (fleetSize <= 0) continue;
 
@@ -85,7 +86,7 @@ SalamanderConquerFirstCornerStrategy.prototype.think = function think(universe) 
             if (available < minFleetSize) break;
 
             // it's possible that fleets have already been sent to the planet, in which case the result is not accurate
-            fleetSize = this.getNeededForces(universe, target);
+            fleetSize = this.getNeededForces(target);
             if (fleetSize > available) continue;
             if (fleetSize <= 0) continue;
 
@@ -99,8 +100,8 @@ SalamanderConquerClosestCornerStrategy: function SalamanderConquerClosestCornerS
 SalamanderConquerClosestCornerStrategy.prototype = new RatPlayerMiddleStrategy();
 SalamanderConquerClosestCornerStrategy.prototype.constructor = SalamanderConquerClosestCornerStrategy;
 
-SalamanderConquerClosestCornerStrategy.prototype.getClusterSize = function getClusterSize(universe) {
-    var activePlayers = universe.getActivePlayers();
+SalamanderConquerClosestCornerStrategy.prototype.getClusterSize = function getClusterSize() {
+    var activePlayers = this.universe.getActivePlayers();
     if (activePlayers.length == 2) {
         return 5;
     } else {
@@ -108,10 +109,21 @@ SalamanderConquerClosestCornerStrategy.prototype.getClusterSize = function getCl
     }
 };
 
+SalamanderConquerClosestCornerStrategy.prototype.getReserveFactor = function getReserveFactor(planet) {
+    return 10;
+};
+
+SalamanderConquerClosestCornerStrategy.prototype.getMinFleetSizes = function getMinFleetSizes()  {
+    return {
+        "defend": 10,
+        "attack": 20,
+        "backup": 20
+    };
+};
+
 SalamanderConquerClosestCornerStrategy.prototype.think = function think(universe) {
     var i,
         j,
-        reserveFactor,
         minFleetSizes,
         myPlanets,
         enemyPlanets,
@@ -132,12 +144,8 @@ SalamanderConquerClosestCornerStrategy.prototype.think = function think(universe
         coords,
         destCoords;
 
-    minFleetSizes = {
-        "defend": 10,
-        "attack": 20,
-        "backup": 20
-    };
-    reserveFactor = 10;
+    this.setupRound(universe);
+    minFleetSizes = this.getMinFleetSizes();
 
     myPlanets = universe.getPlanets(this.player);
     if (myPlanets.length == 0) return;
@@ -149,7 +157,7 @@ SalamanderConquerClosestCornerStrategy.prototype.think = function think(universe
     free = [];
 
     for (i = 0; myPlanet = myPlanets[i]; ++i) {
-        neededForces = this.getNeededForces(universe, myPlanet);
+        neededForces = this.getNeededForces(myPlanet);
 
         if (neededForces > 0) {
             victim = {
@@ -160,7 +168,7 @@ SalamanderConquerClosestCornerStrategy.prototype.think = function think(universe
 
         } else {
 
-            available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
+            available = myPlanet.getForces() - this.getReserveFactor(myPlanet) * myPlanet.getRecruitingPerStep();
             if (available > Math.min(minFleetSizes.defend, minFleetSizes.attack)) {
                 backup = {
                     "planet": myPlanet,
@@ -175,19 +183,19 @@ SalamanderConquerClosestCornerStrategy.prototype.think = function think(universe
 
     for (i = 0; backup = free[i]; ++i) {
         source = backup.planet;
-        cluster = this.getFriendlyCluster(universe, source);
-        coords = this.getClosestCorner(universe, myPlanets);
+        cluster = this.getFriendlyCluster(source);
+        coords = this.getClosestCorner(myPlanets);
         this.sortByDistanceToCoords(cluster, coords);
 
         myPlanet = cluster[0];
-        hostile = this.getHostileCluster(universe, myPlanet);
+        hostile = this.getHostileCluster(myPlanet);
         if (hostile.length == 0) return;
 
-        destCoords = this.getClosestCorner(universe, hostile);
+        destCoords = this.getClosestCorner(hostile);
 
         available = backup.available;
 
-        orders = this.getOrders(universe, source, available, minFleetSizes, needsHelp, destCoords);
+        orders = this.getOrders(source, available, minFleetSizes, needsHelp, destCoords);
         for (j = 0; order = orders[j]; ++j) {
             destination = order.destination;
             fleetSize = order.fleetSize;
@@ -216,6 +224,7 @@ SalamanderDefensiveStrategy.prototype.think = function think(universe) {
         fleetSize,
         enemyPlanets;
 
+    this.setupRound(universe);
     fleetSize = 25;
     reserveFactor = 20;
     support = 3;
@@ -236,7 +245,7 @@ SalamanderDefensiveStrategy.prototype.think = function think(universe) {
 
         universe.sortByDistance(myPlanet, enemyPlanets);
         target = enemyPlanets[0];
-        destination = this.getNextDestination(universe, myPlanet, target, support);
+        destination = this.getNextDestination(myPlanet, target, support);
 
         targetForces = target.getForces();
         if (target.equals(destination)) {
@@ -248,7 +257,7 @@ SalamanderDefensiveStrategy.prototype.think = function think(universe) {
     }
 };
 
-SalamanderDefensiveStrategy.prototype.getLastHop = function getLastHop(universe, source, target, support) {
+SalamanderDefensiveStrategy.prototype.getLastHop = function getLastHop(source, target, support) {
     var i,
         minDist,
         destination,
@@ -260,7 +269,7 @@ SalamanderDefensiveStrategy.prototype.getLastHop = function getLastHop(universe,
     minDist = Math.pow(source.distanceTo(target), support);
     destination = target;
 
-    myPlanets = universe.getPlanets(this);
+    myPlanets = this.universe.getPlanets(this);
 
     for (i = 0; myPlanet = myPlanets[i]; ++i) {
         if (myPlanet.equals(source)) continue;
@@ -274,17 +283,17 @@ SalamanderDefensiveStrategy.prototype.getLastHop = function getLastHop(universe,
     return destination;
 };
 
-SalamanderDefensiveStrategy.prototype.getNextDestination = function getNextDestination(universe, source, target, support) {
+SalamanderDefensiveStrategy.prototype.getNextDestination = function getNextDestination(source, target, support) {
     var lastHop, hopBeforeLast;
 
     if (typeof target === "undefined") return;
 
-    lastHop = this.getLastHop(universe, source, target, support);
-    hopBeforeLast = this.getLastHop(universe, source, lastHop, support);
+    lastHop = this.getLastHop(source, target, support);
+    hopBeforeLast = this.getLastHop(source, lastHop, support);
 
     while (!hopBeforeLast.equals(lastHop)) {
         lastHop = hopBeforeLast;
-        hopBeforeLast = this.getLastHop(universe, source, lastHop, support);
+        hopBeforeLast = this.getLastHop(source, lastHop, support);
     }
     return lastHop;
 };
@@ -292,7 +301,7 @@ SalamanderDefensiveStrategy.prototype.getNextDestination = function getNextDesti
 SalamanderSpreadStrategy: function SalamanderSpreadStrategy() {};
 SalamanderSpreadStrategy.prototype = new RatPlayerStrategy();
 SalamanderSpreadStrategy.prototype.constructor = SalamanderSpreadStrategy;
-SalamanderSpreadStrategy.prototype.getClusterSize = function getClusterSize(universe) {
+SalamanderSpreadStrategy.prototype.getClusterSize = function getClusterSize() {
     return 10;
 };
 
@@ -308,18 +317,19 @@ SalamanderSpreadStrategy.prototype.think = function think(universe) {
         hostile,
         recruitingCenter;
 
+    this.setupRound(universe);
     reserveFactor = 10;
     fleetSize = 20;
     myPlanets = universe.getPlanets(this.player);
 
     if (myPlanets.length == 0) return;
-    recruitingCenter = this.getRecruitmentTarget(universe);
+    recruitingCenter = this.getRecruitmentTarget();
 
     for (i = 0; myPlanet = myPlanets[i]; ++i) {
         available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
         if (available < fleetSize) continue;
 
-        hostile = this.getHostileCluster(universe, myPlanet);
+        hostile = this.getHostileCluster(myPlanet);
         this.sortByDistanceToCoords(hostile, recruitingCenter);
 
         for (j = 0; target = hostile[j]; ++j) {
@@ -395,7 +405,7 @@ SalamanderPlayer.prototype.think = function think(universe) {
             otherForces += universe.getForces(other);
         }
 
-        if (finalFactor * myForces > otherForces && myPlanets.length > planPerPlayer) {
+        if ((finalFactor * myForces > otherForces) && (myPlanets.length > planPerPlayer)) {
             strategy = "attackNearestEnemy";
 
         } else if (defensiveFactor * maxForces > myForces && myPlanets.length < 20) {

@@ -109,3 +109,13 @@ function checkUnique(arr, attr, inner_attr) {
     }
     return true;
 }
+
+function shallowCopy(obj) {
+    var key, copy;
+    copy = {};
+
+    for (key in obj) {
+        copy[key] = obj[key];
+    }
+    return copy;
+}
