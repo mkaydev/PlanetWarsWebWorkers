@@ -10,6 +10,8 @@ RatPlayerStrategy.prototype.setPlayer = function setPlayer(player) {
 
 RatPlayerStrategy.prototype.setupRound = function setupRound(universe) {
     this.universe = universe;
+    this.inTopCache = {};
+    this.topCache = [];
 };
 
 RatPlayerStrategy.prototype.getMaxStepsTo = function getMaxStepsTo(planet, planets) {
@@ -123,26 +125,37 @@ RatPlayerStrategy.prototype.getNeededForces = function getNeededForces(planet) {
 RatPlayerStrategy.prototype.getTopForceEnemyPlanets = function getTopForceEnemyPlanets(count) {
     var i, planets, planet, nonNeutral;
 
-    planets = this.universe.getEnemyPlanets(this.player);
-    nonNeutral = [];
+    if (count > this.topCache.length) {
+        planets = this.universe.getEnemyPlanets(this.player);
+        nonNeutral = [];
 
-    for (i = 0; planet = planets[i]; ++i) {
-        if (!planet.isNeutral()) nonNeutral.push(planet);
+        for (i = 0; planet = planets[i]; ++i) {
+            if (!planet.isNeutral()) nonNeutral.push(planet);
+        }
+
+        this.universe.sortPlanetsByForces(nonNeutral, true);
+        this.topCache = nonNeutral;
     }
 
-    this.universe.sortPlanetsByForces(nonNeutral, true);
-    return nonNeutral.slice(0, count);
+    return this.topCache.slice(0, count);
 };
 
 RatPlayerStrategy.prototype.inTopForceEnemyPlanets = function inTopForceEnemyPlanets(planet, count) {
-    var i, top, topPl;
+    var i, top, topPl, cache, planetId;
 
-    top = this.getTopForceEnemyPlanets(count);
+    if (!this.inTopCache.hasOwnProperty(count)) this.inTopCache[count] = {};
+    cache = this.inTopCache[count];
 
-    for (i = 0; topPl = top[i]; ++i) {
-        if (topPl.equals(planet)) return true;
+    planetId = planet.getId();
+    if(!cache.hasOwnProperty[planetId]) {
+        top = this.getTopForceEnemyPlanets(count);
+
+        cache[planetId] = false;
+        for (i = 0; topPl = top[i]; ++i) {
+            if (topPl.equals(planet)) cache[planetId] = true;
+        }
     }
-    return false;
+    return cache[planetId];
 };
 
 RatPlayerStrategy.prototype.getRecruitmentTarget = function getRecruitmentTarget() {

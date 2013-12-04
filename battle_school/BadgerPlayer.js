@@ -17,6 +17,8 @@ BadgerPlayerStrategy.prototype.setupRound = function setupRound(universe) {
     this.universe = universe;
     this.reserveCache = {};
     this.stepsToEnemyCache = {};
+    this.inTopCache = {};
+    this.topCache = [];
 };
 
 BadgerPlayerStrategy.prototype.getStepsToEnemy = function getStepsToEnemy(planet) {

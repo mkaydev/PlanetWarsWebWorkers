@@ -74,7 +74,7 @@ if (typeof window === "undefined") {
 
 createId = function() {
     var createId, localNext;
-    localNext = 0;
+    localNext = 1;
 
     createId = function() {
         return "" + localNext++;

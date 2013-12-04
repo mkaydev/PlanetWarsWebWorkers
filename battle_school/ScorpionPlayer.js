@@ -100,6 +100,7 @@ ScorpionFutureProductionStrategy.prototype.getTarget = function getTarget(source
     curStepsTo = Infinity;
 
     for (i = 0; target = targets[i]; ++i) {
+        if (this.inTopForceEnemyPlanets(target, 5)) continue;
         needed = enemyNeededMap[target.getId()];
         if (needed <= 0) continue;
 
@@ -156,7 +157,7 @@ ScorpionFutureProductionStrategy.prototype.getFutureProductionRatio = function g
 ScorpionPlayer.prototype.setStrategies = function setStrategies() {
     this.strategies = {
         "futureProduction": new ScorpionFutureProductionStrategy().setPlayer(this),
-        "attackNearestEnemy": new RatPlayerFinalStrategy().setPlayer(this)       // AttackNearestEnemy - simple, but quick and effective for dealing the finishing blow
+        "attackNearestEnemy": new RatPlayerFinalStrategy().setPlayer(this)
     };
 };
 

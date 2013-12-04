@@ -191,7 +191,7 @@ PlanetWarsGame.prototype.drawGame = function drawGame() {
 //    console.log(end - start);
 };
 
-PlanetWarsGame.prototype.stepInterval = 64;
+PlanetWarsGame.prototype.stepInterval = 80;
 PlanetWarsGame.prototype.maxRounds = 1500;
 
 PlanetWarsGame.prototype.stepGame = function stepGame(gameEnded) {
