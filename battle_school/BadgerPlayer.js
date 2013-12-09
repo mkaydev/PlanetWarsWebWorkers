@@ -2,7 +2,7 @@ importScripts("battle_school/SalamanderPlayer.js");
 
 
 BadgerPlayer: function BadgerPlayer() {
-    this.color = [222, 184, 135]; //BurlyWood
+    this.color = [222, 184, 135];
     this.initialize();
     this.setStrategies();
 };
@@ -285,12 +285,31 @@ BadgerConquerClosestCornerStrategy.prototype.getMinFleetSizes = function getMinF
 };
 
 
+function BadgerConquerRecruitingCenterStrategy() {};
+BadgerConquerRecruitingCenterStrategy.prototype = function() {
+    var badger = new BadgerPlayerStrategy();
+    var rat = new RatPlayerMiddleStrategy();
+    rat.getReserveFactor = badger.getReserveFactor;
+    rat.getNeededMap = badger.getNeededMap;
+    rat.getStepsToEnemy = badger.getStepsToEnemy;
+    rat.setupRound = badger.setupRound;
+    return rat;
+}();
+
+BadgerConquerRecruitingCenterStrategy.prototype.getMinFleetSizes = function getMinFleetSizes() {
+    return {
+        "defend": 5,
+        "attack": 5,
+        "backup": 5
+    }
+};
+
 BadgerPlayer.prototype.setStrategies = function setStrategies() {
     this.strategies =  {
         "conquerFirstCorner": new BadgerAttackFirstCorner().setPlayer(this),
         "attackBestRatio": new BadgerAttackBestRatioStrategy().setPlayer(this),
-        "conquerRecruitingCenter": new RatPlayerMiddleStrategy().setPlayer(this),
-        "conquerClosestCorner": new BadgerConquerClosestCornerStrategy().setPlayer(this),     // adapted from RatPlayerMiddleStrategy - always try to limit the front-line by attacking the closest corner
+        "conquerRecruitingCenter": new BadgerConquerRecruitingCenterStrategy().setPlayer(this),
+        "conquerClosestCorner": new BadgerConquerClosestCornerStrategy().setPlayer(this),
         "attackNearestEnemy": new RatPlayerFinalStrategy().setPlayer(this)       // AttackNearestEnemy - simple, but quick and effective for dealing the finishing blow
     };
 };

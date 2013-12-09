@@ -7,17 +7,18 @@ var playerFiles = [
 //    "sample_players/KamikazePlayer.js",
 //    "sample_players/SpiralPlayer.js",
 //    "sample_players/AttackBestPlanetPlayer.js",
-
+//
 //    "sample_players/SupportNetworkPlayer.js",
 //    "sample_players/VirusPlayer.js",
 //    "sample_players/AlbatrossPlayer.js",
 //    "sample_players/AttackNearestEnemyPlayer.js",
 
-    "battle_school/AspPlayer.js",
+    "battle_school/ChimeraPlayer.js",
+//    "battle_school/AspPlayer.js",
     "battle_school/ScorpionPlayer.js",
-    "battle_school/BadgerPlayer.js",
-    "battle_school/SalamanderPlayer.js",
-    "battle_school/RatPlayer.js",
+//    "battle_school/BadgerPlayer.js",
+//    "battle_school/SalamanderPlayer.js",
+//    "battle_school/RatPlayer.js",
 ];
 
 $(document).ready(function() {

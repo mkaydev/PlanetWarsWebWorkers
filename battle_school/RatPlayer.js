@@ -478,10 +478,21 @@ RatPlayerMiddleStrategy.prototype._prioritize = function _prioritize(a, b) {
     return result;
 };
 
+RatPlayerMiddleStrategy.prototype.getReserveFactor = function getReserveFactor(planet) {
+    return 10;
+};
+
+RatPlayerMiddleStrategy.prototype.getMinFleetSizes = function getMinFleetSizes() {
+    return {
+        "defend": 10,
+        "attack": 20,
+        "backup": 20
+    };
+};
+
 RatPlayerMiddleStrategy.prototype.think = function think(universe) {
     var i,
         j,
-        reserveFactor,
         minFleetSizes,
         myPlanets,
         enemyPlanets,
@@ -500,12 +511,7 @@ RatPlayerMiddleStrategy.prototype.think = function think(universe) {
         recruitmentTarget;
 
     this.setupRound(universe);
-    minFleetSizes = {
-        "defend": 10,
-        "attack": 20,
-        "backup": 20
-    };
-    reserveFactor = 10;
+    minFleetSizes = this.getMinFleetSizes();
 
     myPlanets = universe.getPlanets(this.player);
     if (myPlanets.length == 0) return;
@@ -528,7 +534,7 @@ RatPlayerMiddleStrategy.prototype.think = function think(universe) {
 
         } else {
 
-            available = myPlanet.getForces() - reserveFactor * myPlanet.getRecruitingPerStep();
+            available = myPlanet.getForces() - this.getReserveFactor(myPlanet) * myPlanet.getRecruitingPerStep();
             if (available > Math.min(minFleetSizes.defend, minFleetSizes.attack)) {
                 backup = {
                     "planet": myPlanet,
