@@ -1,7 +1,7 @@
 importScripts("battle_school/AspPlayer.js");
 
 ChimeraPlayer: function ChimeraPlayer() {
-    this.color = [218, 165, 32]; //Goldenrod
+    this.color = [0, 128, 128]; //Teal
     this.initialize();
     this.setStrategies();
     this.round = 0;
@@ -16,9 +16,10 @@ ChimeraPlayer.prototype.setStrategies = function setStrategies() {
         "scorpionFutureProduction": new ScorpionFutureProductionStrategy().setPlayer(this),
         "ratNearestEnemy": new RatPlayerFinalStrategy().setPlayer(this),
         "badgerRecruitingCenter": new BadgerConquerRecruitingCenterStrategy().setPlayer(this),
-  //      "ratRecruitingCenter": new RatPlayerMiddleStrategy().setPlayer(this),
+        "ratRecruitingCenter": new RatPlayerMiddleStrategy().setPlayer(this),
         "badgerClosestCorner": new BadgerConquerClosestCornerStrategy().setPlayer(this),
-        "salamanderClosestCorner": new SalamanderConquerClosestCornerStrategy().setPlayer(this)
+//        "salamanderClosestCorner": new SalamanderConquerClosestCornerStrategy().setPlayer(this),
+        "salamanderFirstCorner": new SalamanderConquerFirstCornerStrategy().setPlayer(this)
     };
 };
 
@@ -34,7 +35,9 @@ ChimeraPlayer.prototype.think = function think(universe) {
         otherForces,
         other,
         playersLen,
-        planPerPlayer;
+        planPerPlayer,
+        ratio,
+        roundsPerPhase;
 
     initialRounds = 50;
     finalFactor = 3/4;
@@ -55,10 +58,10 @@ ChimeraPlayer.prototype.think = function think(universe) {
 
         if (playersLen == 2) {
             strategy = "scorpionFutureProduction";
-        } else if (playersLen <= 5) {
-            strategy = "badgerClosestCorner";
+        } else if (playersLen <= 6) {
+            strategy = "aspFutureProduction";
         } else {
-            strategy = "salamanderClosestCorner";
+            strategy = "salamanderFirstCorner";
         }
 
     } else {
@@ -79,21 +82,44 @@ ChimeraPlayer.prototype.think = function think(universe) {
 
         } else {
 
-            if (playersLen > 2 && playersLen < 7) {
+            if (playersLen == 2) {
+                ratio = 0.5;
+                roundsPerPhase = 100;
+            } else  if (playersLen <= 5) {
+                ratio = 0.33;
+                roundsPerPhase = 200;
+            } else if (playersLen <= 7) {
+                ratio = 0.5;
+                roundsPerPhase = 200;
+            } else {
+                ratio = 0.67;
+                roundsPerPhase = 200;
+            }
 
-                if (this.round % 100 < 50) {
-                    strategy = "aspFutureProduction";
+            if (this.round % roundsPerPhase < ratio * roundsPerPhase) {
+
+                if (playersLen == 2) {
+                    strategy = "badgerRecruitingCenter";
+                } else if (playersLen > 2 && playersLen < 5) {
+
+                    if (playersLen % 2 == 1 && this.round > 2 * initialRounds) {
+                        strategy = "badgerRecruitingCenter";
+                    } else {
+                        strategy = "badgerClosestCorner";
+                    }
                 } else {
-                    strategy = "badgerClosestCorner";
+                    strategy = "ratRecruitingCenter";
                 }
+
 
             } else {
 
-                if (this.round % 100 < 50) {
+                if (playersLen == 2 || playersLen > 5) {
                     strategy = "scorpionFutureProduction";
                 } else {
-                    strategy = "badgerRecruitingCenter";
+                    strategy = "aspFutureProduction";
                 }
+
             }
         }
     }
