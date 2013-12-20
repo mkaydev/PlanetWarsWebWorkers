@@ -1,7 +1,4 @@
-AttackLargestEmpirePlayer: function AttackLargestEmpirePlayer() {
-    this.color = [0, 128, 0]; //green
-    this.initialize();
-};
+AttackLargestEmpirePlayer: function AttackLargestEmpirePlayer() {};
 AttackLargestEmpirePlayer.prototype = new Player();
 AttackLargestEmpirePlayer.prototype.constructor = AttackLargestEmpirePlayer;
 AttackLargestEmpirePlayer.prototype.fleetSize = 25;

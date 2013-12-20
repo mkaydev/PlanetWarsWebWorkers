@@ -1,3 +1,9 @@
+RatPlayer: function RatPlayer() {
+    this.setStrategies();
+};
+RatPlayer.prototype = new Player();
+RatPlayer.prototype.constructor = RatPlayer;
+
 RatPlayerStrategy: function RatPlayerStrategy() {};
 RatPlayerStrategy.prototype.getClusterSize = function getClusterSize() {
     return 5;
@@ -597,14 +603,6 @@ RatPlayerFinalStrategy.prototype.think = function think(universe) {
     }
 };
 
-
-RatPlayer: function RatPlayer() {
-    this.color = [176, 196, 222]; //LightSteelBlue
-    this.initialize();
-    this.setStrategies();
-};
-RatPlayer.prototype = new Player();
-RatPlayer.prototype.constructor = RatPlayer;
 
 RatPlayer.prototype.setStrategies = function setStrategies() {
     this.strategies =  {

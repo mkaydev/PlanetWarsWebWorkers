@@ -119,3 +119,7 @@ function shallowCopy(obj) {
     }
     return copy;
 }
+
+function getColorCSS(rgbArr) {
+    return "rgb(".concat(rgbArr[0], ",", rgbArr[1], ",", rgbArr[2], ")");
+}

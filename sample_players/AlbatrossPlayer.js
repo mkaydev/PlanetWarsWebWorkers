@@ -1,9 +1,6 @@
 importScripts("sample_players/SupportNetworkPlayer.js");
 
-AlbatrossPlayer: function AlbatrossPlayer() {
-    this.color = [128, 0, 128]; //purple
-    this.initialize();
-};
+AlbatrossPlayer: function AlbatrossPlayer() {};
 AlbatrossPlayer.prototype = new SupportNetworkPlayer();
 AlbatrossPlayer.prototype.constructor = AlbatrossPlayer;
 AlbatrossPlayer.prototype.fleetSize = 25;

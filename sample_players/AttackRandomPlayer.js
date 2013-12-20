@@ -1,7 +1,4 @@
-AttackRandomPlayer: function AttackRandomPlayer() {
-    this.color = [0, 0, 255]; //blue
-    this.initialize();
-};
+AttackRandomPlayer: function AttackRandomPlayer() {};
 AttackRandomPlayer.prototype = new Player();
 AttackRandomPlayer.prototype.constructor = AttackRandomPlayer;
 AttackRandomPlayer.prototype.fleetSize = 25;

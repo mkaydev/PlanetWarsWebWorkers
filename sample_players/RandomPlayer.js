@@ -1,7 +1,4 @@
-RandomPlayer: function RandomPlayer() {
-    this.color = [255, 0, 0]; //red
-    this.initialize();
-};
+RandomPlayer: function RandomPlayer() {};
 RandomPlayer.prototype = new Player();
 RandomPlayer.prototype.constructor = RandomPlayer;
 RandomPlayer.prototype.fleetSize = 25;

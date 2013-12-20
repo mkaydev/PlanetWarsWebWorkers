@@ -1,6 +1,7 @@
-function Universe(playerFiles, planetCount, width, height, initializedCallback) {
+function Universe(playerMetaData, planetCount, width, height, initializedCallback) {
     var i,
         j,
+        meta,
         workerId,
         worker,
         workers,
@@ -9,7 +10,6 @@ function Universe(playerFiles, planetCount, width, height, initializedCallback) 
         playerId;
 
     this.allFleets = null;
-    this.allPlanets = null;
     this.planetCache = {};
     this.fleetCache = {};
 
@@ -18,7 +18,7 @@ function Universe(playerFiles, planetCount, width, height, initializedCallback) 
     this.height = height;
     this.fleetMovementPerStep = 10;
 
-    playerCount = playerFiles.length;
+    playerCount = playerMetaData.length;
     this.playerCount = playerCount;
     this.neutralPlanetCount = planetCount - playerCount;
 
@@ -133,14 +133,12 @@ function Universe(playerFiles, planetCount, width, height, initializedCallback) 
             }
         }.bind(this);
 
-        file = playerFiles[i];
-        playerId = createId();
+        meta = playerMetaData[i];
 
         worker.postMessage({
             "action": "initialize",
             "workerId": workerId,
-            "playerId": playerId,
-            "playerFile": file
+            "playerMetaData": meta
         });
     }
 }

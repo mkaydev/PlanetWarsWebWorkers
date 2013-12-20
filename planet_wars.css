@@ -111,7 +111,7 @@
 
 .statsPlayerName {
     display: table-cell;
-    padding-left: 2px;
+    padding-left: 4px;
     text-align: left;
 }
 
@@ -120,4 +120,23 @@
     padding-left: 2px;
     padding-right: 2px;
     text-align: right;
+}
+
+#contestantsSelection {
+    width: 30%;
+    font-size: 16px;
+    position: relative;
+    float: left;
+    display: table;
+    border-collapse: collapse;
+}
+
+.playerSelected {
+    display: table-cell;
+    width: 16px;
+}
+
+.contestantSelection {
+    display: table-row;
+    border: 1px solid black;
 }

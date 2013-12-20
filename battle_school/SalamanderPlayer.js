@@ -1,9 +1,7 @@
 importScripts("battle_school/RatPlayer.js");
 
 SalamanderPlayer: function SalamanderPlayer() {
-    this.color = [143, 188, 143]; //DarkSeaGreen
     this.round = 0;
-    this.initialize();
     this.setStrategies();
 };
 SalamanderPlayer.prototype = new Player();

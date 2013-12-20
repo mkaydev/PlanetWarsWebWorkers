@@ -24,7 +24,7 @@ PlayerEntry.prototype.createDomRepresentation = function createDomRepresentation
 
     colorDiv = document.createElement("div");
     colorDiv.className = this.colorCellClass;
-    colorDiv.style.cssText = "background-color: " + this.getColorCSS(this.color) + ";";
+    colorDiv.style.cssText = "background-color: " + getColorCSS(this.color) + ";";
 
     nameDiv = document.createElement("div");
     nameDiv.className = this.nameCellClass;
@@ -37,10 +37,6 @@ PlayerEntry.prototype.createDomRepresentation = function createDomRepresentation
     playerEntry.className = this.playerStatsClass;
 
     return playerEntry;
-};
-
-PlayerEntry.prototype.getColorCSS = function getColorCSS(rgbArr) {
-    return "rgb(".concat(rgbArr[0], ",", rgbArr[1], ",", rgbArr[2], ")");
 };
 
 PlayerEntry.prototype.updateValue = function updateValue(newValue) {

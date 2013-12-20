@@ -1,55 +1,45 @@
 // responsible for running multiple games (tournaments), visualizing the results and getting user input
-var playerFiles = [
-//    "sample_players/DoNothingPlayer.js",
-//    "sample_players/RandomPlayer.js",
-//    "sample_players/AttackRandomPlayer.js",
-//    "sample_players/AttackLargestEmpirePlayer.js",
-//    "sample_players/KamikazePlayer.js",
-//    "sample_players/SpiralPlayer.js",
-//    "sample_players/AttackBestPlanetPlayer.js",
-//
-//    "sample_players/SupportNetworkPlayer.js",
-//    "sample_players/VirusPlayer.js",
-//    "sample_players/AlbatrossPlayer.js",
-//    "sample_players/AttackNearestEnemyPlayer.js",
-
-    "battle_school/ChimeraPlayer.js",
-//    "battle_school/AspPlayer.js",
-    "battle_school/ScorpionPlayer.js",
-//    "battle_school/BadgerPlayer.js",
-//    "battle_school/SalamanderPlayer.js",
-//    "battle_school/RatPlayer.js",
-];
 
 $(document).ready(function() {
-    var tournamentInput,
-        tournament,
-        game,
-        initializedCallback,
-        gameEnded,
-        backgroundCanvasId,
+    new PlanetWarsSimulator(simulatorInitializedCallback);
+});
+
+function simulatorInitializedCallback(simulator) {
+    var backgroundCanvasId,
         foregroundCanvasId,
         textCanvasId,
         gameStatsDivId,
-        gameStats,
+        contestantsSelectorDivId,
         width,
         height,
         planetCount,
-        runTournSel,
-        tournamentOverview,
         tournamentOverviewDivId,
-        useWebGL;
+        useWebGL,
+        tournamentInput,
+        tournament,
+        runTournSel,
+        game,
+        gameStats,
+        contestantsSelector,
+        tournamentOverview,
+        gameEnded,
+        selectionChanged,
+        restartGame,
+        players;
 
     backgroundCanvasId = "gameBackground";
     foregroundCanvasId = "gameForeground";
     textCanvasId = "gameText";
     gameStatsDivId = "gameStats";
     tournamentOverviewDivId = "tournamentOverview";
+    contestantsSelectorDivId = "contestantsSelection";
 
     width = Math.min(screen.width, 1024);
     height = Math.min(screen.height - 200, 600);
     planetCount = 150;
     useWebGL = true;
+
+    players = simulator.players;
 
     enableInput();
     runTournSel = $("#runTournament");
@@ -57,92 +47,87 @@ $(document).ready(function() {
 
     $("#step").attr("disabled", false);
 
-
     gameStats = new GameStats(gameStatsDivId);
     tournamentOverview = new TournamentOverview(tournamentOverviewDivId);
 
     tournamentInput = getTournamentInput();
-    tournament = new Tournament(playerFiles, tournamentInput.duel, tournamentInput.repetitions, tournamentOverview);
+    tournament = new Tournament(players, tournamentInput.duel, tournamentInput.repetitions, tournamentOverview);
     tournament.initialize();
 
-    initializedCallback = tournament.initializePoints;
+     game = new PlanetWarsGame(
+         planetCount,
+         width,
+         height,
+         backgroundCanvasId,
+         foregroundCanvasId,
+         textCanvasId,
+         gameStats,
+         useWebGL,
+         simulator
+     );
 
-    game = new PlanetWarsGame(
-        planetCount,
-        width,
-        height,
-        backgroundCanvasId,
-        foregroundCanvasId,
-        textCanvasId,
-        gameStats,
-        useWebGL
-    );
+     game.initialize(tournament.getNextPlayerIds());
 
-    game.initialize(tournament.getNextPlayers(), initializedCallback.bind(tournament));
+     gameEnded = function gameEnded(gameResults) {
+         tournament.addResultSummary(gameResults);
 
-    gameEnded = function gameEnded(gameResults) {
-        tournament.addResultSummary(gameResults);
+         if (tournament.gameIndex < tournament.gamesToPlay.length) {
+         game.terminateGame();
+         unbindControls();
 
-        if (tournament.gameIndex < tournament.gamesToPlay.length) {
-            game.terminateGame();
-            unbindControls();
+         game.initialize(tournament.getNextPlayerIds());
 
-            game.initialize(tournament.getNextPlayers(), initializedCallback.bind(tournament));
+         window.setTimeout(function() {
+             game.play.bind(game)(gameEnded);
+             bindControls(game, gameEnded, tournament);
+             }, 1200);
+         }
+     }.bind(this);
 
-            window.setTimeout(function() {
-                game.play.bind(game)(gameEnded);
-                bindControls(game, gameEnded, tournament, initializedCallback.bind(tournament));
-            }, 1200);
-        }
-    }.bind(this);
+     bindControls(game, gameEnded, tournament);
 
-    bindControls(game, gameEnded, tournament, initializedCallback.bind(tournament));
+     runTournSel.change(function() {
+         restartGame();
 
-    runTournSel.change(function() {
+         if (this.checked) {
+         $("#tournamentType").show();
+         } else {
+         $("#tournamentType").hide();
+         }
+     });
+
+     $("#duel").change(function() {
+         restartGame();
+     });
+
+     $("#lastManStanding").change(function() {
+         restartGame();
+     });
+
+     $("#repetitions").bind("click keyup", function() {
+         tournamentInput = getTournamentInput();
+         tournament.setRepetitions(tournamentInput.repetitions);
+         tournament.initialize();
+     });
+
+    restartGame = function restartGame() {
         game.terminateGame();
         unbindControls();
         tournamentInput = getTournamentInput();
-        tournament = new Tournament(playerFiles, tournamentInput.duel, tournamentInput.repetitions, tournamentOverview);
+        tournament = new Tournament(players, tournamentInput.duel, tournamentInput.repetitions, tournamentOverview);
         tournament.initialize();
 
-        game.initialize(tournament.getNextPlayers(), initializedCallback.bind(tournament));
-        bindControls(game, gameEnded, tournament, initializedCallback.bind(tournament));
+        game.initialize(tournament.getNextPlayerIds());
+        bindControls(game, gameEnded, tournament);
+    };
 
-        if (this.checked) {
-            $("#tournamentType").show();
-        } else {
-            $("#tournamentType").hide();
-        }
-    });
+    selectionChanged = function selectionChanged(selectedIds) {
+        players = selectedIds;
+        restartGame();
+    };
 
-    $("#duel").change(function() {
-        game.terminateGame();
-        unbindControls();
-        tournamentInput = getTournamentInput();
-        tournament = new Tournament(playerFiles, tournamentInput.duel, tournamentInput.repetitions, tournamentOverview);
-        tournament.initialize();
-
-        game.initialize(tournament.getNextPlayers(), initializedCallback.bind(tournament));
-        bindControls(game, gameEnded, tournament, initializedCallback.bind(tournament));
-    });
-
-    $("#lastManStanding").change(function() {
-        game.terminateGame();
-        unbindControls();
-        tournamentInput = getTournamentInput();
-        tournament = new Tournament(playerFiles, tournamentInput.duel, tournamentInput.repetitions, tournamentOverview);
-        tournament.initialize();
-
-        game.initialize(tournament.getNextPlayers(), initializedCallback.bind(tournament));
-        bindControls(game, gameEnded, tournament, initializedCallback.bind(tournament));
-    });
-
-    $("#repetitions").bind("click keyup", function() {
-        tournamentInput = getTournamentInput();
-        tournament.setRepetitions(tournamentInput.repetitions);
-        tournament.initialize();
-    });
-});
+    contestantsSelector = new ContestantsSelector(players, contestantsSelectorDivId, selectionChanged);
+}
 
 function getTournamentInput() {
     var repetitions, duel, runTournament;
@@ -170,9 +155,11 @@ function unbindControls() {
     $("#webGL").off("change");
 }
 
-function bindControls(game, endedCallback, tournament, initializedCallback) {
+function bindControls(game, endedCallback, tournament) {
     $("#play").click(function() {
         togglePlayPause();
+        $("#gameStats").show();
+        $("#contestantsSelection").hide();
         game.play.bind(game)(endedCallback.bind(game));
     });
     $("#pause").click(function() {
@@ -184,8 +171,10 @@ function bindControls(game, endedCallback, tournament, initializedCallback) {
         $("#step").attr("disabled", false);
         $("#play").show();
         $("#pause").hide();
+        $("#gameStats").hide();
+        $("#contestantsSelection").show();
         tournament.initialize.bind(tournament)();
-        game.initialize(tournament.getNextPlayers(), initializedCallback.bind(tournament));
+        game.initialize(tournament.getNextPlayerIds());
     });
     $("#step").click(function() {
         disableInput();

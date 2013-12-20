@@ -2,13 +2,21 @@ function ContestantRegistry() {
     this.contestants = {};
 };
 
-ContestantRegistry.prototype.registerPlayer = function registerPlayer(name, color, filepath) {
-    var id = createId();
+ContestantRegistry.prototype.registerPlayer = function registerPlayer(name, color, filepath, selectedByDefault) {
+    var id, selected;
+    id = createId();
+    if (selectedByDefault) {
+        selected = true;
+    } else {
+        selected = false;
+    }
+
     this.contestants[id] = {
         "name": name,
         "color": color,
         "file": filepath,
-        "id": id
+        "id": id,
+        "selected": selected
     };
 };
 
@@ -16,106 +24,116 @@ ContestantRegistry.prototype.getContestantMetaData = function getContestantMetaD
     return this.contestants[contestantId];
 };
 
-var _contestantRegistry = new ContestantRegistry();
+ContestantRegistry.prototype.getContestantsMetaData = function getContestantsMetaData() {
+    return this.contestants;
+};
 
-_contestantRegistry.registerPlayer(
+var contestantRegistry = new ContestantRegistry();
+
+contestantRegistry.registerPlayer(
     "Chimera",
-    [218, 165, 32], //Goldenrod
-    "battle_school/ChimeraPlayer.js"
+    [0, 128, 128], //Teal
+    "battle_school/ChimeraPlayer.js",
+    true
 );
 
-_contestantRegistry.registerPlayer(
+contestantRegistry.registerPlayer(
     "Asp",
     [139, 69, 19], //SaddleBrown
-    "battle_school/AspPlayer.js"
+    "battle_school/AspPlayer.js",
+    true
 );
 
-_contestantRegistry.registerPlayer(
+contestantRegistry.registerPlayer(
     "Scorpion",
     [220, 20, 60], //Crimson
-    "battle_school/ScorpionPlayer.js"
+    "battle_school/ScorpionPlayer.js",
+    true
 );
 
-_contestantRegistry.registerPlayer(
+contestantRegistry.registerPlayer(
     "Badger",
     [222, 184, 135], //BurlyWood
-    "battle_school/BadgerPlayer.js"
+    "battle_school/BadgerPlayer.js",
+    true
 );
 
-_contestantRegistry.registerPlayer(
+contestantRegistry.registerPlayer(
     "Salamander",
     [143, 188, 143], //DarkSeaGreen
-    "battle_school/SalamanderPlayer.js"
+    "battle_school/SalamanderPlayer.js",
+    true
 );
 
-_contestantRegistry.registerPlayer(
+contestantRegistry.registerPlayer(
     "Rat",
     [176, 196, 222], //LightSteelBlue
-    "battle_school/RatPlayer.js"
+    "battle_school/RatPlayer.js",
+    true
 );
 
-_contestantRegistry.registerPlayer(
+contestantRegistry.registerPlayer(
     "AttackNearestEnemy",
     [255, 185, 0], //orange
     "sample_players/AttackNearestEnemyPlayer.js"
 );
 
-_contestantRegistry.registerPlayer(
+contestantRegistry.registerPlayer(
     "Albatross",
     [128, 0, 128], //purple
     "sample_players/AlbatrossPlayer.js"
 );
 
-_contestantRegistry.registerPlayer(
+contestantRegistry.registerPlayer(
     "Virus",
     [128, 128, 0], //olive
     "sample_players/VirusPlayer.js"
 );
 
-_contestantRegistry.registerPlayer(
+contestantRegistry.registerPlayer(
     "SupportNetwork",
     [0, 255, 255], //aqua
     "sample_players/SupportNetworkPlayer.js"
 );
 
-_contestantRegistry.registerPlayer(
+contestantRegistry.registerPlayer(
     "DoNothing",
     [255, 255, 0], //yellow
     "sample_players/DoNothingPlayer.js"
 );
 
-_contestantRegistry.registerPlayer(
+contestantRegistry.registerPlayer(
     "Random",
     [255, 0, 0], //red
     "sample_players/RandomPlayer.js"
 );
 
-_contestantRegistry.registerPlayer(
+contestantRegistry.registerPlayer(
     "AttackRandom",
     [0, 0, 255], //blue
     "sample_players/AttackRandomPlayer.js"
 );
 
-_contestantRegistry.registerPlayer(
+contestantRegistry.registerPlayer(
     "AttackLargestEmpire",
     [0, 128, 0], //green
     "sample_players/AttackLargestEmpirePlayer.js"
 );
 
-_contestantRegistry.registerPlayer(
+contestantRegistry.registerPlayer(
     "Kamikaze",
     [250, 128, 114], //salmon
     "sample_players/KamikazePlayer.js"
 );
 
-_contestantRegistry.registerPlayer(
+contestantRegistry.registerPlayer(
     "Spiral",
     [210, 105, 30], //chocolate
     "sample_players/SpiralPlayer.js"
 );
 
-_contestantRegistry.registerPlayer(
-    "AttackBestPlanet"
+contestantRegistry.registerPlayer(
+    "AttackBestPlanet",
     [250, 235, 215], //AntiqueWhite
     "sample_players/AttackBestPlanetPlayer.js"
 );

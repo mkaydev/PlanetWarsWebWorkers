@@ -1,24 +1,42 @@
-function Tournament(contestantFiles, duel, repetitions, tournamentOverview) {
+function Tournament(contestantsMetaData, duel, repetitions, tournamentOverview) {
     this.repetitions = repetitions;
     this.duel = duel;
-    this.contestantFiles = contestantFiles;
+    this.contestantsMeta = this.filterUnselected(contestantsMetaData);
+    this.contestantsIds = this.getContestantIds(this.contestantsMeta);
     this.overview = tournamentOverview;
 }
+
+Tournament.prototype.filterUnselected = function filterUnselected(contestantsMetaData) {
+    var id, meta, result;
+    result = {};
+
+    for (id in contestantsMetaData) {
+        meta = contestantsMetaData[id];
+        if (meta.selected) {
+            result[id] = meta;
+        }
+    }
+    return result;
+};
+
+Tournament.prototype.getContestantIds = function getContestantIds(contestantsMetaData) {
+    return Object.keys(contestantsMetaData);
+};
 
 Tournament.prototype.setRepetitions = function setRepetitions(repetitions) {
     this.repetitions = repetitions;
 };
 
 Tournament.prototype.initialize = function initialize() {
-    var i, j, cycle, rep, contestantFiles, contLen, gamesToPlay;
+    var i, j, cycle, rep, contestantsIds, contLen, gamesToPlay;
     rep = this.repetitions;
-    contestantFiles = this.contestantFiles;
-    contLen = contestantFiles.length;
+    contestantsIds = this.contestantsIds;
+    contLen = contestantsIds.length;
     gamesToPlay = [];
 
     if (!this.duel) {
         for (i = 0; i < rep; ++i) {
-            gamesToPlay.push(contestantFiles);
+            gamesToPlay.push(contestantsIds);
         }
 
     } else {
@@ -26,7 +44,7 @@ Tournament.prototype.initialize = function initialize() {
         cycle = [];
         for (i = 0; i < contLen; ++i) {
             for(j = i + 1; j < contLen; ++j) {
-                cycle.push([contestantFiles[i], contestantFiles[j]]);
+                cycle.push([contestantsIds[i], contestantsIds[j]]);
             }
         }
 
@@ -37,19 +55,20 @@ Tournament.prototype.initialize = function initialize() {
 
     this.gamesToPlay = gamesToPlay;
     this.gameIndex = 0;
+    this.initializePoints(this.contestantsMeta);
     this.overview.initialize(this.duel, 0, this.gamesToPlay.length);
 };
 
-Tournament.prototype.initializePoints = function initializePoints(activePlayers) {
-    var i, contestantKey, player, contestants;
+Tournament.prototype.initializePoints = function initializePoints(players) {
+    var contestantKey, player, contestants;
     contestants = this.contestants;
 
     if (typeof contestants === "undefined") {
         contestants = {};
     }
 
-    for (i = 0; player = activePlayers[i]; ++i) {
-        contestantKey = player.name;
+    for (contestantKey in players) {
+        player = players[contestantKey];
 
         if (!contestants.hasOwnProperty(contestantKey)) {
             contestants[contestantKey] = {
@@ -69,13 +88,13 @@ Tournament.prototype.addResultSummary = function addResultSummary(resultSummary)
     players = resultSummary.players;
 
     if (players.length == 1) {
-        winnerKey = players[0].name;
+        winnerKey = players[0].id;
         this.addPoints(winnerKey, 2);
 
     } else {
 
         for (i = 0; survivor = players[i]; ++i) {
-            this.addPoints(survivor.name, 1);
+            this.addPoints(survivor.id, 1);
         }
     }
     this.gameIndex += 1;
@@ -93,6 +112,6 @@ Tournament.prototype.addPoints = function addPoints(playerKey, points) {
     contestant.points += points;
 };
 
-Tournament.prototype.getNextPlayers = function getNextPlayers() {
+Tournament.prototype.getNextPlayerIds = function getNextPlayerIds() {
     return this.gamesToPlay[this.gameIndex];
 };

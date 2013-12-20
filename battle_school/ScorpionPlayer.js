@@ -2,8 +2,6 @@ importScripts("battle_school/BadgerPlayer.js");
 
 
 ScorpionPlayer: function ScorpionPlayer() {
-    this.color = [220, 20, 60]; //Crimson
-    this.initialize();
     this.setStrategies();
 };
 ScorpionPlayer.prototype = new Player();

@@ -9,7 +9,7 @@ importScripts("helper.js", "player_slave.js", "planet_slave.js", "fleet_slave.js
 
 
 onmessage = function(oEvent) {
-    var data, action;
+    var data, action, meta;
     data = oEvent.data;
     action = data.action;
 
@@ -28,12 +28,12 @@ onmessage = function(oEvent) {
 
         if (_initialized) return;
         _workerId = data.workerId;
-        _playerId = data.playerId;
-        _playerFile = data.playerFile;
+        meta = data.playerMetaData;
+        _playerFile = meta.file;
 
         importScripts(_playerFile);
         _player = new _constructor();
-        _player._setId(_playerId);
+        _player.fromMetaData(meta);
 
         _universe = new Universe();
         _initialized = true;

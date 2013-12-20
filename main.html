@@ -34,7 +34,9 @@
     <script type="text/javascript" src="helper.js"></script>
     <script type="text/javascript" src="renderer.js"></script>
     <script type="text/javascript" src="planet_wars.js"></script>
+    <script type="text/javascript" src="planet_wars_simulator.js"></script>
     <script type="text/javascript" src="tournament.js"></script>
+    <script type="text/javascript" src="contestant_selector.js"></script>
     <script type="text/javascript" src="player_entry.js"></script>
     <script type="text/javascript" src="game_stats.js"></script>
     <script type="text/javascript" src="tournament_overview.js"></script>
@@ -49,11 +51,18 @@
         <canvas id="gameText"></canvas>
     </div>
     <div id="bottomInterface">
-        <div id="gameStats">
+        <div id="gameStats" style="display:none">
             <div class="playerStats" style="visibility:hidden">
                 <div class="statsPlayerColor"></div>
                 <div class="statsPlayerName"></div>
                 <div class="statsPlayerValue"></div>
+            </div>
+        </div>
+        <div id="contestantsSelection">
+            <div class="contestantSelection" style="visibility:hidden">
+                <div class="playerSelected"><input type="checkbox"></div>
+                <div class="statsPlayerColor"></div>
+                <div class="statsPlayerName"></div>
             </div>
         </div>
         <div id="controlsOuter">

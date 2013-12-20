@@ -1,8 +1,6 @@
 importScripts("battle_school/AspPlayer.js");
 
 ChimeraPlayer: function ChimeraPlayer() {
-    this.color = [0, 128, 128]; //Teal
-    this.initialize();
     this.setStrategies();
     this.round = 0;
 };
@@ -39,7 +37,7 @@ ChimeraPlayer.prototype.think = function think(universe) {
         ratio,
         roundsPerPhase;
 
-    initialRounds = 50;
+    initialRounds = 25;
     finalFactor = 3/4;
 
     ++this.round;

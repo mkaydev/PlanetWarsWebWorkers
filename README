@@ -1,15 +1,12 @@
-To implement a player, set the prototype of the new player object to new Player() and the constructor to the new player constructor
-there are two things you have to do in the player's constructor:
-    1. set this.color to a color of your choice
-    2. call this.initialize()
-
-Afterwards register your player as a contestant by calling contestants.register(playerConstructor).
-You need to implement the .think(universe) method, which takes the current universe as a parameter.
-Lastly you need to add the line "var _constructor = [Insert your constructor name here];" to the player-file.
+To implement a player:
+ - create a constructor for your the player
+ - set the .prototype of the new player object to new Player()
+ - set the .prototype.constructor to your player constructor
+ - implement the .think method for your player
+ - set the variable _constructor to the constructor of your player (this variable will be used to create instances of your player)
+ - register the player in the contestant_registry.js-file by specifying the meta data for your player (name, color, file path etc.)
 
 Have a look at the sample_players to see examples.
-
-To let the player participate, add the path to the script containing the player to the players array in main.js.
 
 --------------------------------------------------------------------------------------------
 
@@ -116,7 +113,7 @@ It is expected that for most if not all of the game: #Players <way lower than< #
 
 -----------------Sparring-partners------------------------------------------------------------
 Currently implemented players are in the sample_players and battle_school folder.
-The current players could be separated into classes as follows:
+The current sample players could be separated into classes as follows:
 
 Complete idiots: DoNothingPlayer, SpiralPlayer, RandomPlayer, AttackRandomPlayer, AttackLargestEnemyPlayer, KamikazePlayer, AttackBestPlanetPlayer
 Naive, but alright: SupportNetworkPlayer, AlbatrossPlayer, VirusPlayer, AttackNearestEnemyPlayer

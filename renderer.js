@@ -75,7 +75,7 @@ Canvas2dRenderer.prototype.drawGame = function drawGame(currentState) {
         planets = exportedPlanets[playerId];
         if (planets.length == 0) continue;
 
-        foregroundContext.fillStyle = this.getColorStyle(color);
+        foregroundContext.fillStyle = getColorCSS(color);
 
         for (j = 0; planet = planets[j]; ++j) {
             centerX = planet[_STATE_KEYS["x"]];
@@ -129,10 +129,6 @@ Canvas2dRenderer.prototype.drawGame = function drawGame(currentState) {
             textContext.fillText("" + forces, x, y);
         }
     }
-};
-
-Canvas2dRenderer.prototype.getColorStyle = function getColorStyle(rgbArr) {
-    return "rgb(".concat(rgbArr[0], ",", rgbArr[1], ",", rgbArr[2], ")");
 };
 
 function HybridRenderer(backgroundCanvas, foregroundCanvas, textCanvas, width, height) {
@@ -223,7 +219,7 @@ HybridRenderer.prototype.drawGame = function drawGame(currentState) {
 
         planets = exportedPlanets[playerId];
         if (planets.length == 0) continue;
-        backgroundContext.fillStyle = this.getColorStyle(color);
+        backgroundContext.fillStyle = getColorCSS(color);
 
         for (j = 0; planet = planets[j]; ++j) {
             centerX = planet[_STATE_KEYS["x"]];
@@ -285,10 +281,6 @@ HybridRenderer.prototype.drawGame = function drawGame(currentState) {
         gl.uniform4f(colorLocation, color[0], color[1], color[2], 0.75);
         gl.drawArrays(gl.TRIANGLES, drawInput[0], drawInput[1]);
     }
-};
-
-HybridRenderer.prototype.getColorStyle = function getColorStyle(rgbArr) {
-    return "rgb(".concat(rgbArr[0], ",", rgbArr[1], ",", rgbArr[2], ")");
 };
 
 HybridRenderer.prototype.getGLInput = function getGLInput(expPlayerKeys, expPlayers, expFleets) {

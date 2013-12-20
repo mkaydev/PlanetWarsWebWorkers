@@ -1,7 +1,4 @@
-SupportNetworkPlayer: function SupportNetworkPlayer() {
-    this.color = [0, 255, 255]; //aqua
-    this.initialize();
-};
+SupportNetworkPlayer: function SupportNetworkPlayer() {};
 SupportNetworkPlayer.prototype = new Player();
 SupportNetworkPlayer.prototype.constructor = SupportNetworkPlayer;
 SupportNetworkPlayer.prototype.reserveFactor = 10;

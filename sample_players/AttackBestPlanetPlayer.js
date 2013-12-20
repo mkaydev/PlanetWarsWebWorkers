@@ -1,7 +1,4 @@
-AttackBestPlanetPlayer: function AttackBestPlanetPlayer() {
-    this.color = [250, 235, 215]; //AntiqueWhite
-    this.initialize();
-};
+AttackBestPlanetPlayer: function AttackBestPlanetPlayer() {};
 AttackBestPlanetPlayer.prototype = new Player();
 AttackBestPlanetPlayer.prototype.constructor = AttackBestPlanetPlayer;
 AttackBestPlanetPlayer.prototype.reserveFactor = 10;

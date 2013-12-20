@@ -2,8 +2,6 @@ importScripts("battle_school/SalamanderPlayer.js");
 
 
 BadgerPlayer: function BadgerPlayer() {
-    this.color = [222, 184, 135];
-    this.initialize();
     this.setStrategies();
 };
 BadgerPlayer.prototype = new Player();

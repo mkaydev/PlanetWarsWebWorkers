@@ -2,8 +2,6 @@ importScripts("battle_school/ScorpionPlayer.js");
 
 
 AspPlayer: function AspPlayer() {
-    this.color = [139, 69, 19]; //SaddleBrown
-    this.initialize();
     this.setStrategies();
 };
 AspPlayer.prototype = new ScorpionPlayer();

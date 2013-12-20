@@ -1,11 +1,5 @@
-Player: function Player() {
-    this.color = "black";
-};
+Player: function Player() {};
 Player.prototype.isNeutral = false;
-
-Player.prototype.initialize = function initialize() {
-    this.name = arguments.callee.caller.name;
-};
 
 Player.prototype._setId = function _setId(id) {
     this.id = id;
@@ -22,6 +16,12 @@ Player.prototype.equals = function equals(otherPlayer) {
 Player.prototype.sendFleet = function sendFleet(source, destination, forces) {
     if (!source.ownerEquals(this)) return;
     return source.sendFleet(destination, forces);
+};
+
+Player.prototype.fromMetaData = function fromMetaData(metaData) {
+    this.id = metaData.id;
+    this.color = metaData.color;
+    this.name = metaData.name;
 };
 
 Player.prototype.fromJSON = function fromJSON(playerState) {

@@ -6,7 +6,7 @@
 
 // ---------------------------------------------------------------------------------------------------------------------------------
 
-PlanetWarsGame: function PlanetWarsGame(planetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId, gameStats, useWebGL) {
+PlanetWarsGame: function PlanetWarsGame(planetCount, width, height, backgroundCanvasId, foregroundCanvasId, textCanvasId, gameStats, useWebGL, simulator) {
     this.planetCount = planetCount;
     this.foregroundCanvasId = foregroundCanvasId;
     this.backgroundCanvasId = backgroundCanvasId;
@@ -15,19 +15,22 @@ PlanetWarsGame: function PlanetWarsGame(planetCount, width, height, backgroundCa
     this.height = height;
     this.gameStats = gameStats;
     this.renderer = this.createRenderer(useWebGL);
+    this.simulator = simulator;
 };
 
-PlanetWarsGame.prototype.initialize = function initialize(playerFiles, initializedCallback) {
-    this.playerFiles = playerFiles;
+PlanetWarsGame.prototype.initialize = function initialize(playerIds) {
+    this.playerIds = playerIds;
     this.initialized = false;
     this.terminateGame();
     this.ended = false;
     this.running = false;
     this.lastStepped = 0;
 
-    this.simulator = new Worker("simulator.js");
 
-    this.simulator.onmessage = function(oEvent) {
+    this.states = {};
+    this.round = 0;
+
+    this.simulator.setOnMessage(function(oEvent) {
         var i,
             state,
             round,
@@ -90,7 +93,6 @@ PlanetWarsGame.prototype.initialize = function initialize(playerFiles, initializ
             }
 
             this.gameStats.setPlayerEntries(activePlayers);
-            initializedCallback(activePlayers);
 
         } else if (action == "log") {
             if (typeof messageId !== "undefined") {
@@ -101,22 +103,19 @@ PlanetWarsGame.prototype.initialize = function initialize(playerFiles, initializ
 
         } else if (action == "alert") {
             if (typeof messageId !== "undefined") {
-                alert([messageId, message]);
+                window.alert([messageId, message]);
             } else {
-                alert(message);
+                window.alert(message);
             }
         } else {
             console.log("unrecognized action " + action);
         }
-    }.bind(this);
-
-    this.states = {};
-    this.round = 0;
+    }.bind(this));
 
     this.simulator.postMessage(
         {
             "action": "start",
-            "playerFiles": this.playerFiles,
+            "playerIds": this.playerIds,
             "planetCount": this.planetCount,
             "width": this.width,
             "height": this.height,
@@ -268,11 +267,9 @@ PlanetWarsGame.prototype.pause = function pause() {
 
 // I tried using self.close within the worker instead, however sometimes it failed and caused a memory leak, because the workers wouldn't be destroyed.
 PlanetWarsGame.prototype.terminateGame = function terminateGame() {
-    if (typeof this.simulator !== "undefined") {
-        this.simId = null;
-        this.currentState = null;
-        this.simulator.terminate();
-    }
+    this.simulator.reset();
+    this.simId = null;
+    this.currentState = null;
 };
 
 PlanetWarsGame.prototype.exportPlayer = function exportPlayer(playerState) {

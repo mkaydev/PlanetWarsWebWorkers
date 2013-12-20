@@ -1,7 +1,4 @@
-VirusPlayer: function VirusPlayer() {
-    this.color = [128, 128, 0]; //olive
-    this.initialize();
-};
+VirusPlayer: function VirusPlayer() {};
 VirusPlayer.prototype = new Player();
 VirusPlayer.prototype.constructor = VirusPlayer;
 
