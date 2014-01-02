@@ -49,8 +49,8 @@ ContestantSelector.prototype.isSelected = function isSelected() {
 
 
 ContestantSelector.prototype.contestantSelectorClass = "contestantSelection";
-ContestantSelector.prototype.colorCellClass = "statsPlayerColor";
-ContestantSelector.prototype.nameCellClass = "statsPlayerName";
+ContestantSelector.prototype.colorCellClass = "selectionPlayerColor";
+ContestantSelector.prototype.nameCellClass = "selectionPlayerName";
 ContestantSelector.prototype.valueCellClass = "playerSelected";
 
 //------------------------------

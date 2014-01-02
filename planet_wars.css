@@ -1,49 +1,3 @@
-#gameOuter {
-    float: right;
-    right: 50%;
-    position: relative;
-    margin-bottom: 10px;
-}
-
-#gameBackground {
-    border: 1px solid black;
-    float: right;
-    right: -50%;
-    position: relative;
-    z-index: 0;
-}
-
-#gameForeground {
-    border: 1px solid black;
-    float: right;
-    right: -50%;
-    position: absolute;
-    z-index: 1;
-}
-
-#gameText {
-    border: 1px solid black;
-    float: right;
-    right: -50%;
-    position: absolute;
-    z-index: 2;
-}
-
-#bottomInterface {
-    width: 100%;
-    clear: both;
-    float: left;
-    position: relative;
-}
-
-#controlsOuter {
-    width: 30%;
-    position: relative;
-    float: left;
-    left: 5%;
-    text-align: center;
-}
-
 #controls {
     margin: 0 auto;
 }
@@ -60,31 +14,18 @@
     margin-right: 2px;
 }
 
-#tournamentSelection {
-    width: 30%;
-    position: relative;
-    float: right;
-    text-align: right;
-}
-
 #repetitions {
     width: 36px;
 }
 
-#gameStats {
-    width: 30%;
-    font-size: 16px;
-    position: relative;
-    float: left;
-    display: table;
-    border-collapse: collapse;
+.playerSelected {
+    display: table-cell;
+    width: 16px;
 }
 
-#tournamentOverview {
-    width: 30%;
-    font-size: 16px;
-    position: relative;
-    float: right;
+.contestantSelection, .playerStats {
+    display: table-row;
+    border: 1px solid black;
 }
 
 .tournamentStats {
@@ -98,18 +39,13 @@
     float: right;
 }
 
-.playerStats {
-    display: table-row;
-    border: 1px solid black;
-}
-
-.statsPlayerColor {
+.selectionPlayerColor, .statsPlayerColor {
     border: 1px solid black;
     display: table-cell;
     width: 16px;
 }
 
-.statsPlayerName {
+.selectionPlayerName, .statsPlayerName {
     display: table-cell;
     padding-left: 4px;
     text-align: left;
@@ -122,21 +58,132 @@
     text-align: right;
 }
 
-#contestantsSelection {
-    width: 30%;
-    font-size: 16px;
-    position: relative;
-    float: left;
-    display: table;
-    border-collapse: collapse;
+@media (max-width: 1599px) {
+    #gameOuter {
+        float: right;
+        right: 50%;
+        position: relative;
+        margin-bottom: 10px;
+    }
+
+    #gameBackground {
+        border: 1px solid black;
+        float: right;
+        right: -50%;
+        position: relative;
+        z-index: 0;
+    }
+
+    #gameForeground {
+        border: 1px solid black;
+        float: right;
+        right: -50%;
+        position: absolute;
+        z-index: 1;
+    }
+
+    #gameText {
+        border: 1px solid black;
+        float: right;
+        right: -50%;
+        position: absolute;
+        z-index: 2;
+    }
+
+    #controlsOuter {
+        width: 30%;
+        position: relative;
+        float: left;
+        left: 5%;
+        text-align: center;
+    }
+
+    #contestantsSelection, #gameStats {
+        width: 30%;
+        font-size: 16px;
+        position: relative;
+        float: left;
+        clear: left;
+        display: table;
+        border-collapse: collapse;
+    }
+
+    #tournamentOverview {
+        width: 30%;
+        font-size: 16px;
+        position: relative;
+        float: right;
+    }
+
+    #tournamentSelection {
+        width: 30%;
+        position: relative;
+        float: right;
+        text-align: right;
+    }
 }
 
-.playerSelected {
-    display: table-cell;
-    width: 16px;
-}
+@media (min-width: 1600px) {
+     #gameOuter {
+        left: 1%;
+        clear: none;
+        position: relative;
+        display: inline-block;
+        margin-bottom: 10px;
+    }
 
-.contestantSelection {
-    display: table-row;
-    border: 1px solid black;
+    #gameBackground {
+        border: 1px solid black;
+        float: right;
+        position: relative;
+        z-index: 0;
+    }
+
+    #gameForeground {
+        border: 1px solid black;
+        float: right;
+        position: absolute;
+        z-index: 1;
+    }
+
+    #gameText {
+        border: 1px solid black;
+        float: right;
+        position: absolute;
+        z-index: 2;
+    }
+
+    #controlsOuter {
+        width: 30%;
+        position: relative;
+        float: left;
+        clear: right;
+        left: 35%;
+        text-align: center;
+    }
+
+    #contestantsSelection, #gameStats {
+        width: 18%;
+        font-size: 16px;
+        position: relative;
+        float: left;
+        display: table;
+        border-collapse: collapse;
+    }
+
+    #tournamentOverview {
+        width: 18%;
+        font-size: 16px;
+        position: relative;
+        float: right;
+        clear: none;
+    }
+
+    #tournamentSelection {
+        width: 18%;
+        position: relative;
+        float: right;
+        text-align: right;
+        clear: none;
+    }
 }

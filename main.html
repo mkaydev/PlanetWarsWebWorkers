@@ -50,51 +50,49 @@
         <canvas id="gameForeground"></canvas>
         <canvas id="gameText"></canvas>
     </div>
-    <div id="bottomInterface">
-        <div id="gameStats" style="display:none">
+    <div id="gameStats" style="display:none">
+        <div class="playerStats" style="visibility:hidden">
+            <div class="statsPlayerColor"></div>
+            <div class="statsPlayerName"></div>
+            <div class="statsPlayerValue"></div>
+        </div>
+    </div>
+    <div id="tournamentOverview" hidden>
+        <div class="tournamentStats">
             <div class="playerStats" style="visibility:hidden">
                 <div class="statsPlayerColor"></div>
                 <div class="statsPlayerName"></div>
                 <div class="statsPlayerValue"></div>
             </div>
         </div>
-        <div id="contestantsSelection">
-            <div class="contestantSelection" style="visibility:hidden">
-                <div class="playerSelected"><input type="checkbox"></div>
-                <div class="statsPlayerColor"></div>
-                <div class="statsPlayerName"></div>
+        <div class="tournamentInfo">
+            <span class="tournamentTypeInfo"></span>:
+            <div class="tournamentGameInfo">
+                <span class="tournamentGameIndex"></span>/<span class="tournamentGameCount"></span>
             </div>
         </div>
-        <div id="controlsOuter">
-            <div id="controls">
-                <button type="button" id="initialize">initialize</button>
-                <button type="button" id="play">play</button>
-                <button type="button" id="pause" hidden>pause</button>
-                <button type="button" id="step">step</button>
-            </div>
+    </div>
+    <form id="tournamentSelection">
+        run tournament?<input type="checkbox" id="runTournament">
+        <div id="tournamentType" hidden>
+            duel<input type="radio" name="type" value="duel" id="duel"></br>
+            last man standing<input type="radio" name="type" value="lastManStanding" id="lastManStanding" checked=true></br>
+            repetitions: <input type="number" name="repetitions" id="repetitions" min="1" max="1000" value="10">
         </div>
-        <form id="tournamentSelection">
-            run tournament?<input type="checkbox" id="runTournament">
-            <div id="tournamentType" hidden>
-                duel<input type="radio" name="type" value="duel" id="duel"></br>
-                last man standing<input type="radio" name="type" value="lastManStanding" id="lastManStanding" checked=true></br>
-                repetitions: <input type="number" name="repetitions" id="repetitions" min="1" max="1000" value="10">
-            </div>
-        </form>
-        <div id="tournamentOverview" hidden>
-            <div class="tournamentStats">
-                <div class="playerStats" style="visibility:hidden">
-                    <div class="statsPlayerColor"></div>
-                    <div class="statsPlayerName"></div>
-                    <div class="statsPlayerValue"></div>
-                </div>
-            </div>
-            <div class="tournamentInfo">
-                <span class="tournamentTypeInfo"></span>:
-                <div class="tournamentGameInfo">
-                    <span class="tournamentGameIndex"></span>/<span class="tournamentGameCount"></span>
-                </div>
-            </div>
+    </form>
+    <div id="contestantsSelection">
+        <div class="contestantSelection" style="visibility:hidden">
+            <div class="playerSelected"><input type="checkbox"></div>
+            <div class="selectionPlayerColor"></div>
+            <div class="selectionPlayerName"></div>
+        </div>
+    </div>
+    <div id="controlsOuter">
+        <div id="controls">
+            <button type="button" id="initialize">initialize</button>
+            <button type="button" id="play">play</button>
+            <button type="button" id="pause" hidden>pause</button>
+            <button type="button" id="step">step</button>
         </div>
     </div>
 </body>
