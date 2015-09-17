@@ -40,8 +40,7 @@ contestantRegistry.registerPlayer(
 contestantRegistry.registerPlayer(
     "Asp",
     [139, 69, 19], //SaddleBrown
-    "battle_school/AspPlayer.js",
-    true
+    "battle_school/AspPlayer.js"
 );
 
 contestantRegistry.registerPlayer(
@@ -68,8 +67,7 @@ contestantRegistry.registerPlayer(
 contestantRegistry.registerPlayer(
     "Rat",
     [176, 196, 222], //LightSteelBlue
-    "battle_school/RatPlayer.js",
-    true
+    "battle_school/RatPlayer.js"
 );
 
 contestantRegistry.registerPlayer(
@@ -137,5 +135,3 @@ contestantRegistry.registerPlayer(
     [250, 235, 215], //AntiqueWhite
     "sample_players/AttackBestPlanetPlayer.js"
 );
-
-
