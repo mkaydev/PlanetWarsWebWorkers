@@ -113,7 +113,7 @@ Universe.prototype._fromJSON = function _fromJSON(universeState) {
         playerJSON = playersJSON[playerId];
         player = this._toPlayerObject(playerJSON);
 
-        if (player.isNeutral) {
+        if (player.MOVE_isNeutral()) {
             this._neutralPlayerId = playerId;
         } else {
             playersArray.push(player);

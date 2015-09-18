@@ -52,7 +52,7 @@ Planet.prototype.getRecruitingPerStep = function getRecruitingPerStep() {
 
 
 Planet.prototype.step = function step() {
-    if (this.getOwner().isNeutral) return;
+    if (this.getOwner().MOVE_isNeutral()) return;
     this.setForces(this.getForces() + this.getRecruitingPerStep());
 };
 

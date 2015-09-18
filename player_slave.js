@@ -1,6 +1,11 @@
 Player: function Player() {};
 Player.prototype.isNeutral = false;
 
+Player.prototype.MOVE_isNeutral = function MOVE_isNeutral() {
+  return this.isNeutral;
+};
+
+
 Player.prototype._setId = function _setId(id) {
     this.id = id;
 };
@@ -34,7 +39,7 @@ Player.prototype.fromJSON = function fromJSON(playerState) {
 Player.prototype.toJSON = function toJSON() {
     var json = {};
     json[_STATE_KEYS["id"]] = this.id;
-    json[_STATE_KEYS["isNeutral"]] = this.isNeutral;
+    json[_STATE_KEYS["isNeutral"]] = this.MOVE_isNeutral();
     json[_STATE_KEYS["color"]] = this.color;
     json[_STATE_KEYS["name"]] = this.name;
     return json;

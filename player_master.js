@@ -9,6 +9,10 @@ Player: function Player(playerJSON) {
     this.name = playerJSON[_STATE_KEYS["name"]];
 };
 
+Player.prototype.MOVE_isNeutral = function MOVE_isNeutral() {
+  return this.isNeutral;
+};
+
 Player.prototype.toJSON = function toJSON() {
     var json = {};
     json[_STATE_KEYS["id"]] = this.id;

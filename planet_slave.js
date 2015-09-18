@@ -136,7 +136,7 @@ Planet.prototype.getDefendingFleets = function getDefendingFleets() {
 };
 
 Planet.prototype.isNeutral = function isNeutral() {
-    return this.getOwner().isNeutral;
+    return this.getOwner().MOVE_isNeutral();
 };
 
 Planet.prototype.sendFleet = function sendFleet(destination, forces) {
