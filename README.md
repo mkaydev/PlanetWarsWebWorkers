@@ -1,3 +1,7 @@
+# Discontinued
+
+Will be replaced by a client/server implementation.
+
 # Implement a player:
  - create a constructor for your the player
  - set the .prototype of the new player object to new Player()
