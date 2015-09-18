@@ -1,4 +1,4 @@
-To implement a player:
+# Implement a player:
  - create a constructor for your the player
  - set the .prototype of the new player object to new Player()
  - set the .prototype.constructor to your player constructor
@@ -10,81 +10,149 @@ Have a look at the sample_players to see examples.
 
 --------------------------------------------------------------------------------------------
 
-Publicly accessible functions for use in the .think method:
+# Publicly accessible API for use in the .think method:
 
----------methods--------------------------------
+## Player
+
+### Methods
+
 Player:sendFleet(source, destination, fleetSize)
     source: a planet, owned by the player
     destination: a planet
     fleetSize: an integer
---------attributes------------------------------
+
 Player:equals
+
+### Attributes
+
 Player:id
+
 Player:isNeutral
 
 
----------methods--------------------------------
+## Planet
+
+### Methods
+
 Planet:isNeutral()
+
 Planet:distanceTo(otherPlanet)
+
 Planet:distanceToCoords(x, y)
+
 Planet:fleetStepsTo(otherPlanet)
+
 Planet:ownerEquals(player)
+
 Planet:getX()
+
 Planet:getY()
+
 Planet:getForces()
+
 Planet:getOwner()
+
 Planet:getRecruitingPerStep()
+
 Planet:getId()
---------attributes------------------------------
-None
----------methods--------------------------------
-Fleet:ownerEquals(player)
-Fleet:distanceToDestination()
-Fleet:stepsToDestination()
-Fleet:isHostileTo(fleetOrPlanet)
-Fleet:isHostileToDestination()
-Fleet:getMovementPerStep()
-Fleet:getX()
-Fleet:getY()
-Fleet:getMovementPerStep()
-Fleet:getSource()
-Fleet:getDestination()
-Fleet:getOwner()
-Fleet:getId()
---------attributes------------------------------
+
+### Attributes
+
 None
 
----------methods--------------------------------
+
+## Fleet
+
+### Methods
+
+Fleet:ownerEquals(player)
+
+Fleet:distanceToDestination()
+
+Fleet:stepsToDestination()
+
+Fleet:isHostileTo(fleetOrPlanet)
+
+Fleet:isHostileToDestination()
+
+Fleet:getMovementPerStep()
+
+Fleet:getX()
+
+Fleet:getY()
+
+Fleet:getMovementPerStep()
+
+Fleet:getSource()
+
+Fleet:getDestination()
+
+Fleet:getOwner()
+
+Fleet:getId()
+
+
+### Attributes
+
+None
+
+
+## Universe
+
+### Methods
+
 Universe:getActivePlayers()
+
 Universe:getAllPlanets()
+
 Universe:getPlanets(player)
+
 Universe:getNeutralPlanets()
+
 Universe:getEnemyPlanets(player)
+
 Universe:sortByDistance(planet, planets [,reverse])
+
 Universe:sortByRecruitingPower(planets [,reverse])
+
 Universe:sortByForces(planetsOrFleets [,reverse])
+
 Universe:getGroundForces(player)
+
 Universe:getAirForces(player)
+
 Universe:getForces(player)
+
 Universe:getAllFleets()
+
 Universe:getFleets(player)
+
 Universe:getEnemyFleets(player)
+
 Universe:sortByDistanceToDestination(fleets [,reverse])
+
 Universe:sortPlayersByForces(players [,reverse])
 
---------attributes------------------------------
+
+### Attributes
+
 Universe:width
+
 Universe:height
+
 Universe:fleetMovementPerStep
 
+## Helper functions
 
-----------------------helper-functions------------------
+
 shuffleArray(arr)
+
 checkUnique(arr, attribute [, inner_attribute])
+
 createId([prefix])
 
---------------------------------------------------------------------------------------------
-For debugging:
+
+# Debugging:
 
 There is no console or window object in a web worker. The helper.js file defines these objects in a way that a message is posted to the creator of the worker.
 console.log(message) allows logging to the console (only string or json objects)
@@ -111,18 +179,53 @@ This is in contrast to storing all the values from the json-representation in at
 It is expected that for most if not all of the game: #Players <way lower than< #Planets < #Fleets  (-> it is especially important for fleets, not really for players)
 
 
------------------Sparring-partners------------------------------------------------------------
+# Sparring partners
+
 Currently implemented players are in the sample_players and battle_school folder.
 The current sample players could be separated into classes as follows:
 
-Complete idiots: DoNothingPlayer, SpiralPlayer, RandomPlayer, AttackRandomPlayer, AttackLargestEnemyPlayer, KamikazePlayer, AttackBestPlanetPlayer
+Complete idiots:
+
+DoNothingPlayer, SpiralPlayer, RandomPlayer, AttackRandomPlayer, AttackLargestEnemyPlayer, KamikazePlayer, AttackBestPlanetPlayer
 Naive, but alright: SupportNetworkPlayer, AlbatrossPlayer, VirusPlayer, AttackNearestEnemyPlayer
 
 The AttackNearestEnemyPlayer performs the best of the sample players.
-The SupportNetworkPlayer performs the worst in a duel of the four. (Will win none against the other three and sometimes fails to finish against the AlbatrossPlayer - even if he has more forces.)
+
+The SupportNetworkPlayer performs the worst in a duel of the four. (Will win none against the other three and sometimes fails to finish against the AlbatrossPlayer - even if he has more forces.) He performs reasonably well in a last man standing with a lot of players.
+
 The VirusPlayer performs the worst in a last man standing setting, but will perform as well as the AttackNearestEnemyPlayer in a duel.
 
 The battle_school folder is for players with more sophisticated strategies. The players dominate duel and last man standing tournaments against the sample players.
 
 The idiots are good for early sparring and for last man standing setups, e.g. adding a DoNothingPlayer to a last man standing will act as a kind of honeypot for players,
 who don't realize that attacking this player in the early phase of the game is suicide. (One of the differences between the SupportNetworkPlayer and the AlbatrossPlayer.)
+
+## Duel
+
+In a duel the more aggressive players perform a lot better. This includes strategies such as keeping no reserves for planets far away from the enemy in order to conquer neutral planets faster.
+
+The mid-game in a duel is a lot more interesting, because it is easier for an opponent with a better strategy to win while at a disadvantage.
+
+To train against different strategies, the following are a good list:
+- Scorpion, Asp, or Chimera
+- Badger
+- Salamander
+- Albatross
+
+## Last man standing
+
+In a duel defensive players seem to perform better on average. Chance plays a much bigger role.
+
+In a duel players that started in a place with few close planets can still stand a chance if their strategy allows them to conquer planets faster. In a last man standing match this is much harder.
+
+A position that is far away from the corners is harder to play. The bigger the number of players the harder it is too win a match where you started from the middle rather than a corner. Because you're sandwiched between enemies and have more surface to defend. That's why Rat and Salamander perform well on average. They always focus on conquering a corner first.
+
+It is rare for a player to win by conquering the (top left + top right) or (lower left + lower right) corner first. A better approach seems to be to conquer the left side or the ride side.
+
+To train against different strategies, the following are a good list:
+- Rat and Salamander
+- Scorpion, Asp, or Chimera
+- Badger
+- Albatross and SupportNetworkPlayer
+- AttackNearestEnemy
+- DoNothing
