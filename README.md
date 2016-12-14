@@ -1,3 +1,5 @@
+[Live demo on the github project page](http://mkaydev.github.io/PlanetWarsWebWorkers/) (Firefox only, because it uses nested web worker creation)
+
 # Discontinued
 
 Will be replaced by a client/server implementation.
