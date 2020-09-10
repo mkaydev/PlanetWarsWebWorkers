@@ -1,5 +1,11 @@
 [Live demo on the github project page](http://mkaydev.github.io/PlanetWarsWebWorkers/) (Firefox only, because it uses nested web worker creation)
 
+[Video of single duel badger vs scorpion](https://drive.google.com/file/d/1BUsot4704QmOVr9FRl1p2j6CXGR38482/view?usp=sharing)
+
+[Video of single last player standing match with four players](https://drive.google.com/file/d/1NJ6VWcNc8SKeV4hmsFBw2zRM1yAfHrRo/view?usp=sharing)
+
+[Video of single last player standing match with eight players](https://drive.google.com/file/d/1ZnaGU_84wqXFkMhmpP6K6aN3DiVWLKjI/view?usp=sharing)
+
 # Discontinued
 
 Will be replaced by a client/server implementation.
