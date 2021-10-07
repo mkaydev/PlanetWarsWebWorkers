@@ -6,9 +6,6 @@
 
 [Video of single last player standing match with eight players](https://drive.google.com/file/d/1ZnaGU_84wqXFkMhmpP6K6aN3DiVWLKjI/view?usp=sharing)
 
-# Discontinued
-
-Will be replaced by a client/server implementation.
 
 # Implement a player:
  - create a constructor for your the player
