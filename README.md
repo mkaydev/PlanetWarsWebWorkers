@@ -1,4 +1,4 @@
-[Live demo on the github project page](http://mkaydev.github.io/PlanetWarsWebWorkers/) (Firefox only, because it uses nested web worker creation)
+[Live demo on the github project page](http://mkaydev.github.io/PlanetWarsWebWorkers/) (uses nested web worker creation, won't work with older Chrome)
 
 [Video of single duel badger vs scorpion](https://drive.google.com/file/d/1BUsot4704QmOVr9FRl1p2j6CXGR38482/view?usp=sharing)
 
